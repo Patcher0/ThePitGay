@@ -11,10 +11,6 @@ ThePitStudy is designed for efficient server running.
 ThePitStudy is a fork of ThePitPremium that has huge speed and memory improvements and considerably more features.  
 If you use other plugins which depend on ThePitPremium, simply having "TPS" installed will boost their performance.
 
-## Downloads
-
-Downloads are available either on Nyacho
-- [Nyacho](https://www.nyacho.cn/)
 
 Snapshots are available on [Github Actions](https://github.com/ThePitPlus/ThePitPlus).
 

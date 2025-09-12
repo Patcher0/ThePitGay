@@ -143,7 +143,7 @@ public class Scoreboard implements AssembleAdapter {
         }
         lines.add("&f等级: " + LevelUtil.getLevelTag(prestige, level) + genesisTeam);
         if (level >= NewConfiguration.INSTANCE.getMaxLevel()) {
-            lines.add("&f经验: &b经验值已满!");
+            lines.add("&f经验值: &b经验值已满!");
         } else {
             if (!profile.getPlayerOption().isLevelBar() && prestige <= 100) {
                 lines.add("&f下级: &b" + numFormatTwo.format((LevelUtil.getLevelTotalExperience(prestige, level + 1) - profile.getExperience())) + " Xp");

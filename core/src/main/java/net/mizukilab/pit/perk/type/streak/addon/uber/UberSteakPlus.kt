@@ -231,7 +231,7 @@ class UberSteakPlus : AbstractPerk(), MegaStreak, Listener, IPlayerKilledEntity,
     override fun handle(enchantLevel: Int, player: Player) {
         if (!hasUberPlus(player)) return
         val profile = ThePit.getInstance().profileOperator.namedIOperator(player.name).profile()
-        if (profile.streakKills >= 5000) {
+        if (profile.streakKills >= 5000 && profile.streakKills < 6000) {
             PlayerUtil.damage(player, PlayerUtil.DamageType.TRUE, 2.0, false)
         }
         if (profile.streakKills >= 6000) {
