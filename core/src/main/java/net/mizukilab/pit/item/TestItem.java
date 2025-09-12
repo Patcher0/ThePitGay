@@ -22,7 +22,7 @@ public class TestItem extends AbstractPitItem{
 
     @Override
     public ItemStack toItemStack() {
-        long expireTime = System.currentTimeMillis();
+        long expireTime = System.currentTimeMillis() + 10000;
 
         return
                 new ItemBuilder(Material.BARRIER).name("&c测试").lore(ItemBuilder.formatExactTime(expireTime)).expireTime(expireTime).canTrade(true).canSaveToEnderChest(true).build();
