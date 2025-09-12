@@ -87,8 +87,6 @@ class PitCommands {
     fun info(@Context player: Player) {
         player.sendMessage(CC.translate(
             "&7Currently running &cThePitUltimate"))
-            if (player.name.endsWith("MiriamZQAT")) {
-        }
     }
 
     @Execute(name = "startDate")

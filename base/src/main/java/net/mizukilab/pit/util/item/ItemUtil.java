@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
+
 /**
  * @Author: EmptyIrony
  * @Date: 2021/1/1 1:37
@@ -21,6 +22,7 @@ public class ItemUtil {
     public static String getUUID(ItemStack item) {
         return getItemStringData(item, "uuid");
     }
+
     public static int getHashCodeForUUID(ItemStack item) {
         NBTTagCompound extra = getExtra(item);
         return getHashCodeForUUID0(item, extra);
@@ -138,7 +140,9 @@ public class ItemUtil {
         if (extra == null) {
             return true;
         }
-
+        if (extra.hasKey("expireTime")) {
+            return false;
+        }
         return !extra.hasKey("internal") || getInternalName(item).endsWith("_reward");
     }
 
@@ -207,6 +211,7 @@ public class ItemUtil {
     }
     public static String getInternalName(ItemStack item) {
         return getItemStringData(item, "internal");
+
     }
 
     public static Object[] getInternalNameAndUUID(ItemStack stack) {

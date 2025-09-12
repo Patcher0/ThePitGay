@@ -51,6 +51,7 @@ import net.mizukilab.pit.hook.ItemPapiHook
 import net.mizukilab.pit.hook.PitPapiHook
 import net.mizukilab.pit.impl.PitInternalImpl.loaded
 import net.mizukilab.pit.impl.PlayerPointsAPI
+import net.mizukilab.pit.item.TestItem
 import net.mizukilab.pit.item.factory.ItemFactory
 import net.mizukilab.pit.item.type.*
 import net.mizukilab.pit.item.type.egg.SpeedEggs
@@ -88,7 +89,6 @@ import net.mizukilab.pit.perk.type.streak.highlander.GoldNanoFactoryKillStreak
 import net.mizukilab.pit.perk.type.streak.highlander.HighlanderMegaStreak
 import net.mizukilab.pit.perk.type.streak.highlander.KhanateKillStreak
 import net.mizukilab.pit.perk.type.streak.highlander.WitherCraftKillStreak
-import net.mizukilab.pit.perk.type.streak.king.Despot
 import net.mizukilab.pit.perk.type.streak.nonpurchased.*
 import net.mizukilab.pit.perk.type.streak.tothemoon.GoldStack
 import net.mizukilab.pit.perk.type.streak.tothemoon.SuperStreaker
@@ -139,11 +139,13 @@ object PitHook {
         loadTab()
         loadNpcs()
 
+
         Bukkit.getPluginManager().getPlugin("PlaceholderAPI")?.let {
             PitPapiHook.register()
             ItemPapiHook.register()
         }
-
+        val expireListener = ExpireListener()
+        expireListener.startExpireCheckTask()
         val description = ThePit.getInstance().description
 
         val field = PluginDescriptionFile::class.java.getDeclaredField("version")
@@ -294,6 +296,7 @@ object PitHook {
             BountySolventPotion::class.java,
             ChunkOfVileItem::class.java,
             FunkyFeather::class.java,
+            TestItem::class.java,
             GoldenHelmet::class.java,
             LuckyGem::class.java,
             JewelSword::class.java,
@@ -769,7 +772,7 @@ private fun loadEvents() {
 
 private fun registerListeners() {
     val classes = listOf<Class<*>>(
-
+        ExpireListener::class.java,
         CombatListener::class.java,
         GameEffectListener::class.java,
         DataListener::class.java,

@@ -27,10 +27,8 @@ import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class ItemBuilder {
 
@@ -48,6 +46,33 @@ public class ItemBuilder {
     public ItemBuilder material(Material mat) {
         this.is = new ItemStack(mat);
         return this;
+    }
+    public ItemBuilder changeNbt(String key, long value) {
+
+        net.minecraft.server.v1_8_R3.ItemStack nmsItem = PublicUtil.toNMStackQuick(is);
+
+        NBTTagCompound tag = getNbtTagCompound(nmsItem.getTag());
+
+        NBTTagCompound extra = getNbtTagCompound(tag.getCompound("extra"));
+
+        extra.setLong(key, value);
+
+        tag.set("extra", extra);
+        nmsItem.setTag(tag);
+
+        this.is = CraftItemStack.asBukkitCopy(nmsItem);
+        return this;
+    }
+    public static String formatExactTime(long timestamp) {
+        if (timestamp <= 0) {
+            return ChatColor.RED + "已过期";
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日HH时mm分");
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai")); // 使用北京时间
+
+        Date expireDate = new Date(timestamp);
+        return ChatColor.GREEN + sdf.format(expireDate);
     }
 
     public ItemBuilder amount(int amount) {
@@ -79,6 +104,33 @@ public class ItemBuilder {
         im.setOwner(owner);
         is.setItemMeta(im);
         return this;
+    }
+
+    public ItemBuilder expireTime(long expireTime) {
+        return this.changeNbt("expireTime", expireTime);
+    }
+
+    public static String formatTime(long ms) {
+        if (ms <= 0) {
+            return ChatColor.RED + "已过期";
+        }
+        long sec = ms / 1000;
+
+        long days = ms / (24 * 60 * 60 * 1000);
+        ms %= 24 * 60 * 60 * 1000;
+
+        long hours = ms / (60 * 60 * 1000);
+        ms %= 60 * 60 * 1000;
+
+        long minutes = ms / (60 * 1000);
+
+        StringBuilder sb = new StringBuilder();
+        if (days > 0) sb.append(days).append("天");
+        if (hours > 0) sb.append(hours).append("小时");
+        if (minutes > 0) sb.append(minutes).append("分钟");
+        if (sec > 0) sb.append(sec).append("秒");
+
+        return ChatColor.GREEN + sb.toString();
     }
 
     public ItemBuilder setSkullProperty(String texture) {
