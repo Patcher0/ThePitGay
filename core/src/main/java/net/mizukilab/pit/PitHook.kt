@@ -144,8 +144,6 @@ object PitHook {
             PitPapiHook.register()
             ItemPapiHook.register()
         }
-        val expireListener = ExpireListener()
-        expireListener.startExpireCheckTask()
         val description = ThePit.getInstance().description
 
         val field = PluginDescriptionFile::class.java.getDeclaredField("version")
