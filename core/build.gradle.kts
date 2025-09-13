@@ -18,12 +18,9 @@ plugins {
     alias(libs.plugins.shadow)
 }
 
-var devBuild = true
-if (devBuild) {
-    println("WARN! 当前使用DevBuild模式构建!!,请详细斟酌是否构建")
-}
-group = "cn.klee"
-version = "core"
+group = "top.mcrw"
+
+version = "V"
 repositories {
 
     maven("https://maven.cleanroommc.com")
@@ -127,7 +124,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 
 tasks.named<ShadowJar>("shadowJar") {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    archiveFileName.set("ThePitUltimate-$version" + (if (devBuild) "-dev" else "") + ".jar")
+    archiveFileName.set("ThePitGay-$version" + ".jar")
     exclude("META-INF/**")
     relocate("pku.yim.license", "net.mizukilab.pit.license")
     relocate("panda", "net.mizukilab.pit.libs")
@@ -137,10 +134,7 @@ tasks.named<ShadowJar>("shadowJar") {
     relocate("net.jodah", "net.mizukilab.pit.libs")
     relocate("net.jitse", "net.mizukilab.pit.libs")
     relocate("xyz.upperlevel.spigot", "net.mizukilab.pit.libs")
-    if (!devBuild) {
-        exclude("org/**")
-    }
-
+    exclude("org/**")
     exclude("kotlin/**", "junit/**", "org/junit/**")
     from("build/tmp/processed-resources")
     mergeServiceFiles()
@@ -148,16 +142,9 @@ tasks.named<ShadowJar>("shadowJar") {
 dependencies {
     var dependencyNotation = project(":base")
     compileOnly(dependencyNotation)
-    if (devBuild) {
-        implementation(dependencyNotation)
-    }
     compileOnly(fileTree("../packLib"))
     compileOnly(fileTree(mapOf("dir" to "../libs", "include" to listOf("*.jar"))))
-    if (devBuild) {
-        api(libs.reflectionhelper)
-    }else{
-        compileOnly(libs.reflectionhelper)
-    }
+    api(libs.reflectionhelper)
     compileOnly(libs.hutool.crypto)
     compileOnly(libs.book)
     compileOnly(libs.slf4j)
