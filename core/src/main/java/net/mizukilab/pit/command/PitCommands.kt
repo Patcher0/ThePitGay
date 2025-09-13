@@ -161,10 +161,7 @@ class PitCommands {
                         return@runTaskAsynchronously
                     }
                 }
-                /*                if (lookupStrict.profile().playerUuid == player.uniqueId) {
-                                    player.sendMessage(CC.translate("&c疑? 为什么要查看自己档案?"))
-                                    return@runTaskAsynchronously
-                                }*/
+
                 Bukkit.getScheduler().runTask(ThePit.getInstance()) {
                     StatusViewerMenu(lookupStrict.profile()).openMenu(
                         player

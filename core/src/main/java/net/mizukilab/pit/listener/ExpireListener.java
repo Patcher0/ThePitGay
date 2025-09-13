@@ -1,7 +1,6 @@
 package net.mizukilab.pit.listener;
 
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
@@ -13,6 +12,10 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+/*
+ * author: APNF
+ * date: 2025/9/12
+ */
 
 public class ExpireListener implements Listener {
     private static final String NBT_KEY = "expireTime";
