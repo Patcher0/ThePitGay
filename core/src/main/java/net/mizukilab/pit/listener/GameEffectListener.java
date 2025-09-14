@@ -31,6 +31,7 @@ import net.mizukilab.pit.parm.type.BowOnly;
 import net.mizukilab.pit.parm.type.ThrowOnly;
 import net.mizukilab.pit.quest.AbstractQuest;
 import net.mizukilab.pit.quest.QuestFactory;
+import net.mizukilab.pit.util.Einstein;
 import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.RangedStreamLineList;
 import net.mizukilab.pit.util.Utils;
@@ -160,14 +161,6 @@ public class GameEffectListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL,ignoreCancelled = true)
     public void onPlayerDamagePlayer(EntityDamageByEntityEvent event) {
         if (event.getDamager() instanceof Player attacker) {
-            if (NewConfiguration.INSTANCE.getRepairFeatures())  {
-                if (event.getEntity() instanceof CraftLivingEntity livingEntity) { //特性修复 //TODO
-                    if (livingEntity.getHandle().hurtTicks > 5) {
-                        event.setCancelled(true);
-                        return;
-                    }
-                }
-            }
             //修正伤害
             ItemStack itemInHand = attacker.getItemInHand();
             if (itemInHand == null || itemInHand.getType() == Material.AIR
@@ -186,8 +179,7 @@ public class GameEffectListener implements Listener {
         ThePit instance = ThePit.getInstance();
         PerkFactory perkFactory = instance.getPerkFactory();
         EnchantmentFactor enchantmentFactor = instance.getEnchantmentFactor();
-
-        AtomicDouble finalDamage = new AtomicDouble(0);
+        AtomicDouble finalDamage = new AtomicDouble(event.getDamage());
         AtomicDouble boostDamage = new AtomicDouble(1);
         AtomicBoolean cancel = new AtomicBoolean(false);
         Player damager = null;
@@ -359,66 +351,21 @@ public class GameEffectListener implements Listener {
             if (damager != null) {
                 ((CraftPlayer) player).getHandle().killer = ((CraftPlayer) damager).getHandle();
             }
-
-            if (player.getHealth() < finalDamage.get()) {
-                // 添加安全检查，避免机器人死亡时的NullPointerException
-                try {
-                    player.damage(500000.0);
-                } catch (Exception e) {
-                    // 如果damage方法出错，直接设置生命值为0
-                    try {
-                        player.setHealth(0);
-                    } catch (Exception ex) {
-                        // 如果setHealth也失败，尝试使用更底层的方式
-                        try {
-                            ((CraftPlayer) player).getHandle().setHealth(0.0f);
-                        } catch (Exception ignored) {
-                            // 最后的安全网，静默忽略
-                        }
-                    }
-                }
-                event.setCancelled(true);
-            } else { //TODO 修正 一击毙命, 但是event不cancel
-                double v = player.getHealth() - finalDamage.get();
-                if (v > 0) {
-                    // 确保生命值不超过最大生命值上限
-                    try {
-                        player.setHealth(Math.min(v, player.getMaxHealth()));
-                    } catch (Exception e) {
-                        // 如果setHealth失败，尝试直接设置为当前生命值（不改变）
-                        try {
-                            player.setHealth(player.getHealth());
-                        } catch (Exception ignored) {
-                            // 静默忽略
-                        }
-                    }
-                } else {
-                    try {
-                        player.setHealth(0);
-                    } catch (Exception e) {
-                        // 如果setHealth失败，尝试使用底层API
-                        try {
-                            ((CraftPlayer) player).getHandle().setHealth(0.0f);
-                        } catch (Exception ignored) {
-                            // 最后的安全网，静默忽略
-                        }
-                    }
-                }
-            }
+            //we need to ensure the final damage is pushed into the event
+            event.setDamage(finalDamage.get());
         }
 
         if (!cancel.get()) {
-
             if (event.getDamager() instanceof FishHook hook) {
                 final PlayerProfile damagerProfile = PlayerProfile.getPlayerProfileByUuid(((Player) hook.getShooter()).getUniqueId());
                 damagerProfile.setFishingNumber(damagerProfile.getFishingNumber() + 1);
             }
-
         } else {
             event.setCancelled(true);
         }
-
-        event.setDamage(Math.max(1, event.getDamage()) * Math.max(0.2, boostDamage.get()));
+        double finalDamage1 = event.getDamage();
+        //does it impossible?
+        event.setDamage(finalDamage1 * Einstein.clamp(boostDamage.get(),0,100));
 
         if (event.getEntity() instanceof Player player) {
             PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());

@@ -139,7 +139,7 @@ public class PlayerListener implements Listener {
         CombatListener instance = CombatListener.INSTANCE;
         if (instance != null && !profile.getCombatTimer().hasExpired()) {
             Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
-                instance.handlePlayerDeath(event.getPlayer(), null, false);
+                instance.handlePlayerDeath(null,event.getPlayer(), null, false);
             });
         }
     }

@@ -9,8 +9,10 @@ import cn.charlotte.pit.events.genesis.GenesisTeam;
 import cn.charlotte.pit.perk.AbstractPerk;
 import cn.charlotte.pit.perk.PerkFactory;
 import com.google.common.util.concurrent.AtomicDouble;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
+import net.minecraft.server.v1_8_R3.EntityPlayer;
 import net.minecraft.server.v1_8_R3.ItemArmor;
 import net.minecraft.server.v1_8_R3.MathHelper;
 import net.mizukilab.pit.UtilKt;
@@ -33,10 +35,7 @@ import net.mizukilab.pit.parm.listener.IPlayerBeKilledByEntity;
 import net.mizukilab.pit.parm.listener.IPlayerKilledEntity;
 import net.mizukilab.pit.parm.listener.IPlayerRespawn;
 import net.mizukilab.pit.runnable.ProfileLoadRunnable;
-import net.mizukilab.pit.util.FuncsKt;
-import net.mizukilab.pit.util.MythicUtil;
-import net.mizukilab.pit.util.PlayerUtil;
-import net.mizukilab.pit.util.Utils;
+import net.mizukilab.pit.util.*;
 import net.mizukilab.pit.util.chat.*;
 import net.mizukilab.pit.util.cooldown.Cooldown;
 import net.mizukilab.pit.util.inventory.InventoryUtil;
@@ -61,6 +60,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -224,10 +224,9 @@ public class CombatListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onKilled(PlayerDeathEvent event) {
-        event.getEntity().setNoDamageTicks(0);
-        event.getEntity().spigot().respawn();
+        event.getEntity().setNoDamageTicks(40);
         event.setDeathMessage(null);
-        handlePlayerDeath(event.getEntity(), event.getEntity().getKiller(), true);
+        handlePlayerDeath(event,event.getEntity(), event.getEntity().getKiller(), true);
     }
 
     /**
@@ -496,7 +495,7 @@ public class CombatListener implements Listener {
         }
     }
 
-    public void handlePlayerDeath(Player player, Player killer, boolean shouldRespawn) {
+    public void handlePlayerDeath(PlayerDeathEvent event,Player player, Player killer, boolean shouldRespawn) {
         PlayerProfile playerProfile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
         boolean npc = PlayerUtil.isNPC(player);
         if (killer != null) {
@@ -531,11 +530,11 @@ public class CombatListener implements Listener {
         }
         //saves performance
         if (npc) { //NPC Name
-            if(NewConfiguration.INSTANCE.getAlwaysCheckNPC()){
-                player.setGameMode(GameMode.SPECTATOR);
-                player.setNoDamageTicks(0);
-                player.spigot().respawn();
-            }
+//            if(NewConfiguration.INSTANCE.getAlwaysCheckNPC()){
+//                player.setGameMode(GameMode.SPECTATOR);
+//                player.setNoDamageTicks(40);
+//                player.spigot().respawn();
+//            }
             return;
         }
         final Player finalKiller = killer;
@@ -690,39 +689,24 @@ public class CombatListener implements Listener {
             });
         }
         if (shouldRespawn) {
-            ((CraftPlayer) player).getHandle().invulnerableTicks = 40;
+
+            EntityPlayer handle = ((CraftPlayer) player).getHandle();
+            handle.invulnerableTicks = 40;
             // player.setHealth(player.getMaxHealth());
-            Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), () -> player.spigot().respawn(), 10);
-
-            if (playerProfile.getRespawnTime() <= 1.5) {
-                playerProfile.setRespawnTime(0.1d);
-            }
-
-            if (respawnTime > 0.1) {
-                new BukkitRunnable() {
-                    private int remainingTime = (int) respawnTime;
-
-                    @Override
-                    public void run() {
-                        if (remainingTime <= 0) {
-                            this.cancel();
-                            return;
-                        }
-                        TitleUtil.sendTitle(player, "&c你死了！", "&7将在 &6" + remainingTime + "秒 &7后复活", 5, 5, 20);
-                        remainingTime--;
-                    }
-                }.runTaskTimer(ThePit.getInstance(), 0, 20);
-
-                Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), () -> {
-                    this.doRespawn(player);
-                    TitleUtil.sendTitle(player, "&a已复活！", " ", 5, 5, 20);
-                }, (long) (respawnTime * 20L));
-            } else {
-                Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), () -> doRespawn(player), 1L);
-            }
+            player.setHealth(player.getMaxHealth());
+            doRespawn(player);
+            Location location= player.getLocation();
+            Einstein.flushPos(player);
+            Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), () -> {
+                if(handle.invulnerableTicks == 0){
+                    return;
+                }
+                player.teleport(location);
+                Einstein.noVelocity(player);
+                handle.invulnerableTicks = 0;
+                },3L);
         }
     }
-
     private void doRespawn(Player player) {
         if (!player.isOnline()) {
             return;
@@ -739,32 +723,28 @@ public class CombatListener implements Listener {
         }
         player.teleport(location);
 
-        PlayerProfile.getPlayerProfileByUuid(player.getUniqueId()).setInArena(false);
+        PlayerProfile playerProfileByUuid = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
+        playerProfileByUuid.setInArena(false);
 
         PlayerUtil.resetPlayer(player, true, false);
         player.setGameMode(GameMode.SURVIVAL);
 
-        PlayerProfile.getPlayerProfileByUuid(player.getUniqueId())
-                .applyExperienceToPlayer(player);
-        TitleUtil.sendTitle(player, " ", " ", 5, 5, 20);
-
-        for (IPlayerRespawn ins : ThePit.getInstance().getPerkFactory()
-                .getPlayerRespawns()) {
-            AbstractPerk perk = (AbstractPerk) ins;
-            int perkPlayerLevel = perk.getPlayerLevel(player);
-            if (perkPlayerLevel != -1) {
-                ins.handleRespawn(perkPlayerLevel, player);
+        playerProfileByUuid.applyExperienceToPlayer(player);
+        playerProfileByUuid.getUnlockedPerkMap().forEach((a,i) -> {
+            AbstractPerk handle = i.getHandle(ThePit.getInstance().getPerkFactory().getPerkMap());
+            if(handle instanceof IPlayerRespawn c){
+                c.handleRespawn(i.getLevel(),player);
             }
-        }
+        });
 
-        EnchantmentFactor enchantmentFactor = ThePit.getInstance().getEnchantmentFactor();
-        for (IPlayerRespawn ins : enchantmentFactor.getPlayerRespawns()) {
-            AbstractEnchantment ench = (AbstractEnchantment) ins;
-
-            int level = ench.getItemEnchantLevel(player.getInventory().getLeggings());
-            if (level > 0) {
-                ins.handleRespawn(level, player);
-            }
+        AbstractPitItem leggings = playerProfileByUuid.leggings;
+        if(leggings instanceof IMythicItem i){
+            Object2IntOpenHashMap<AbstractEnchantment> enchantments = i.getEnchantments();
+            enchantments.forEach((c,a) -> {
+                if(c instanceof IPlayerRespawn e){
+                    e.handleRespawn(a,player);
+                }
+            });
         }
     }
 
@@ -1187,11 +1167,7 @@ public class CombatListener implements Listener {
             CC.send(MessageType.COMBAT, killer, CC.translate("&a&l" + prefix + "! " + RankUtil.getPlayerColoredName(beKilledPlayer.getUniqueId()).replace("null", "BOT") + " &6+" + numFormat.format(totalCoins) + "硬币" + genesisStatus + (eventBoost > 1 ? boostString : "")));
         }
         if (playerProfile.isLoaded()) {
-            if (beKilledPlayer instanceof Player deadplaper) {
-                Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
-                    deadplaper.setGameMode(GameMode.SPECTATOR);
-                    doRespawn(deadplaper);
-                });
+            if (beKilledPlayer instanceof Player) {
                 String deathString = CC.translate("&c&l死亡! &7被 " + killerProfile.getFormattedName() + " &7击杀.");
                 ChatComponentBuilder deathMsg = new ChatComponentBuilder(deathString)
                         .append(new ChatComponentBuilder(CC.translate(" &e&l死亡回放"))
