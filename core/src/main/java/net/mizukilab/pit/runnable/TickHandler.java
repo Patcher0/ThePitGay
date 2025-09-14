@@ -3,6 +3,7 @@ package net.mizukilab.pit.runnable;
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
 import cn.charlotte.pit.data.sub.PerkData;
+import cn.charlotte.pit.perk.AbstractPerk;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
 import net.mizukilab.pit.item.IMythicItem;
 import net.mizukilab.pit.park.Parker;
@@ -34,9 +35,9 @@ public class TickHandler extends BukkitRunnable {
     //@Getter
     //private final static ObjectArrayList<TradeRequest> tradeRequests = new ObjectArrayList<>();
 
-    final Map<String, ITickTask> enchantTicks = ThePit.getInstance().getEnchantmentFactor().getTickTasks();
+    final Map<AbstractEnchantment, ITickTask> enchantTicks = ThePit.getInstance().getEnchantmentFactor().getTickTasks();
 
-    final Map<String, ITickTask> ticksPerk = ThePit.getInstance().getPerkFactory().getTickTasks();
+    final Map<AbstractPerk, ITickTask> ticksPerk = ThePit.getInstance().getPerkFactory().getTickTasks();
 
     private int tick = 0;
 
@@ -120,30 +121,27 @@ public class TickHandler extends BukkitRunnable {
 
     private void tickPerks(Player player, PlayerProfile profile,long tick) {
         for (Map.Entry<Integer, PerkData> entry : profile.getChosePerk().entrySet()) {
-            final ITickTask task = entry.getValue().getITickTask(ticksPerk);
-            if (task != null) {
-                int b = task.loopTick(entry.getValue().getLevel());
-                if(b == PublicUtil.TICK_OFF_MAGIC_CODE){
-                    return;
-                }
-                if (shouldTick(tick, b)) {
-                    task.handle(entry.getValue().getLevel(), player);
-                }
-            }
+            final ITickTask task = entry.getValue().getITickTask(ThePit.getInstance().getPerkFactory().getPerkMap(), ticksPerk);
+            if (tick(task, entry.getValue(), tick, player)) return;
         }
 
         for (Map.Entry<String, PerkData> entry : profile.getUnlockedPerkMap().entrySet()) {
-            final ITickTask task = ticksPerk.get(entry.getValue().getPerkInternalName());
-            if (task != null) {
-                int b = task.loopTick(entry.getValue().getLevel());
-                if(b == PublicUtil.TICK_OFF_MAGIC_CODE){
-                    return;
-                }
-                if (shouldTick(tick, b)) {
-                    task.handle(entry.getValue().getLevel(), player);
-                }
+            final ITickTask task = ticksPerk.get(entry.getValue().getHandle(ThePit.getInstance().getPerkFactory().getPerkMap()));
+            if (tick(task, entry.getValue(), tick, player)) return;
+        }
+    }
+
+    private static boolean tick(ITickTask task, PerkData entry, long tick, Player player) {
+        if (task != null) {
+            int b = task.loopTick(entry.getLevel());
+            if (b == PublicUtil.TICK_OFF_MAGIC_CODE) {
+                return true;
+            }
+            if (shouldTick(tick, b)) {
+                task.handle(entry.getLevel(), player);
             }
         }
+        return false;
     }
 
     public IMythicItem handleIMythicItemTickTasks(ItemStack stack, Player player,long tick) {

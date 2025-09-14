@@ -13,11 +13,4 @@ object Loader {
         }
         PitHook.init()
     }
-    @JvmStatic
-    fun begin(){
-        System.setProperty("env",this.javaClass.name);
-
-        System.setProperty("ent","start");
-        println("MagicLicense initialized")
-    }
 }

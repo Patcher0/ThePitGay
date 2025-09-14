@@ -22,7 +22,7 @@ group = "top.mcrw"
 
 version = "V"
 repositories {
-
+    maven("https://maven.cleanroommc.com")
     maven("https://maven.cleanroommc.com")
     maven("https://maven.aliyun.com/repository/public/")
     mavenCentral()
@@ -149,6 +149,7 @@ dependencies {
     compileOnly(libs.book)
     compileOnly(libs.slf4j)
     compileOnly(libs.litecommands)
+    implementation("zone.rong:imaginebreaker:2.1")
     compileOnly(libs.adventure.bukkit)
     compileOnly("com.caoccao.javet:javet:3.1.4")
     compileOnly("org.projectlombok:lombok:1.18.32")

@@ -388,23 +388,7 @@ public abstract class IMythicItem extends AbstractPitItem {
             return;
         }
 
-        final NBTBase recordsStringRaw = extra.get("records");
-        if (recordsStringRaw instanceof NBTTagString) {
-            String recordsString = ((NBTTagString) recordsStringRaw).a_();
-
-            for (String recordString : Utils.splitByCharAt(recordsString, ';')) {
-                final String[] split = Utils.splitByCharAt(recordString,'|');
-                if (split.length >= 3) {
-                    enchantmentRecords.add(
-                            new EnchantmentRecord(
-                                    split[0],
-                                    split[1],
-                                    Long.parseLong(split[2])
-                            )
-                    );
-                }
-            }
-        }
+        readRecords(extra);
         //nano
         NBTTagList ench = extra.getList("ench", 8);
         this.enchantments = new Object2IntOpenHashMap<>();
@@ -423,6 +407,38 @@ public abstract class IMythicItem extends AbstractPitItem {
                 } else {
                     this.tier = extra.getInt("tier");
                 }
+            }
+        }
+    }
+
+    private void readRecords(NBTTagCompound extra) {
+        final NBTBase recordsStringRaw = extra.get("records");
+        if (recordsStringRaw instanceof NBTTagString) {
+            String recordsString = ((NBTTagString) recordsStringRaw).a_();
+            for (String recordString : Utils.splitByCharAt(recordsString, ';')) {
+                final String[] split = Utils.splitByCharAt(recordString,'|');
+                if (split.length >= 3) {
+                    enchantmentRecords.add(
+                            new EnchantmentRecord(
+                                    split[0],
+                                    split[1],
+                                    Long.parseLong(split[2])
+                            )
+                    );
+                }
+            }
+            extra.remove("records");
+            extra.set("records", new NBTTagList());
+        } else if(recordsStringRaw instanceof NBTTagList k){
+            for (int i = 0; i < k.size(); i++) {
+                NBTTagCompound nbtTagCompound = k.get(i);
+                enchantmentRecords.add(
+                        new EnchantmentRecord(
+                                nbtTagCompound.getString("name"),
+                                nbtTagCompound.getString("reason"),
+                                nbtTagCompound.getLong("timeStamp")
+                        )
+                );
             }
         }
     }
