@@ -6,6 +6,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.SneakyThrows;
+import net.mizukilab.pit.util.rank.RankUtil;
 import nya.Skip;
 import org.bson.Document;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -50,7 +51,8 @@ public class LeaderBoardRunnable extends BukkitRunnable {
                 }
                 int prestige = document.getInteger("prestige");
                 int rank = i;
-                entries.add(new LeaderBoardEntry(name, UUID.fromString(uuid), rank, experience, prestige));
+                UUID uuid1 = UUID.fromString(uuid);
+                entries.add(new LeaderBoardEntry(RankUtil.getPlayerRealColoredName(uuid1), uuid1, rank, experience, prestige));
 
                 i++;
             } catch (Exception e) {

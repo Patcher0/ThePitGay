@@ -13,10 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class EnchantmentDisplayButton extends Button {
@@ -46,7 +43,7 @@ public class EnchantmentDisplayButton extends Button {
             return getEmptySlot("mythicItem为null");
         }
 
-        ItemStack refreshedItem = InventoryUtil.deserializeItemStack(InventoryUtil.serializeItemStack(mythicItem.toItemStack()));
+        ItemStack refreshedItem = mythicItem.toItemStack();
         mythicItem = Utils.getMythicItem0(refreshedItem);
         
         if (mythicItem == null) {
@@ -62,20 +59,21 @@ public class EnchantmentDisplayButton extends Button {
         if (enchantments.isEmpty()) {
             return getEmptySlot("附魔列表为空");
         }
-
-        List<Map.Entry<AbstractEnchantment, Integer>> enchantList = enchantments.entrySet()
-                .stream()
-                .sorted(Comparator.comparing(e -> e.getKey().getEnchantName()))
-                .collect(Collectors.toList());
-
-        if (enchantIndex >= enchantList.size()) {
-            return getEmptySlot("索引超出范围: " + enchantIndex + "/" + enchantList.size());
+        int size = enchantments.size();
+        Iterator<Map.Entry<AbstractEnchantment, Integer>> iterator = enchantments.entrySet().iterator();
+        Map.Entry<AbstractEnchantment, Integer> enchantEntry = null;
+        if(enchantIndex < size) {
+            for (int i = 0; i < enchantIndex; i++) {
+                enchantEntry = iterator.next();
+            }
+        }
+        if (enchantEntry == null) {
+            return getEmptySlot("索引超出范围: " + enchantIndex + "/" + size);
         }
 
-        Map.Entry<AbstractEnchantment, Integer> enchantEntry = enchantList.get(enchantIndex);
         AbstractEnchantment enchant = enchantEntry.getKey();
         Integer level = enchantEntry.getValue();
-        List<String> lore = new ArrayList<>();
+        List<String> lore = new LinkedList<>();
 
         lore.add("&8&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         lore.add("&f✦ &7等级: " + getLevelColor(level) + RomanUtil.convert(level));
@@ -84,16 +82,24 @@ public class EnchantmentDisplayButton extends Button {
         String usefulnessLore = enchant.getUsefulnessLore(level);
         if (usefulnessLore != null && !usefulnessLore.isEmpty()) {
             lore.add("&6&l▍ &6附魔效果:");
-            String[] lines = usefulnessLore.split("/s");
-            for (String line : lines) {
-                if (!line.trim().isEmpty()) {
-                    if (!line.startsWith("&")) {
-                        line = "&7" + line;
+
+            int start = 0;
+            int len = usefulnessLore.length();
+            for (int i = 0; i <= len; i++) {
+                if (i == len || (i + 1 < len && usefulnessLore.charAt(i) == '/' && usefulnessLore.charAt(i + 1) == 's')) {
+                    String line = usefulnessLore.substring(start, i).trim();
+                    if (!line.isEmpty()) {
+                        if (line.charAt(0) != '&') {
+                            line = "&7" + line;
+                        }
+                        lore.add("  &8▸ " + line);
                     }
-                    lore.add("  &8▸ " + line.trim());
+                    start = i + 2;
+                    i++;
                 }
             }
         }
+
 
         lore.add("");
         lore.add("&8&m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");

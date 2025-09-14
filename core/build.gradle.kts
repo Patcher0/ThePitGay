@@ -140,8 +140,6 @@ tasks.named<ShadowJar>("shadowJar") {
     mergeServiceFiles()
 }
 dependencies {
-    var dependencyNotation = project(":base")
-    compileOnly(dependencyNotation)
     compileOnly(fileTree("../packLib"))
     compileOnly(fileTree(mapOf("dir" to "../libs", "include" to listOf("*.jar"))))
     api(libs.reflectionhelper)

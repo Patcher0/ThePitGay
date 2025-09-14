@@ -3,5 +3,4 @@ plugins {
 }
 rootProject.name = "ThePitUltimate"
 
-include("base")
 include("core")
