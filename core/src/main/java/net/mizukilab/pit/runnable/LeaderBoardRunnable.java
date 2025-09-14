@@ -52,7 +52,8 @@ public class LeaderBoardRunnable extends BukkitRunnable {
                 int prestige = document.getInteger("prestige");
                 int rank = i;
                 UUID uuid1 = UUID.fromString(uuid);
-                entries.add(new LeaderBoardEntry(RankUtil.getPlayerRealColoredName(uuid1), uuid1, rank, experience, prestige));
+                String playerRealColoredName = RankUtil.getPlayerRealColoredName(uuid1);
+                entries.add(new LeaderBoardEntry(playerRealColoredName, uuid1, rank, experience, prestige));
 
                 i++;
             } catch (Exception e) {

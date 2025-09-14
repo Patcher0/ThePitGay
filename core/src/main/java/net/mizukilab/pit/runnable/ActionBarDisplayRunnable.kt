@@ -63,7 +63,7 @@ object ActionBarDisplayRunnable {
     private fun Player.handleActionDisplay(itemStack: AbstractPitItem?, builder: StringBuilder) {
         itemStack?.run {
             for (enchantment in enchantments) {
-                val displayEnchant = enchants[enchantment.key.nbtName] ?: continue
+                val displayEnchant = enchants[enchantment.key] ?: continue
                 builder
                     .append("&b&l")
                     .append(enchantment.key.enchantName)

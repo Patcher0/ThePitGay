@@ -85,7 +85,6 @@ class Regularity : AbstractEnchantment(), Listener {
 
 
         if (level < 1) return
-
         if (PlayerUtil.shouldIgnoreEnchant(attacker, victim)) {
             return
         }
@@ -119,12 +118,15 @@ class Regularity : AbstractEnchantment(), Listener {
                                 return
                             }
                         }
+                        if(victim.isDead){
+                            return;
+                        }
                         victim.noDamageTicks = 0;
                         victim.damage(event.damage * boost, attacker)
-
+                        victim.lastDamage = 2000.0;
                         victim.setMetadata(
                             "regularity",
-                            FixedMetadataValue(ThePit.getInstance(), System.currentTimeMillis() + 700L)
+                            FixedMetadataValue(ThePit.getInstance(), System.currentTimeMillis() + 700)
                         )
                     }
                 }.runTaskLater(ThePit.getInstance(), 5L)

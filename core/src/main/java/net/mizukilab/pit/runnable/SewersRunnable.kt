@@ -153,7 +153,7 @@ object SewersRunnable : BukkitRunnable(), Listener {
             }
 
             "rubbish" -> {
-                player.inventory.addItem(ThePit.getApi().getMythicItemItemStack("rubbish"))
+                player.inventory.addItem(ThePit.api.getMythicItemItemStack("rubbish"))
                 "- &2下水道废弃物"
             }
 
@@ -163,7 +163,7 @@ object SewersRunnable : BukkitRunnable(), Listener {
             }
 
             "speed_eggs" -> {
-                player.inventory.addItem(ThePit.getApi().getMythicItemItemStack("speed_eggs"))
+                player.inventory.addItem(ThePit.api.getMythicItemItemStack("speed_eggs"))
                 "- &b速度蛋"
             }
 
@@ -174,14 +174,14 @@ object SewersRunnable : BukkitRunnable(), Listener {
 
             "milk_buckets" -> {
                 player.inventory.addItem(
-                    ThePit.getApi().getMythicItemItemStack("milk")
+                    ThePit.api.getMythicItemItemStack("milk")
                 )
                 "- &f牛奶"
             }
 
             else -> {
-                if (ThePit.getApi().getMythicItemItemStack(id).type != Material.AIR) {
-                    val item = ThePit.getApi().getMythicItemItemStack(id)
+                if (ThePit.api.getMythicItemItemStack(id).type != Material.AIR) {
+                    val item = ThePit.api.getMythicItemItemStack(id)
                     player.inventory.addItem(item)
                     "- ${item.itemMeta.displayName}"
                 }

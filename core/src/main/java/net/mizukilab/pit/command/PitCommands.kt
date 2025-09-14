@@ -941,7 +941,7 @@ class PitCommands {
             player.sendMessage(CC.translate("&c此指令当前无法使用!"))
             return
         }
-        ThePit.getApi().openAuctionMenu(player)
+        ThePit.api.openAuctionMenu(player)
     }
 
     @Execute(name = "changeVolley")

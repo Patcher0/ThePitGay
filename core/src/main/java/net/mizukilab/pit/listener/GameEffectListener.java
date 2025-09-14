@@ -557,13 +557,12 @@ public class GameEffectListener implements Listener {
             return;
         }
         AtomicBoolean atomicBoolean = new AtomicBoolean();
-        for (IItemDamage itemDamage : ThePit.getInstance()
-                .getEnchantmentFactor()
-                .getiItemDamages()) {
-            int level = ((AbstractEnchantment) itemDamage).getItemEnchantLevel(event.getPlayer().getItemInHand());
-
-            itemDamage.handleItemDamaged(level, event.getItem(), event.getPlayer(), atomicBoolean);
-        }
+        IMythicItem mm = Utils.getMythicItem(item);
+        mm.getEnchantments().forEach((i,a) -> {
+            if(i instanceof IItemDamage itemDamage) {
+                itemDamage.handleItemDamaged(a, event.getItem(), event.getPlayer(), atomicBoolean);
+            }
+        });
         if (atomicBoolean.get()) {
             event.setCancelled(true);
         }

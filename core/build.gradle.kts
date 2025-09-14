@@ -126,6 +126,12 @@ tasks.named<ShadowJar>("shadowJar") {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     archiveFileName.set("ThePitGay-$version" + ".jar")
     exclude("META-INF/**")
+
+    exclude("org.hamcrest")
+
+    exclude("org.intellij")
+
+    exclude("org.jetbrains")
     relocate("pku.yim.license", "net.mizukilab.pit.license")
     relocate("panda", "net.mizukilab.pit.libs")
     relocate("dev.rollczi", "net.mizukilab.pit.libs")
@@ -134,7 +140,6 @@ tasks.named<ShadowJar>("shadowJar") {
     relocate("net.jodah", "net.mizukilab.pit.libs")
     relocate("net.jitse", "net.mizukilab.pit.libs")
     relocate("xyz.upperlevel.spigot", "net.mizukilab.pit.libs")
-    exclude("org/**")
     exclude("kotlin/**", "junit/**", "org/junit/**")
     from("build/tmp/processed-resources")
     mergeServiceFiles()
@@ -142,18 +147,18 @@ tasks.named<ShadowJar>("shadowJar") {
 dependencies {
     compileOnly(fileTree("../packLib"))
     compileOnly(fileTree(mapOf("dir" to "../libs", "include" to listOf("*.jar"))))
-    api(libs.reflectionhelper)
-    compileOnly(libs.hutool.crypto)
-    compileOnly(libs.book)
+    implementation(libs.reflectionhelper)
+
+    implementation(libs.hutool.crypto)
+    implementation(libs.book)
     compileOnly(libs.slf4j)
-    compileOnly(libs.litecommands)
+    implementation(libs.litecommands)
     implementation("zone.rong:imaginebreaker:2.1")
     compileOnly(libs.adventure.bukkit)
     compileOnly("com.caoccao.javet:javet:3.1.4")
     compileOnly("org.projectlombok:lombok:1.18.32")
     annotationProcessor("org.projectlombok:lombok:1.18.32")
     compileOnly(libs.luckperms)
-    compileOnly("com.github.ben-manes.caffeine:caffeine:3.1.8")
     compileOnly("com.github.f4b6a3:uuid-creator:6.0.0")
     compileOnly(libs.papi)
     compileOnly(libs.narshorn)
@@ -171,7 +176,7 @@ dependencies {
     compileOnly(libs.luckperms)
     compileOnly(libs.playerpoints)
     compileOnly(libs.decentholograms)
-    compileOnly(libs.adventure.bukkit)
+    implementation(libs.adventure.bukkit)
     implementation(kotlin("reflect"))
 }
 kotlin {

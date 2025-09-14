@@ -123,7 +123,7 @@ class PitAdminSimpleCommand {
         }
         if (menu.equals("ench", ignoreCase = true)) {
             try {
-                ThePit.getApi().openMythicWellMenu(player)
+                ThePit.api.openMythicWellMenu(player)
             } catch (e: Exception) {
                 CC.printErrorWithCode(player, e)
             }
@@ -337,7 +337,7 @@ class PitAdminSimpleCommand {
             "wheat" -> addItemToPlayer(Wheat.toItemStack())//小麦
             "yummy" -> addItemToPlayer(YummyBread.toItemStack())//美味面包
             else -> {
-                val itemStack = ThePit.getApi().getMythicItemItemStack(itemsID)
+                val itemStack = ThePit.api.getMythicItemItemStack(itemsID)
                 if (itemStack == null || itemStack.type == Material.AIR) {
                     sender.sendMessage("§c物品不存在")
                 } else {

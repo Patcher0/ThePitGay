@@ -90,7 +90,7 @@ class PitAdminCommands {
     @Execute(name = "createEquation")
     @Shortcut("eq")
     fun eqEvent(@Context player: Player, @Arg("eqQuest") eq: String, @Arg("eqAns") ans: String) {
-        ThePit.getApi().openEvent(QuickMathEvent(eq, ans), null)
+        ThePit.api.openEvent(QuickMathEvent(eq, ans), null)
     }
 
     @Execute(name = "giveItemInHand")
@@ -466,7 +466,7 @@ class PitAdminCommands {
     @Execute(name = "event")
     @Shortcut("event")
     fun event(@Context player: Player, @Arg("action") /*todo*/action: String): String? {
-        val success = ThePit.getApi().openEvent(player, action)
+        val success = ThePit.api.openEvent(player, action)
         return if (success) {
             CC.translate("&a成功!")
         } else {

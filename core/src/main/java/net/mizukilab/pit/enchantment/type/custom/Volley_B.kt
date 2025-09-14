@@ -79,7 +79,7 @@ class Volley_B : AbstractEnchantment(),  Listener {
         val itemInHand = player.itemInHand
         if (itemInHand == null || itemInHand.type != Material.BOW) return
 
-        val level = ThePit.getApi().getItemEnchantLevel(itemInHand, this.nbtName)
+        val level = ThePit.api.getItemEnchantLevel(itemInHand, this.nbtName)
         if (level <= 0) return
 
         if (!cooldown.getOrDefault(player.uniqueId, Cooldown(0L)).hasExpired()) return

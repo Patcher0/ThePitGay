@@ -1,6 +1,7 @@
 package net.mizukilab.pit.enchantment.type.normal;
 
 import cn.charlotte.pit.data.PlayerProfile;
+import com.google.common.util.concurrent.AtomicDouble;
 import lombok.SneakyThrows;
 import net.minecraft.server.v1_8_R3.PacketPlayInFlying;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
@@ -93,6 +94,31 @@ public class TrotEnchant extends AbstractEnchantment implements MovementHandler 
             if (walkSpeed != 0.2F) {
                 player.setWalkSpeed(0.2F);
             }
+        }
+    }
+
+    @Override
+    public void handleUpdateSpeed(Player var1, AtomicDouble speed, Location in, Location out) {
+        IMythicItem leggings = (IMythicItem) PlayerProfile.getPlayerProfileByUuid(var1.getUniqueId()).leggings;
+        boolean b = PlayerUtil.shouldIgnoreEnchant(var1);
+        if (leggings != null && !b) {
+            int level = this.getItemEnchantLevel(leggings);
+            switch (level) {
+                case 1: {
+                    speed.set(0.21);
+                }
+                case 2: {
+                    speed.set(0.22);
+                }
+                case 3: {
+                    speed.set(0.24);
+                }
+                default: {
+                    speed.set(0.2);
+                }
+            }
+        } else {
+            speed.set(0.2);
         }
     }
 
