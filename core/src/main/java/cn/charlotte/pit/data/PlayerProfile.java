@@ -37,6 +37,7 @@ import nya.Skip;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.Warning;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.mongojack.JacksonMongoCollection;
@@ -388,6 +389,13 @@ public class PlayerProfile {
             return NONE_PROFILE;
         }
         return rawCache;
+    }
+    @Deprecated
+    public static PlayerProfile getPlayerProfile(Entity player) {
+        if (player instanceof Player) {
+            return getPlayerProfileByUuid(player.getUniqueId());
+        }
+        return NONE_PROFILE;
     }
 
     public AbstractPerk getActiveMegaStreakObj() {
