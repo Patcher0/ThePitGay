@@ -20,18 +20,9 @@ import java.util.List;
 public class iSpigot implements Listener {
     public static iSpigot INSTANCE;
     private final List<MovementHandler> movementHandlers = new ObjectArrayList<>();
+
     public iSpigot() {
         INSTANCE = this;
-    }
-
-    @EventHandler
-    public void onMove(PlayerMoveEvent event) {
-        handleMove(event.getFrom(), event.getTo(), event.getPlayer(), movementHandlers, event);
-    }
-
-    @EventHandler
-    public void onMove(PlayerTeleportEvent event) {
-        handleMove(event.getFrom(), event.getTo(), event.getPlayer(), movementHandlers, event);
     }
 
     private static void handleMove(Location from2, Location eventTo, Player player, List<MovementHandler> movementHandlers, PlayerMoveEvent event) {
@@ -48,10 +39,21 @@ public class iSpigot implements Listener {
                 move.handleUpdateSpeed(player, atomicDouble, from2, eventTo);
             }
         }
-        if(atomicDouble.floatValue() == walkSpeed){
+        float newSpeed = (float) atomicDouble.get();
+        if (newSpeed == walkSpeed) {
             return;
         }
-        player.setWalkSpeed(walkSpeed);
+        player.setWalkSpeed(newSpeed);
+    }
+
+    @EventHandler
+    public void onMove(PlayerMoveEvent event) {
+        handleMove(event.getFrom(), event.getTo(), event.getPlayer(), movementHandlers, event);
+    }
+
+    @EventHandler
+    public void onMove(PlayerTeleportEvent event) {
+        handleMove(event.getFrom(), event.getTo(), event.getPlayer(), movementHandlers, event);
     }
 
     public void addMovementHandler(MovementHandler var1) {

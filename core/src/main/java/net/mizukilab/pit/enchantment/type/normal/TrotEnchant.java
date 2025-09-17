@@ -65,65 +65,33 @@ public class TrotEnchant extends AbstractEnchantment implements MovementHandler 
 
     @Override
     public void handleUpdateLocation(Player player, Location location, Location location1, PacketPlayInFlying packetPlayInFlying) {
-        IMythicItem leggings = (IMythicItem) PlayerProfile.getPlayerProfileByUuid(player.getUniqueId()).leggings;
-        float walkSpeed = player.getWalkSpeed();
-        boolean b = PlayerUtil.shouldIgnoreEnchant(player);
-        if (leggings != null && !b) {
-            int level = this.getItemEnchantLevel(leggings);
-            if (level == 1) {
-                if (walkSpeed != 0.21F) {
-                    player.setWalkSpeed(0.21F);
-                }
-            } else if (level == 2) {
-                if (walkSpeed != 0.22F) {
-                    player.setWalkSpeed(0.22F);
-                }
-            } else if (level == 3) {
-
-                if (walkSpeed != 0.24F) {
-                    player.setWalkSpeed(0.24F);
-                }
-            } else {
-                if (walkSpeed != 0.2F) {
-                    player.setWalkSpeed(0.2F);
-                }
-            }
-
-        } else {
-
-            if (walkSpeed != 0.2F) {
-                player.setWalkSpeed(0.2F);
-            }
-        }
     }
 
     @Override
-    public void handleUpdateSpeed(Player var1, AtomicDouble speed, Location in, Location out) {
-        IMythicItem leggings = (IMythicItem) PlayerProfile.getPlayerProfileByUuid(var1.getUniqueId()).leggings;
-        boolean b = PlayerUtil.shouldIgnoreEnchant(var1);
-        if (leggings != null && !b) {
+    public void handleUpdateSpeed(Player player, AtomicDouble speed, Location in, Location out) {
+        IMythicItem leggings = (IMythicItem) PlayerProfile.getPlayerProfileByUuid(player.getUniqueId()).leggings;
+        boolean shouldIgnoreEnchant = PlayerUtil.shouldIgnoreEnchant(player);
+        float targetSpeed = 0.2F;
+        if (leggings != null && !shouldIgnoreEnchant) {
             int level = this.getItemEnchantLevel(leggings);
             switch (level) {
-                case 1: {
-                    speed.set(0.21);
-                }
-                case 2: {
-                    speed.set(0.22);
-                }
-                case 3: {
-                    speed.set(0.24);
-                }
-                default: {
-                    speed.set(0.2);
-                }
+                case 1:
+                    targetSpeed = 0.21F; // 增加5%速度
+                    break;
+                case 2:
+                    targetSpeed = 0.22F; // 增加10%速度
+                    break;
+                case 3:
+                    targetSpeed = 0.24F; // 增加20%速度
+                    break;
+                default:
+                    break;
             }
-        } else {
-            speed.set(0.2);
         }
+        speed.set(targetSpeed);
     }
 
     @Override
     public void handleUpdateRotation(Player player, Location location, Location location1, PacketPlayInFlying packetPlayInFlying) {
-
     }
 }
