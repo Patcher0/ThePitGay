@@ -69,6 +69,7 @@ class MonsterPerk : AbstractPerk(), Listener {
     override fun onPerkInactive(player: Player) {
         val profile = player.getPitProfile()
         profile.extraMaxHealth.remove("monster")
+        player.maxHealth = profile.maxHealth
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -77,6 +78,8 @@ class MonsterPerk : AbstractPerk(), Listener {
         val player = Bukkit.getPlayer(profile.playerUuid) ?: return
 
         if (!PlayerUtil.isPlayerChosePerk(player, internalPerkName)) {
+            profile.extraMaxHealth.remove("monster")
+            player.maxHealth = profile.maxHealth
             return
         }
 
