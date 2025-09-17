@@ -760,7 +760,7 @@ private fun loadEvents() {
         CarePackageEvent::class.java,
         EveOneBountyEvent::class.java,
         QuickMathEvent::class.java,
-        SquadsEvent::class.java,
+//        SquadsEvent::class.java,
         /*        DoubleRewardsEvent::class.java,*/
         RespawnFamilyEvent::class.java
     )
