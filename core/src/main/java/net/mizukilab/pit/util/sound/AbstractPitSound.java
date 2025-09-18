@@ -28,14 +28,13 @@ public abstract class AbstractPitSound {
         for (Map.Entry<UUID, Integer> entry : playersTick.entrySet()) {
             final Player player = Bukkit.getPlayer(entry.getKey());
             if (player == null || !player.isOnline()) {
-                end(player);
+                end(entry.getKey());
                 continue;
             }
             Integer tick = entry.getValue();
             this.onSoundTick(player, tick);
             tick++;
             entry.setValue(tick);
-
         }
     }
 
@@ -43,8 +42,11 @@ public abstract class AbstractPitSound {
         this.playersTick.put(player.getUniqueId(), 0);
     }
 
-    public void end(Player player) {
-        this.playersTick.remove(player.getUniqueId());
+    public void end(UUID playerUUID) {
+        this.playersTick.remove(playerUUID);
     }
-
+    
+    public void end(Player player) {
+        if (player != null) end(player.getUniqueId());
+    }
 }

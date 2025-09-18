@@ -84,7 +84,7 @@ public class BowComboEnchant extends AbstractEnchantment implements IPlayerShoot
                 if (combo.getOrDefault(attacker.getUniqueId(), 0) >= (enchantLevel >= 2 ? 2 : 3)) {
                     combo.put(attacker.getUniqueId(), 0);
                     attacker.removePotionEffect(PotionEffectType.SPEED);
-                    attacker.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 4, enchantLevel, true));
+                    attacker.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20 * 5, enchantLevel, true));
                 }
             }
         }.runTaskLater(ThePit.getInstance(), 2L);

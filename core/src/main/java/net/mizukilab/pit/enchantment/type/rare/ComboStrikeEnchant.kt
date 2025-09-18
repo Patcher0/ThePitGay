@@ -86,7 +86,7 @@ class ComboStrikeEnchant : AbstractEnchantment(), IAttackEntity, IPlayerShootEnt
             }
         }
         if (PlayerProfile.getPlayerProfileByUuid(attacker.uniqueId).meleeHit % (if (enchantLevel > 1) 4 else 5) == 0) {
-            finalDamage.set(finalDamage.get() + 2 * getDamage(enchantLevel))
+            PlayerUtil.damage(attacker,victim, PlayerUtil.DamageType.TRUE, getDamage(enchantLevel) * 2, true)
             PlayerUtil.playThunderEffect(target.getLocation())
             val victimProfile = PlayerProfile.getPlayerProfileByUuid(victim.uniqueId)
             CC.send(MessageType.MISC, attacker, "&b&l闪电! &7你的闪电击中了 " + victimProfile.formattedName + " &7!")
@@ -97,7 +97,7 @@ class ComboStrikeEnchant : AbstractEnchantment(), IAttackEntity, IPlayerShootEnt
                         extra++
                     }
                 }
-                finalDamage.set(finalDamage.get() + extra * 2)
+                PlayerUtil.damage(attacker,victim, PlayerUtil.DamageType.TRUE, extra * 2, true)
             }
         }
     }
@@ -127,7 +127,7 @@ class ComboStrikeEnchant : AbstractEnchantment(), IAttackEntity, IPlayerShootEnt
             }
         }
         if (PlayerProfile.getPlayerProfileByUuid(attacker.uniqueId).meleeHit % (if (enchantLevel > 1) 4 else 5) == 0) {
-            finalDamage.set(finalDamage.get() + 2 * getDamage(enchantLevel))
+            PlayerUtil.damage(attacker,victim, PlayerUtil.DamageType.TRUE, getDamage(enchantLevel) * 2, true)
             PlayerUtil.playThunderEffect(target.getLocation())
             val victimProfile = PlayerProfile.getPlayerProfileByUuid(victim.uniqueId)
             CC.send(MessageType.MISC, attacker, "&b&l闪电! &7你的闪电击中了 " + victimProfile.formattedName + " &7!")
@@ -138,7 +138,7 @@ class ComboStrikeEnchant : AbstractEnchantment(), IAttackEntity, IPlayerShootEnt
                         extra++
                     }
                 }
-                finalDamage.set(finalDamage.get() + extra * 2)
+                PlayerUtil.damage(attacker,victim, PlayerUtil.DamageType.TRUE, extra * 2, true)
             }
         }
     }

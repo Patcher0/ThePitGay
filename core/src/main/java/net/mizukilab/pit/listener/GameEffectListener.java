@@ -30,7 +30,6 @@ import net.mizukilab.pit.parm.listener.*;
 import net.mizukilab.pit.parm.type.BowOnly;
 import net.mizukilab.pit.parm.type.ThrowOnly;
 import net.mizukilab.pit.quest.AbstractQuest;
-import net.mizukilab.pit.quest.QuestFactory;
 import net.mizukilab.pit.util.Einstein;
 import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.RangedStreamLineList;
@@ -105,6 +104,19 @@ public class GameEffectListener implements Listener {
         }
     }
 
+    private static void fixDamage(EntityDamageByEntityEvent event, Entity damager1) {
+        if (damager1 instanceof Player attacker) {
+            //修正伤害
+            ItemStack itemInHand = attacker.getItemInHand();
+            if (itemInHand == null || itemInHand.getType() == Material.AIR
+                    || itemInHand.getType() == Material.FISHING_ROD) {
+                event.setDamage(1);
+            } else {
+                event.setDamage(Math.min(event.getDamage(), 9));
+            }
+        }
+    }
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerFired(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player player && event.getCause().equals(EntityDamageEvent.DamageCause.FIRE_TICK)) {
@@ -158,7 +170,7 @@ public class GameEffectListener implements Listener {
         CC.boardCast("Time change to: " + event.getTime());
     }
 
-    @EventHandler(priority = EventPriority.NORMAL,ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerDamagePlayer(EntityDamageByEntityEvent event) {
         Entity damagerEntity = event.getDamager();
         fixDamage(event, damagerEntity);
@@ -176,6 +188,7 @@ public class GameEffectListener implements Listener {
         if (damagerEntity instanceof Player) {
             damager = (Player) damagerEntity;
 
+            if (PlayerUtil.isCritical(damager)) boostDamage.set(1.5);
             if (NewConfiguration.INSTANCE.getNoobProtect() && playerProfileByUuid.getPrestige() <= 0 && playerProfileByUuid.getLevel() < NewConfiguration.INSTANCE.getNoobProtectLevel()) {
                 boostDamage.getAndAdd(NewConfiguration.INSTANCE.getNoobDamageBoost() - 1);
             }
@@ -294,8 +307,8 @@ public class GameEffectListener implements Listener {
                     processQuestDmged(event, player, currentQuest1, finalDamage, boostDamage, cancel);
                 }
                 if (damager != null) {
-                    new PitDamagePlayerEvent(event,damager, event.getFinalDamage(), event.getDamage(), player).callEvent();
-                    new PitDamageEvent(event,damager, event.getFinalDamage(), event.getDamage()).callEvent();
+                    new PitDamagePlayerEvent(event, damager, event.getFinalDamage(), event.getDamage(), player).callEvent();
+                    new PitDamageEvent(event, damager, event.getFinalDamage(), event.getDamage()).callEvent();
                     RangedStreamLineList<KillRecap.DamageData> damageLogs = playerProfileByUuid.getKillRecap().getDamageLogs();
                     if (!damageLogs.isEmpty()) {
                         damageLogs.peekFirst().setBoostDamage(boostDamage.get());
@@ -308,7 +321,7 @@ public class GameEffectListener implements Listener {
                 ((CraftPlayer) player).getHandle().killer = ((CraftPlayer) damager).getHandle();
             }
             //we need to ensure the final damage is pushed into the event
-            event.setDamage(finalDamage.get() * Einstein.clamp(boostDamage.get(),0,100));
+            event.setDamage(finalDamage.get() * Einstein.clamp(boostDamage.get(), 0, 100));
         }
 
         if (!cancel.get()) {
@@ -339,19 +352,6 @@ public class GameEffectListener implements Listener {
                 final float enchantDamage = EnchantmentManager.a(entityPlayer.bA(), ((CraftLivingEntity) event.getEntity()).getHandle().getMonsterType());
                 final boolean critical = entityPlayer.fallDistance > 0.0F && !entityPlayer.onGround && !entityPlayer.k_() && !entityPlayer.V() && !entityPlayer.hasEffect(MobEffectList.BLINDNESS) && entityPlayer.vehicle == null;
                 player.sendMessage(CC.translate("&7基础: &c" + value + "&7,附魔伤害: &c" + enchantDamage + "&7,cancel:" + cancel.get() + " ,暴击: &c" + critical));
-            }
-        }
-    }
-
-    private static void fixDamage(EntityDamageByEntityEvent event, Entity damager1) {
-        if (damager1 instanceof Player attacker) {
-            //修正伤害
-            ItemStack itemInHand = attacker.getItemInHand();
-            if (itemInHand == null || itemInHand.getType() == Material.AIR
-                    || itemInHand.getType() == Material.FISHING_ROD) {
-                event.setDamage(1);
-            } else {
-                event.setDamage(Math.min(event.getDamage(), 9));
             }
         }
     }
@@ -475,8 +475,8 @@ public class GameEffectListener implements Listener {
         AtomicBoolean atomicBoolean = new AtomicBoolean();
         IMythicItem mm = Utils.getMythicItem(item);
         if (mm != null) {
-            mm.getEnchantments().forEach((i,a) -> {
-                if(i instanceof IItemDamage itemDamage) {
+            mm.getEnchantments().forEach((i, a) -> {
+                if (i instanceof IItemDamage itemDamage) {
                     itemDamage.handleItemDamaged(a, event.getItem(), event.getPlayer(), atomicBoolean);
                 }
             });
