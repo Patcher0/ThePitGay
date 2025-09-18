@@ -56,7 +56,7 @@ public class GoingFurtherPerk extends AbstractPerk {
 
     @Override
     public List<String> getDescription(Player player) {
-        return Collections.singletonList("&7所有 &c被动天赋提升 &7的最大等级拓展至 &eVI &7级");
+        return Collections.singletonList("&7所有 &c被动天赋提升 &7的最大等级拓展至 &eVIII &7级");
     }
 
     @Override

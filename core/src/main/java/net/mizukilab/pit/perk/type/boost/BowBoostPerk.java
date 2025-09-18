@@ -64,8 +64,8 @@ public class BowBoostPerk extends AbstractPerk implements IPlayerShootEntity {
         List<String> lines = new ArrayList<>();
         PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
         lines.add("&7每次升级:");
-        lines.add("  &7弓箭攻击造成的伤害 &c+3% &7.");
-        lines.add("  &7当前: &c+" + 3 * (profile.getChosePerk().get(-4) == null ? 0 : profile.getChosePerk().get(-4).getLevel()) + "% 弓箭伤害");
+        lines.add("  &7弓箭攻击造成的伤害 &c+2% &7.");
+        lines.add("  &7当前: &c+" + 2 * (profile.getChosePerk().get(-4) == null ? 0 : profile.getChosePerk().get(-4).getLevel()) + "% 弓箭伤害");
         return lines;
     }
 
@@ -95,7 +95,7 @@ public class BowBoostPerk extends AbstractPerk implements IPlayerShootEntity {
         PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(attacker.getUniqueId());
         for (Map.Entry<Integer, PerkData> entry : profile.getChosePerk().entrySet()) {
             if (entry.getValue().getPerkInternalName().equals(this.getInternalPerkName())) {
-                boostDamage.set(boostDamage.get() + 0.03 * entry.getValue().getLevel());
+                boostDamage.set(boostDamage.get() + 0.02 * entry.getValue().getLevel());
                 break;
             }
         }

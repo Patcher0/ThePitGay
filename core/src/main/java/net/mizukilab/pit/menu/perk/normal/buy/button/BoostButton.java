@@ -34,7 +34,7 @@ public class BoostButton extends Button {
     public ItemStack getButtonItem(Player player) {
         int level = 0;
         int[] price = new int[0];
-        int[] limit = new int[]{0, 10, 20, 30, 40, 50};
+        int[] limit = new int[]{0, 10, 20, 30, 40, 50, 60, 70};
         PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
         List<String> lore = new ArrayList<>();
         for (Map.Entry<Integer, PerkData> entry : profile.getChosePerk().entrySet()) {
@@ -48,25 +48,25 @@ public class BoostButton extends Button {
         lore.addAll(perk.getDescription(player));
         lore.add(" ");
         boolean unlocked = PlayerUtil.isPlayerUnlockedPerk(player, "GoingFurther");
-        if (level >= 6 && unlocked) {
+        if (level >= 8 && unlocked) {
             lore.add("&c此加成等级已达到上限！");
         } else if (level >= 5 && !unlocked) {
             lore.add("&c此加成等级已达到上限！");
         } else {
             if (perk.getInternalPerkName().equals("XPBoost")) {
-                price = new int[]{500, 1000, 2500, 10000, 25000, 40000};
+                price = new int[]{500, 1000, 2500, 10000, 25000, 40000, 60000, 80000};
             }
             if (perk.getInternalPerkName().equals("CoinBoost")) {
-                price = new int[]{1000, 2500, 10000, 25000, 40000, 50000};
+                price = new int[]{1000, 2500, 10000, 25000, 40000, 50000, 70000, 100000};
             }
             if (perk.getInternalPerkName().equals("MeleeBoost") || perk.getInternalPerkName().equals("ArrowBoost") || perk.getInternalPerkName().equals("DmgReduceBoost")) {
-                price = new int[]{450, 1050, 1500, 2250, 3000, 4000};
+                price = new int[]{450, 1050, 1500, 2250, 3000, 4000, 5000, 6000};
             }
             if (perk.getInternalPerkName().equals("BuilderBattleBoost")) {
-                price = new int[]{750, 1750, 2750, 3750, 5000, 6500};
+                price = new int[]{750, 1750, 2750, 3750, 5000, 6500, 8000, 10000};
             }
             if (perk.getInternalPerkName().equals("ElGatoBoost")) {
-                price = new int[]{1000, 2000, 3000, 4000, 5000, 6000};
+                price = new int[]{1000, 2000, 3000, 4000, 5000, 6000, 8000, 10000};
             }
             if (limit[level] > profile.getLevel()) {
                 lore.add("&c等级不足: " + LevelUtil.getLevelTag(profile.getPrestige(), limit[level]));
@@ -87,7 +87,7 @@ public class BoostButton extends Button {
     public void clicked(Player player, int slot, ClickType clickType, int hotbarButton, ItemStack currentItem) {
         int level = 0;
         int[] price = new int[0];
-        int[] limit = new int[]{0, 10, 20, 30, 40, 50};
+        int[] limit = new int[]{0, 10, 20, 30, 40, 50, 60, 70};
         PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
         boolean unlocked = PlayerUtil.isPlayerUnlockedPerk(player, "GoingFurther");
         for (Map.Entry<Integer, PerkData> entry : profile.getChosePerk().entrySet()) {
@@ -122,21 +122,21 @@ public class BoostButton extends Button {
                     player.sendMessage(CC.translate("&a&l升级成功! &7成功升级加成 &a" + perk.getDisplayName() + " &7至等级 &b" + RomanUtil.convert(level + 1) + " &7."));
                 }
             }
-        } else if (level < 6 && unlocked) {
+        } else if (level < 8 && unlocked) {
             if (perk.getInternalPerkName().equals("XPBoost")) {
-                price = new int[]{500, 1000, 2500, 10000, 25000, 40000};
+                price = new int[]{500, 1000, 2500, 10000, 25000, 40000, 60000, 80000};
             }
             if (perk.getInternalPerkName().equals("CoinBoost")) {
-                price = new int[]{1000, 2500, 10000, 25000, 40000, 50000};
+                price = new int[]{1000, 2500, 10000, 25000, 40000, 50000, 70000, 100000};
             }
             if (perk.getInternalPerkName().equals("MeleeBoost") || perk.getInternalPerkName().equals("ArrowBoost") || perk.getInternalPerkName().equals("DmgReduceBoost")) {
-                price = new int[]{450, 1050, 1500, 2250, 3000, 4000};
+                price = new int[]{450, 1050, 1500, 2250, 3000, 4000, 5000, 6000};
             }
             if (perk.getInternalPerkName().equals("BuilderBattleBoost")) {
-                price = new int[]{750, 1750, 2750, 3750, 5000, 6500};
+                price = new int[]{750, 1750, 2750, 3750, 5000, 6500, 8000, 10000};
             }
             if (perk.getInternalPerkName().equals("ElGatoBoost")) {
-                price = new int[]{1000, 2000, 3000, 4000, 5000, 6000};
+                price = new int[]{1000, 2000, 3000, 4000, 5000, 6000, 8000, 10000};
             }
             if (limit[level] > profile.getLevel()) {
                 return;
