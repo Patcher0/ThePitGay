@@ -68,7 +68,7 @@ object ActionBarDisplayRunnable {
                     .append("&b&l")
                     .append(enchantment.key.enchantName)
                     .append(" ")
-                    .append(displayEnchant.getText(enchantment.value, player))
+                    .append(displayEnchant.getText(enchantment.value, this@handleActionDisplay))
                     .append(" ")
             }
         }

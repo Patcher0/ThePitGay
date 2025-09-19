@@ -1,6 +1,3 @@
-package net.mizukilab.pit.enchantment.type.rare
-
-import cn.charlotte.pit.ThePit
 import com.google.common.util.concurrent.AtomicDouble
 import net.minecraft.server.v1_8_R3.BlockPosition
 import net.minecraft.server.v1_8_R3.PacketPlayOutWorldEvent
@@ -22,7 +19,6 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @Author: Misoryan
  * @Created_In: 2021/1/29 21:23
  */
-
 @WeaponOnly
 class ExecutionerEnchant : AbstractEnchantment(), IAttackEntity {
     override fun getEnchantName(): String {
@@ -62,10 +58,6 @@ class ExecutionerEnchant : AbstractEnchantment(), IAttackEntity {
     ) {
         val targetPlayer = target as Player
         for (nearbyPlayers in PlayerUtil.getNearbyPlayers(targetPlayer.location, 10.0)) {
-            var npc = ThePit.getInstance().npcFactory.hasNPC(nearbyPlayers)
-            if (npc) {
-                continue
-            }
             if (nearbyPlayers.inventory.leggings != null && thinkOfThePeople.isItemHasEnchant(nearbyPlayers.inventory.leggings)) {
                 val level = thinkOfThePeople.getItemEnchantLevel(nearbyPlayers.inventory.leggings)
                 if (level > 1) {
@@ -74,11 +66,9 @@ class ExecutionerEnchant : AbstractEnchantment(), IAttackEntity {
                 return
             }
         }
-
         if (targetPlayer.health - damage * boostDamage.get() < enchantLevel + 1) {
-            cancel.set(true)
-            targetPlayer.damage(targetPlayer.health)
-            finalDamage.getAndAdd(2000.0)
+            targetPlayer.noDamageTicks = 0
+            PlayerUtil.damage(targetPlayer, PlayerUtil.DamageType.TRUE, 2 * (0.5 * enchantLevel + 0.5), false)
             attacker.playSound(attacker.location, Sound.VILLAGER_DEATH, 1f, 0.5f)
             val deathLoc = target.getLocation()
             val packetA = PacketPlayOutWorldEvent(
