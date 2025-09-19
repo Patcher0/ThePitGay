@@ -41,6 +41,10 @@ import java.util.UUID;
 @Skip
 public abstract class IMythicItem extends AbstractPitItem {
 
+    @Getter
+    private final static String defUUIDString = "00000000-0000-0000-0000-000000000001";
+    @Getter
+    private final static UUID defUUID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     public int maxLive;
     public int live;
     public int tier;
@@ -49,10 +53,6 @@ public abstract class IMythicItem extends AbstractPitItem {
     public String version;
     public String prefix;
     public boolean boostedByGem = false;
-    @Getter
-    private final static String defUUIDString = "00000000-0000-0000-0000-000000000001";
-    @Getter
-    private final static UUID defUUID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     public String customName = null;
 
     public boolean boostedByBook = false;
@@ -113,6 +113,7 @@ public abstract class IMythicItem extends AbstractPitItem {
         }
 
         int rareAmount = 0;
+        int darkRareAmount = 0;
         int opAmount = 0;
         int uberAmount = 0;
         int enchantTotalLevel = 0;
@@ -127,6 +128,8 @@ public abstract class IMythicItem extends AbstractPitItem {
                 if (color == MythicColor.RAGE && abstractEnchantment.getMaxEnchantLevel() == enchantLevel) {
                     this.prefix = "不可思议的";
                 }
+            } else if (abstractEnchantment.getRarity() == EnchantmentRarity.DARK_RARE) {
+                darkRareAmount++;
             } else if (abstractEnchantment.getRarity() == EnchantmentRarity.OP) {
                 opAmount++;
             } else if (abstractEnchantment.getRarity() == EnchantmentRarity.UBER_LIMITED_RARE || abstractEnchantment.getRarity() == EnchantmentRarity.UBER_LIMITED) {
@@ -137,13 +140,15 @@ public abstract class IMythicItem extends AbstractPitItem {
         if (enchantTotalLevel >= 8) {
             this.prefix = switch (color) {
                 case RAGE -> "狂躁的";
-                case DARK -> "邪恶的";
                 default -> "传说中的";
             };
         }
 
         if (this.maxLive >= 100) {
             if (color == MythicColor.DARK) {
+                if (darkRareAmount >= 1) {
+                    this.prefix = "邪恶的";
+                }
                 name = color.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "恶魔之甲";
             } else {
                 this.prefix = "精制的";
@@ -237,8 +242,7 @@ public abstract class IMythicItem extends AbstractPitItem {
             builder.customName(customName);
         }
         if (uuid != null) {
-            boolean equals = uuid == null || defUUID.equals(uuid);
-            lore.add("&8" + (equals ? "Refresh on table" : uuid.toString()));
+            lore.add("&8" + (defUUID.equals(uuid) ? "Refresh on table" : uuid.toString()));
         }
 
         if (this instanceof IMythicSword mythicSword) {
@@ -416,7 +420,7 @@ public abstract class IMythicItem extends AbstractPitItem {
         if (recordsStringRaw instanceof NBTTagString) {
             String recordsString = ((NBTTagString) recordsStringRaw).a_();
             for (String recordString : Utils.splitByCharAt(recordsString, ';')) {
-                final String[] split = Utils.splitByCharAt(recordString,'|');
+                final String[] split = Utils.splitByCharAt(recordString, '|');
                 if (split.length >= 3) {
                     enchantmentRecords.add(
                             new EnchantmentRecord(
@@ -429,7 +433,7 @@ public abstract class IMythicItem extends AbstractPitItem {
             }
             extra.remove("records");
             extra.set("records", new NBTTagList());
-        } else if(recordsStringRaw instanceof NBTTagList k){
+        } else if (recordsStringRaw instanceof NBTTagList k) {
             for (int i = 0; i < k.size(); i++) {
                 NBTTagCompound nbtTagCompound = k.get(i);
                 enchantmentRecords.add(

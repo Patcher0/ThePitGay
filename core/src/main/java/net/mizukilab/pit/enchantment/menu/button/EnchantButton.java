@@ -316,7 +316,7 @@ public class EnchantButton extends Button {
                 .getEnchantments()
                 .stream()
                 .filter(abstractEnchantment -> abstractEnchantment.canApply(item))
-                .toList();
+                .collect(Collectors.toList());
         List<AbstractEnchantment> enchantments = new ObjectArrayList<>();
         if (level > 1) {
             enchantments = new ObjectArrayList<>(mythicItem.getEnchantments().keySet());
@@ -400,7 +400,7 @@ public class EnchantButton extends Button {
         }
 
         if (mythicItem.color == MythicColor.DARK_GREEN && mythicItem.getEnchantmentLevel("trash_panda_enchant") >= 1) {
-            int randomLive = RandomUtil.random.nextInt(30, 41);
+            int randomLive = RandomUtil.random.nextInt(11) + 30; // 30-40
             mythicItem.live = randomLive;
             mythicItem.maxLive = randomLive;
         }
@@ -479,7 +479,14 @@ public class EnchantButton extends Button {
         if (amount == 1) { // If this item have only 1 enchantment
             AbstractEnchantment enchantment = null;
             if (Utils.canUseMythicBook(player, item)) { //定义不明
-                AbstractEnchantment rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
+                List<AbstractEnchantment> availableRareEnchants = new ArrayList<>(rareResults);
+                availableRareEnchants.removeAll(enchantments);
+                AbstractEnchantment rareEnchant;
+                if (!availableRareEnchants.isEmpty()) {
+                    rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(availableRareEnchants.toArray());
+                } else {
+                    rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
+                }
                 mythicItem.getEnchantments().put(rareEnchant, 3);
                 announcement = true;
                 PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
@@ -620,7 +627,14 @@ public class EnchantButton extends Button {
             boolean useBook = Utils.canUseMythicBook(player, item);
 
             if (useBook) {
-                AbstractEnchantment rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
+                List<AbstractEnchantment> availableRareEnchants = new ArrayList<>(rareResults);
+                availableRareEnchants.removeAll(enchantments);
+                AbstractEnchantment rareEnchant;
+                if (!availableRareEnchants.isEmpty()) {
+                    rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(availableRareEnchants.toArray());
+                } else {
+                    rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
+                }
                 mythicItem.getEnchantments().put(rareEnchant, 3);
                 announcement = true;
                 PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
@@ -711,6 +725,22 @@ public class EnchantButton extends Button {
                     mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b,1));
                     break;
                 }
+                case 3: { // 11->113 (使用附魔书)
+                    List<AbstractEnchantment> availableRareEnchants = new ArrayList<>(rareResults);
+                    availableRareEnchants.removeAll(enchantments);
+                    AbstractEnchantment rareEnchant;
+                    if (!availableRareEnchants.isEmpty()) {
+                        rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(availableRareEnchants.toArray());
+                    } else {
+                        rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
+                    }
+                    mythicItem.getEnchantments().computeInt(rareEnchant, (a,b) -> max(b,3));
+                    announcement = true;
+                    PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
+                    profile.setEnchantingBook(null);
+                    mythicItem.boostedByBook = true;
+                    break;
+                }
                 default:
                     break;
             }
@@ -731,7 +761,14 @@ public class EnchantButton extends Button {
         boolean useBook = Utils.canUseMythicBook(player, item);
         if (useBook) {
             choice = 5;
-            AbstractEnchantment enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
+            List<AbstractEnchantment> availableRareEnchants = new ArrayList<>(rareResults);
+            availableRareEnchants.removeAll(enchantments);
+            AbstractEnchantment enchantment;
+            if (!availableRareEnchants.isEmpty()) {
+                enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(availableRareEnchants.toArray());
+            } else {
+                enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
+            }
 
             mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b,3));
             announcement = true;
