@@ -19,7 +19,6 @@ public class PerkData {
     private AbstractPerk handle;
     @JsonIgnore
     private ITickTask iTickTask;
-
     public PerkData(String perkInternalName, int level) {
         this.perkInternalName = perkInternalName;
         this.level = level;
@@ -36,7 +35,8 @@ public class PerkData {
         if (iTickTask != null) {
             return iTickTask;
         }
-        iTickTask = tickTasks.get(globalMap.get(getPerkInternalName()));
+
+        iTickTask = tickTasks.get(getHandle(globalMap));
         return iTickTask;
     }
 

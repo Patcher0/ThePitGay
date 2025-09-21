@@ -1,6 +1,7 @@
 package net.mizukilab.pit.util.level;
 
 import cn.charlotte.pit.ThePit;
+import net.mizukilab.pit.config.PitGlobalConfig;
 import net.mizukilab.pit.menu.prestige.button.PrestigeStatusButton;
 import net.mizukilab.pit.util.chat.RomanUtil;
 
@@ -125,7 +126,8 @@ public class LevelUtil {
         } else if (booted && plevelMapping != null) {
             if (plevelMapping.length > prestige) {
                 try {
-                    return plevelMapping[prestige * ThePit.getInstance().getGlobalConfig().maxLevel + level];
+                    PitGlobalConfig globalConfig = ThePit.getInstance().getGlobalConfig();
+                    return plevelMapping[prestige * globalConfig.maxLevel + level];
                 } catch (Exception e) {
                     return Double.MAX_VALUE - 1000.0D;
                 }

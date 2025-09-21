@@ -2,7 +2,6 @@ package net.mizukilab.pit.util;
 
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
-import io.lumine.xikage.mythicmobs.items.MythicItem;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.SneakyThrows;
 import net.minecraft.server.v1_8_R3.BlockPosition;
@@ -36,7 +35,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
@@ -73,9 +72,10 @@ public class Utils {
      * @param projectile current Entity
      */
     public static void pointMetadataAndRemove(Entity projectile, int later, String... metadata) {
-        Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), () -> {
+        ThePit instance = ThePit.getInstance();
+        Bukkit.getScheduler().runTaskLater(instance, () -> {
             for (String metadatum : metadata) {
-                projectile.removeMetadata(metadatum, ThePit.getInstance());
+                projectile.removeMetadata(metadatum, instance);
             }
         }, later);
     }
@@ -221,10 +221,7 @@ public class Utils {
         return getMythicItem0(item, internalName);
     }
 
-    public static boolean canUseGen(ItemStack item) {
-        if (item == null) {
-            return false;
-        }
+    public static boolean canUseGem(@NotNull ItemStack item) {
 
         final IMythicItem mythicItem = (IMythicItem) FuncsKt.toMythicItem(item);
         if (mythicItem == null || !mythicItem.isEnchanted() || mythicItem.isBoostedByGem() || mythicItem.isBoostedByGlobalGem()) {
@@ -235,12 +232,18 @@ public class Utils {
             return false;
         }
 
-        for (Map.Entry<AbstractEnchantment, Integer> entry : mythicItem.getEnchantments().entrySet()) {
-            if (entry.getKey().getRarity().getParentType() != EnchantmentRarity.RarityType.RARE && entry.getValue() < entry.getKey().getMaxEnchantLevel()) {
+        return canUseGemSeries(mythicItem);
+    }
+
+    private static boolean canUseGemSeries(IMythicItem mythicItem) {
+        Object2IntMap.FastEntrySet<AbstractEnchantment> entries = mythicItem.getEnchantments().object2IntEntrySet();
+        for (Object2IntMap.Entry<AbstractEnchantment> entry : entries) {
+            int intValue = entry.getIntValue();
+            AbstractEnchantment key = entry.getKey();
+            if (key.getRarity().getParentType() != EnchantmentRarity.RarityType.RARE && intValue < key.getMaxEnchantLevel()) {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -248,22 +251,8 @@ public class Utils {
         if (item == null) {
             return false;
         }
-
-        final IMythicItem mythicItem = (IMythicItem) FuncsKt.toMythicItem(item);
-        if (mythicItem == null || !mythicItem.isEnchanted() || mythicItem.isBoostedByGem() || mythicItem.isBoostedByGlobalGem()) {
-            return false;
-        }
-        if (mythicItem.getColor() == MythicColor.DARK) {
-            return false;
-        }
-
-        for (Map.Entry<AbstractEnchantment, Integer> entry : mythicItem.getEnchantments().entrySet()) {
-            if (entry.getKey().getRarity().getParentType() == EnchantmentRarity.RarityType.RARE && entry.getValue() < entry.getKey().getMaxEnchantLevel()) {
-                return true;
-            }
-        }
-
-        return false;
+        //?? same method?
+        return canUseGem(item);
     }
 
     public static boolean isNPC(org.bukkit.entity.Entity entity) {

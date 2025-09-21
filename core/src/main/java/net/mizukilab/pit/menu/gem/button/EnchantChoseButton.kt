@@ -41,7 +41,7 @@ class EnchantChoseButton(
                 "",
                 "&7消耗: &a一个遵纪守法的宝石",
                 "",
-                if (Utils.canUseGen(item)) {
+                if (Utils.canUseGem(item)) {
                     if (enchantLevel >= 3) "&c已达最大等级" else
                         if (enchantment.rarity.parentType == EnchantmentRarity.RarityType.RARE) "&c稀有附魔" else
                             "&a点击使用!"
@@ -57,7 +57,7 @@ class EnchantChoseButton(
         hotbarButton: Int,
         currentItem: ItemStack?
     ) {
-        if (!Utils.canUseGen(item)) {
+        if (!Utils.canUseGem(item)) {
             player.closeInventory()
             return
         }

@@ -2,15 +2,14 @@ package net.mizukilab.pit.item;
 
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.sub.EnchantmentRecord;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.server.v1_8_R3.NBTBase;
-import net.minecraft.server.v1_8_R3.NBTTagCompound;
-import net.minecraft.server.v1_8_R3.NBTTagList;
-import net.minecraft.server.v1_8_R3.NBTTagString;
+import net.minecraft.server.v1_8_R3.*;
 import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
 import net.mizukilab.pit.enchantment.rarity.EnchantmentRarity;
@@ -24,6 +23,7 @@ import net.mizukilab.pit.util.chat.RomanUtil;
 import net.mizukilab.pit.util.item.ItemBuilder;
 import net.mizukilab.pit.util.random.RandomUtil;
 import nya.Skip;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -90,19 +90,21 @@ public abstract class IMythicItem extends AbstractPitItem {
             }
         }
 
+        ChatColor mythColor = color.getChatColor();
+        ChatColor dyeColorLocal = dyeColor.getChatColor();
         if (this instanceof MythicLeggingsItem) {
-            name = color.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + color.getDisplayName() + "色" + getItemDisplayName();
+            name = mythColor + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + color.getDisplayName() + "色" + getItemDisplayName();
             if (dyeColor != null) {
-                name = dyeColor.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "染色神话之甲";
+                name = dyeColorLocal + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "染色神话之甲";
             }
             if (color == MythicColor.DARK) {
-                name = color.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "暗黑之甲";
+                name = mythColor + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "暗黑之甲";
             }
             if (color == MythicColor.RAGE) {
-                name = color.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "暴怒之甲";
+                name = mythColor + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "暴怒之甲";
             }
             if (color == MythicColor.DARK_GREEN) {
-                name = color.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "下水道之甲";
+                name = mythColor + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "下水道之甲";
             }
         } else if (this instanceof MythicSwordItem) {
             name = (tier >= 3 ? "&c" : "&e") + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + getItemDisplayName();
@@ -149,7 +151,7 @@ public abstract class IMythicItem extends AbstractPitItem {
                 if (darkRareAmount >= 1) {
                     this.prefix = "邪恶的";
                 }
-                name = color.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "恶魔之甲";
+                name = mythColor + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "恶魔之甲";
             } else {
                 this.prefix = "精制的";
             }
@@ -190,6 +192,7 @@ public abstract class IMythicItem extends AbstractPitItem {
             lore.add("");
         }
 
+        ChatColor finalColor = dyeColor == null ? mythColor : dyeColorLocal;
         if (isEnchanted()) {
             final AbstractEnchantment somber = ThePit.getInstance().getEnchantmentFactor().getEnchantmentMap().get("somber_enchant");
             if (color == MythicColor.DARK && !enchantments.containsKey(somber)) {
@@ -197,8 +200,9 @@ public abstract class IMythicItem extends AbstractPitItem {
             }
             boolean genesisFound = false;
 
-            for (Map.Entry<AbstractEnchantment, Integer> entry : enchantments.entrySet()) {
-                getEnchantLore(lore, entry, enchantments.entrySet());
+            var entries = enchantments.object2IntEntrySet();
+            for (Object2IntMap.Entry<AbstractEnchantment> entry : entries) {
+                getEnchantLore(lore, entry, entries);
                 if (entry.getKey().getRarity() == EnchantmentRarity.GENESIS) {
                     genesisFound = true;
                 }
@@ -206,24 +210,24 @@ public abstract class IMythicItem extends AbstractPitItem {
 
             if (this instanceof MythicLeggingsItem) {
                 if (color != MythicColor.DARK) {
-                    lore.add((dyeColor == null ? color.getChatColor() : dyeColor.getChatColor()) + "穿着时提供与铁护腿相同的伤害减免效果 &8| " + NewConfiguration.INSTANCE.getWatermarks());
+                    lore.add(finalColor + "穿着时提供与铁护腿相同的伤害减免效果 &8| " + NewConfiguration.INSTANCE.getWatermarks());
                 } else {
-                    lore.add((dyeColor == null ? color.getChatColor() : dyeColor.getChatColor()) + "穿着时提供与皮革护腿相同的伤害减免效果 &8| " + NewConfiguration.INSTANCE.getWatermarks());
+                    lore.add(finalColor + "穿着时提供与皮革护腿相同的伤害减免效果 &8| " + NewConfiguration.INSTANCE.getWatermarks());
                 }
             } else {
                 lore.add(NewConfiguration.INSTANCE.getWatermarks());
             }
 
             if (genesisFound) {
-                lore.add(color.getChatColor() + "阵营活动奖励");
+                lore.add(mythColor + "阵营活动奖励");
             }
 
         } else {
             lore.add("&7死亡后保留");
             lore.add("");
             if (this instanceof MythicLeggingsItem) {
-                lore.add((dyeColor == null ? color.getChatColor() : dyeColor.getChatColor()) + "在神话之井中附魔");
-                lore.add((dyeColor == null ? color.getChatColor() : dyeColor.getChatColor()) + "同时,也是一种象征 &8| " + NewConfiguration.INSTANCE.getWatermarks());
+                lore.add(finalColor + "在神话之井中附魔");
+                lore.add(finalColor + "同时,也是一种象征 &8| " + NewConfiguration.INSTANCE.getWatermarks());
             } else {
                 lore.add("&7在神话之井中附魔 &8| " + ThePit.getApi().getWatermark());
             }
@@ -231,7 +235,7 @@ public abstract class IMythicItem extends AbstractPitItem {
         }
 
         if (dyeColor != null && this instanceof MythicLeggingsItem) {
-            lore.add("&7原: " + color.getChatColor() + color.getDisplayName() + "色神话之甲");
+            lore.add("&7原: " + mythColor + color.getDisplayName() + "色神话之甲");
         }
         //Dark Pants
         ItemBuilder builder = new ItemBuilder(this.getItemDisplayMaterial());
@@ -436,13 +440,15 @@ public abstract class IMythicItem extends AbstractPitItem {
         } else if (recordsStringRaw instanceof NBTTagList k) {
             for (int i = 0; i < k.size(); i++) {
                 NBTTagCompound nbtTagCompound = k.get(i);
-                enchantmentRecords.add(
-                        new EnchantmentRecord(
-                                nbtTagCompound.getString("name"),
-                                nbtTagCompound.getString("reason"),
-                                nbtTagCompound.getLong("timeStamp")
-                        )
-                );
+                NBTBase name = nbtTagCompound.get("name");
+                NBTBase reason = nbtTagCompound.get("reason");
+                NBTBase timeStamp = nbtTagCompound.get("timeStamp");
+                if (name instanceof NBTTagString nm && reason instanceof NBTTagString ra && timeStamp instanceof NBTTagLong ts) {
+                    enchantmentRecords.add(
+                            new EnchantmentRecord(
+                                    nm.a_(), ra.a_(), ts.c())
+                    );
+                }
             }
         }
     }
@@ -466,15 +472,14 @@ public abstract class IMythicItem extends AbstractPitItem {
     public String toString() {
         return "IMythicItem(maxLive=" +
                 this.getMaxLive() + ", live=" +
-                this.getLive() + ", tier=" + this.getTier() + "" +
+                this.getLive() + ", tier=" + this.getTier() +
                 ", color=" + this.getColor() + ", dyeColor=" + this.getDyeColor() + ", prefix=" + this.getPrefix() + ")";
     }
 
     public boolean equals(final Object o) {
         if (o == this) return true;
-        if (!(o instanceof IMythicItem)) return false;
-        final IMythicItem other = (IMythicItem) o;
-        if (!other.canEqual((Object) this)) return false;
+        if (!(o instanceof IMythicItem other)) return false;
+        if (!other.canEqual(this)) return false;
         if (!super.equals(o)) return false;
         if (this.getMaxLive() != other.getMaxLive()) return false;
         if (this.getLive() != other.getLive()) return false;
