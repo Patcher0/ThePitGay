@@ -19,7 +19,6 @@ import net.mizukilab.pit.UtilKt;
 import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.data.operator.PackedOperator;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
-import net.mizukilab.pit.enchantment.EnchantmentFactor;
 import net.mizukilab.pit.item.AbstractPitItem;
 import net.mizukilab.pit.item.IMythicItem;
 import net.mizukilab.pit.item.factory.ItemFactory;
@@ -36,7 +35,10 @@ import net.mizukilab.pit.parm.listener.IPlayerKilledEntity;
 import net.mizukilab.pit.parm.listener.IPlayerRespawn;
 import net.mizukilab.pit.runnable.ProfileLoadRunnable;
 import net.mizukilab.pit.util.*;
-import net.mizukilab.pit.util.chat.*;
+import net.mizukilab.pit.util.chat.ActionBarUtil;
+import net.mizukilab.pit.util.chat.CC;
+import net.mizukilab.pit.util.chat.ChatComponentBuilder;
+import net.mizukilab.pit.util.chat.MessageType;
 import net.mizukilab.pit.util.cooldown.Cooldown;
 import net.mizukilab.pit.util.inventory.InventoryUtil;
 import net.mizukilab.pit.util.item.ItemBuilder;
@@ -60,7 +62,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -80,13 +81,40 @@ public class CombatListener implements Listener {
 
     ;
     public static CombatListener INSTANCE;
+    public static double eventBoost = 2.0; //1.0 to close
     private final DecimalFormat numFormat = new DecimalFormat("0.00");
     private final DecimalFormat intFormat = new DecimalFormat("0");
-    public static double eventBoost = 2.0; //1.0 to close
     String boostString = " &6(限时加成x" + eventBoost + "倍奖励)";
 
     public CombatListener() {
         INSTANCE = this;
+    }
+
+    @NotNull
+    private static String getBountyString(PlayerProfile killerProfile) {
+        String bountyColor = "&6";
+        if (ThePit.getInstance().getPitConfig().isGenesisEnable()) {
+            GenesisTeam team = killerProfile.getGenesisData().getTeam();
+            if (team == GenesisTeam.ANGEL) {
+                bountyColor = "&b";
+            }
+            if (team == GenesisTeam.DEMON) {
+                bountyColor = "&c";
+            }
+        }
+        return bountyColor;
+    }
+
+    public static boolean isNight() {
+        if (!ThePit.getInstance().getGlobalConfig().isCurfewEnable()) {
+            return false;
+        }
+
+        final Calendar instance = Calendar.getInstance();
+        instance.setTimeInMillis(System.currentTimeMillis());
+        final int hour = instance.get(Calendar.HOUR_OF_DAY);
+
+        return hour >= ThePit.getInstance().getGlobalConfig().getCurfewStart() && hour <= ThePit.getInstance().getGlobalConfig().getCurfewEnd();
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
@@ -126,7 +154,7 @@ public class CombatListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR,ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     private void onCombat(EntityDamageByEntityEvent event) {
         if (event.getEntity() instanceof Player) {
             if (event.getDamager() instanceof Player damager) {
@@ -163,6 +191,8 @@ public class CombatListener implements Listener {
                     int enchantLevel = Utils.getEnchantLevel(player.getItemInHand(), "bruiser_enchant");
                     if (enchantLevel > 0 && player.isBlocking()) {
                         event.setDamage(event.getDamage() - (enchantLevel / 2F) - (enchantLevel >= 3 ? 0.5 : 0));
+                    } else if (player.isBlocking()) {
+                        event.setDamage(event.getDamage() * 2);
                     }
                 }
 
@@ -226,7 +256,7 @@ public class CombatListener implements Listener {
     public void onKilled(PlayerDeathEvent event) {
         event.getEntity().setNoDamageTicks(40);
         event.setDeathMessage(null);
-        handlePlayerDeath(event,event.getEntity(), event.getEntity().getKiller(), true);
+        handlePlayerDeath(event, event.getEntity(), event.getEntity().getKiller(), true);
     }
 
     /**
@@ -339,10 +369,10 @@ public class CombatListener implements Listener {
     }
 
     public void handleKill(Player killer, PlayerProfile killerProfile, LivingEntity player, PlayerProfile playerProfile) {
-        handleKill(killer,killerProfile,player,playerProfile,false);
+        handleKill(killer, killerProfile, player, playerProfile, false);
     }
 
-    public void handleKill(Player killer, PlayerProfile killerProfile, LivingEntity player, PlayerProfile playerProfile,boolean npc) {
+    public void handleKill(Player killer, PlayerProfile killerProfile, LivingEntity player, PlayerProfile playerProfile, boolean npc) {
         try {
             boolean isNight = isNight();
 
@@ -495,7 +525,7 @@ public class CombatListener implements Listener {
         }
     }
 
-    public void handlePlayerDeath(PlayerDeathEvent event,Player player, Player killer, boolean shouldRespawn) {
+    public void handlePlayerDeath(PlayerDeathEvent event, Player player, Player killer, boolean shouldRespawn) {
         PlayerProfile playerProfile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
         boolean npc = PlayerUtil.isNPC(player);
         if (killer != null) {
@@ -695,18 +725,19 @@ public class CombatListener implements Listener {
             // player.setHealth(player.getMaxHealth());
             player.setHealth(player.getMaxHealth());
             doRespawn(player);
-            Location location= player.getLocation();
+            Location location = player.getLocation();
             Einstein.flushPos(player);
             Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), () -> {
-                if(handle.invulnerableTicks == 0){
+                if (handle.invulnerableTicks == 0) {
                     return;
                 }
                 player.teleport(location);
                 Einstein.noVelocity(player);
                 handle.invulnerableTicks = 0;
-                },3L);
+            }, 3L);
         }
     }
+
     private void doRespawn(Player player) {
         if (!player.isOnline()) {
             return;
@@ -730,19 +761,19 @@ public class CombatListener implements Listener {
         player.setGameMode(GameMode.SURVIVAL);
 
         playerProfileByUuid.applyExperienceToPlayer(player);
-        playerProfileByUuid.getUnlockedPerkMap().forEach((a,i) -> {
+        playerProfileByUuid.getUnlockedPerkMap().forEach((a, i) -> {
             AbstractPerk handle = i.getHandle(ThePit.getInstance().getPerkFactory().getPerkMap());
-            if(handle instanceof IPlayerRespawn c){
-                c.handleRespawn(i.getLevel(),player);
+            if (handle instanceof IPlayerRespawn c) {
+                c.handleRespawn(i.getLevel(), player);
             }
         });
 
         AbstractPitItem leggings = playerProfileByUuid.leggings;
-        if(leggings instanceof IMythicItem i){
+        if (leggings instanceof IMythicItem i) {
             Object2IntOpenHashMap<AbstractEnchantment> enchantments = i.getEnchantments();
-            enchantments.forEach((c,a) -> {
-                if(c instanceof IPlayerRespawn e){
-                    e.handleRespawn(a,player);
+            enchantments.forEach((c, a) -> {
+                if (c instanceof IPlayerRespawn e) {
+                    e.handleRespawn(a, player);
                 }
             });
         }
@@ -1085,21 +1116,6 @@ public class CombatListener implements Listener {
         }
     }
 
-    @NotNull
-    private static String getBountyString(PlayerProfile killerProfile) {
-        String bountyColor = "&6";
-        if (ThePit.getInstance().getPitConfig().isGenesisEnable()) {
-            GenesisTeam team = killerProfile.getGenesisData().getTeam();
-            if (team == GenesisTeam.ANGEL) {
-                bountyColor = "&b";
-            }
-            if (team == GenesisTeam.DEMON) {
-                bountyColor = "&c";
-            }
-        }
-        return bountyColor;
-    }
-
     private void handleBoardCastMessage(PlayerProfile killerProfile, PlayerProfile playerProfile, Player killer, LivingEntity beKilledPlayer, double totalCoins, double totalXp) {
 
         if (beKilledPlayer instanceof Player) {
@@ -1395,17 +1411,5 @@ public class CombatListener implements Listener {
         if (factory.getActiveEpicEvent() != null) {
             event.setCancelled(true);
         }
-    }
-
-    public static boolean isNight() {
-        if (!ThePit.getInstance().getGlobalConfig().isCurfewEnable()) {
-            return false;
-        }
-
-        final Calendar instance = Calendar.getInstance();
-        instance.setTimeInMillis(System.currentTimeMillis());
-        final int hour = instance.get(Calendar.HOUR_OF_DAY);
-
-        return hour >= ThePit.getInstance().getGlobalConfig().getCurfewStart() && hour <= ThePit.getInstance().getGlobalConfig().getCurfewEnd();
     }
 }
