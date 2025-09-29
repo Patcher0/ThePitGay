@@ -2,6 +2,7 @@ package net.mizukilab.pit.item;
 
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.sub.EnchantmentRecord;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -15,6 +16,8 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 2 * @Author: EmptyIrony
@@ -52,28 +55,32 @@ public abstract class AbstractPitItem {
     }
 
 
-    protected void getEnchantLore(List<String> lore, Map.Entry<AbstractEnchantment, Integer> entry, Set<Map.Entry<AbstractEnchantment, Integer>> entries) {
-        if (lore == null || entry == null || entry.getKey() == null) {
+    protected void getEnchantLore(List<String> lore, Object2IntMap.Entry<AbstractEnchantment> entry, Object2IntMap.FastEntrySet<AbstractEnchantment> entries) {
+        AbstractEnchantment key = entry.getKey();
+        if (lore == null || entry == null || key == null) {
             return;
         }
-        lore.add(entry.getKey().getRarity().getPrefix() + "&9"
-                + (entry.getKey().getRarity() == EnchantmentRarity.DISABLED || entry.getKey().getRarity() == EnchantmentRarity.REMOVED ? "&m" : "")
-                + entry.getKey().getEnchantName() + " " + (entry.getValue() >= 2 ? RomanUtil.convert(entry.getValue()) : "") + "&r");
+        EnchantmentRarity rarity = key.getRarity();
+        int value = entry.getIntValue();
+        lore.add(rarity.getPrefix() + "&9"
+                + (rarity == EnchantmentRarity.DISABLED || rarity == EnchantmentRarity.REMOVED ? "&m" : "")
+                + key.getEnchantName() + " " + (value >= 2 ? RomanUtil.convert(value) : "") + "&r");
         if (entries.size() < 6) {
-            String[] split = entry.getKey().getUsefulnessLore(entry.getValue()).split("/s");
-            if (entry.getKey().getRarity() != EnchantmentRarity.REMOVED) {
+            String[] split = doTsMatcher.split(key.getUsefulnessLore(value));
+            if (rarity != EnchantmentRarity.REMOVED) {
                 for (String s : split) {
                     lore.add("&7" + s);
                 }
             } else {
                 lore.add("&7此附魔已被移除. &8| " + ThePit.getApi().getWatermark());
             }
-            if (entry.getKey().getRarity() == EnchantmentRarity.DISABLED) {
+            if (rarity == EnchantmentRarity.DISABLED) {
                 lore.add("&7此附魔暂时被管理员停用. &8| " + ThePit.getApi().getWatermark());
             }
             lore.add(" ");
         }
     }
+    public static Pattern doTsMatcher = Pattern.compile("/s");
 
     public abstract ItemStack toItemStack();
 
@@ -84,11 +91,9 @@ public abstract class AbstractPitItem {
         if (!isEnchanted()) {
             return lore;
         }
-        ObjectSet<Map.Entry<AbstractEnchantment, Integer>> entries = enchantments.entrySet();
-
+        var entries = enchantments.object2IntEntrySet();
         enchantments.object2IntEntrySet().fastForEach(i ->
                 getEnchantLore(lore, i, entries)
-
         );
 
 

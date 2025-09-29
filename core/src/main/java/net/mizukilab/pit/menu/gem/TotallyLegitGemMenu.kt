@@ -16,7 +16,7 @@ class TotallyLegitGemMenu : Menu() {
         val map = HashMap<Int, Button>()
         var index = 0
         for ((slot, itemStack) in player.inventory.withIndex()) {
-            if (Utils.canUseGen(itemStack)) {
+            if (Utils.canUseGem(itemStack)) {
                 map[index] = ItemGemButton(itemStack, slot)
                 index++
             }

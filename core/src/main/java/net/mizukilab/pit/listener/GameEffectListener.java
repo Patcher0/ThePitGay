@@ -120,15 +120,15 @@ public class GameEffectListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerFired(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player player && event.getCause().equals(EntityDamageEvent.DamageCause.FIRE_TICK)) {
-            event.setCancelled(true);
-            if (player.getHealth() <= event.getFinalDamage()) {
-                player.damage(player.getMaxHealth() * 100);
-            } else {
-                double newHealth = player.getHealth() - event.getFinalDamage();
-                // 确保生命值在有效范围内
-                player.setHealth(Math.max(0, Math.min(newHealth, player.getMaxHealth())));
-            }
-
+//            event.setCancelled(true);
+////            if (player.getHealth() <= event.getFinalDamage()) {
+////                player.damage(player.getMaxHealth() * 100);
+////            } else {
+////                double newHealth = player.getHealth() - event.getFinalDamage();
+////                // 确保生命值在有效范围内
+////                player.setHealth(Math.max(0, Math.min(newHealth, player.getMaxHealth())));
+////            }
+//
             PlayerProfile.getPlayerProfileByUuid(player.getUniqueId())
                     .setNoDamageAnimations(true);
         }
