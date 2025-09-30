@@ -1,4 +1,6 @@
 package net.mizukilab.pit
+
+import ExecutionerEnchant
 import cn.charlotte.pit.ThePit
 import cn.charlotte.pit.data.CDKData
 import cn.charlotte.pit.events.genesis.GenesisCombatListener
@@ -9,10 +11,7 @@ import dev.rollczi.litecommands.bukkit.LiteBukkitMessages
 import dev.rollczi.litecommands.meta.Meta
 import dev.rollczi.litecommands.validator.ValidatorScope
 import net.mizukilab.pit.actionbar.ActionBarManager
-import net.mizukilab.pit.command.PitAdminCommands
-import net.mizukilab.pit.command.PitAdminDupeFixCommands
-import net.mizukilab.pit.command.PitAdminSimpleCommand
-import net.mizukilab.pit.command.PitCommands
+import net.mizukilab.pit.command.*
 import net.mizukilab.pit.command.handler.HandHasItem
 import net.mizukilab.pit.command.handler.HandHasItemValidator
 import net.mizukilab.pit.command.handler.metaKey
@@ -202,6 +201,7 @@ object PitHook {
                 PitAdminSimpleCommand(),
                 PitAdminCommands(),
                 PitCommands(),
+                PitItemCommands(),
                 PitAdminDupeFixCommands()
             )
             .settings {
@@ -248,7 +248,7 @@ object PitHook {
         AsyncTickHandler().runTaskTimerAsynchronously(ThePit.getInstance(), 1, 1)
         GoldDropRunnable().runTaskTimer(ThePit.getInstance(), 20, 20)
 
-         ProtectRunnable().runTaskTimer(ThePit.getInstance(), 20, 20)
+        ProtectRunnable().runTaskTimer(ThePit.getInstance(), 20, 20)
 
         FreeExpRunnable().runTaskTimer(ThePit.getInstance(), 20 * 60 * 15, 20 * 60 * 15)
         NightVisionRunnable().runTaskTimer(ThePit.getInstance(), 20, 20)
@@ -527,7 +527,7 @@ private fun loadEnchants() {
 
     //  classes += Limit24520Ench::class.java
     //  classes += LimitXZQ1Ench::class.java
-    if (ThePit.getInstance().globalConfig.token == "SmallMY"){
+    if (ThePit.getInstance().globalConfig.token == "SmallMY") {
         classes += VollewyA::class.java
         classes += Volley_B::class.java
         classes -= VolleyEnchant::class.java

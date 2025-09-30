@@ -43,6 +43,11 @@ public class ItemBuilder {
         this.is = is;
     }
 
+    public ItemBuilder saved(boolean saved) {
+        this.changeNbt("saved", saved);
+        return this;
+    }
+
     public ItemBuilder material(Material mat) {
         this.is = new ItemStack(mat);
         return this;

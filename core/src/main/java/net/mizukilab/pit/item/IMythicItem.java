@@ -5,7 +5,6 @@ import cn.charlotte.pit.data.sub.EnchantmentRecord;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +27,6 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -53,6 +51,7 @@ public abstract class IMythicItem extends AbstractPitItem {
     public String version;
     public String prefix;
     public boolean boostedByGem = false;
+    public boolean saved = false;
     public String customName = null;
 
     public boolean boostedByBook = false;
@@ -91,7 +90,7 @@ public abstract class IMythicItem extends AbstractPitItem {
         }
 
         ChatColor mythColor = color.getChatColor();
-        ChatColor dyeColorLocal = dyeColor.getChatColor();
+        ChatColor dyeColorLocal = dyeColor == null ? mythColor : dyeColor.getChatColor();
         if (this instanceof MythicLeggingsItem) {
             name = mythColor + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + color.getDisplayName() + "色" + getItemDisplayName();
             if (dyeColor != null) {
@@ -246,7 +245,16 @@ public abstract class IMythicItem extends AbstractPitItem {
             builder.customName(customName);
         }
         if (uuid != null) {
-            lore.add("&8" + (defUUID.equals(uuid) ? "Refresh on table" : uuid.toString()));
+            boolean equals = uuid == null || defUUID.equals(uuid);
+            boolean saved = this.saved;
+            String uuidColor = "&8";
+            if (saved) {
+                if (MythicColor.DARK.getChatColor().equals(color.getChatColor())) uuidColor = "&d";
+                if (MythicColor.RAGE.getChatColor().equals(color.getChatColor())) uuidColor = "&c";
+                if ("mythic_sword".equals(this.getInternalName())) uuidColor = "&e";
+                if ("mythic_bow".equals(this.getInternalName())) uuidColor = "&b";
+            }
+            lore.add(uuidColor + (equals ? "Refresh on table" : uuid.toString()));
         }
 
         if (this instanceof IMythicSword mythicSword) {
@@ -293,7 +301,9 @@ public abstract class IMythicItem extends AbstractPitItem {
         if (dyeColor != null) {
             builder.dyeColor(dyeColor.name());
         }
-
+        if (saved) {
+            builder.saved(true);
+        }
         if (isEnchanted()) {
             builder.shiny();
         }
@@ -342,6 +352,8 @@ public abstract class IMythicItem extends AbstractPitItem {
         this.boostedByGlobalGem = extra.getBoolean("boostedByGlobalGem");
 
         this.boostedByBook = extra.getBoolean("boostedByBook");
+
+        this.saved = extra.getBoolean("saved");
 
         //for raw type opti
         NBTBase prefix1 = extra.get("prefix");
