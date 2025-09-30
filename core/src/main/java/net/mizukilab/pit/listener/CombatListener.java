@@ -84,10 +84,12 @@ public class CombatListener implements Listener {
     public static double eventBoost = 2.0; //1.0 to close
     private final DecimalFormat numFormat = new DecimalFormat("0.00");
     private final DecimalFormat intFormat = new DecimalFormat("0");
+    private final Map<UUID, Long> combatStartTime = new HashMap<>(); // 用于跟踪玩家进入战斗的时间
     String boostString = " &6(限时加成x" + eventBoost + "倍奖励)";
 
     public CombatListener() {
         INSTANCE = this;
+        Bukkit.getScheduler().runTaskTimer(ThePit.getInstance(), this::updateCombatTime, 20L, 20L);
     }
 
     @NotNull
@@ -115,6 +117,16 @@ public class CombatListener implements Listener {
         final int hour = instance.get(Calendar.HOUR_OF_DAY);
 
         return hour >= ThePit.getInstance().getGlobalConfig().getCurfewStart() && hour <= ThePit.getInstance().getGlobalConfig().getCurfewEnd();
+    }
+
+    private void updateCombatTime() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
+            if (profile == null || !profile.isLoaded()) {
+                continue;
+            }
+            if (!profile.getCombatTimer().hasExpired()) profile.setCombatTime(profile.getCombatTime() + 1000);
+        }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
