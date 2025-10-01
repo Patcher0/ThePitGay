@@ -59,7 +59,7 @@ public class RandomUtil {
         return random.nextDouble() < chance;
     }
 
-    public static Object helpMeToChooseOne(Object... entry) {
+    public static <T> T helpMeToChooseOne(T... entry) {
         switchSeed();
         return entry[random.nextInt(entry.length)];
     }
