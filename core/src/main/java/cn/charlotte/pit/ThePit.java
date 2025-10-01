@@ -465,7 +465,7 @@ public class ThePit extends JavaPlugin implements PluginMessageListener {
                         if (name.contains("&7") || name.contains("§7")) {
                             event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "你所在的用户组当前无法进入此分区!");
                         }
-                    } else if (!player.isOp() && !player.hasPermission("thepit.admin")) {
+                    } else if (!player.isOp() && !player.hasPermission("pit.admin")) {
                         event.disallow(PlayerLoginEvent.Result.KICK_OTHER, "此分区当前未开放,开放时间请关注官方公告!");
                     }
                 }

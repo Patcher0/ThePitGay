@@ -193,7 +193,7 @@ public class AllSavedMythicItemsMenu extends Menu {
             lore.add(CC.translate("&7创建时间: &f" + sdf.format(new Date(createdAt))));
             lore.add("");
             lore.add(CC.translate("&e左键点击查看物品"));
-            lore.add(CC.translate("&c右键点击删除物品"));
+            lore.add(CC.translate("&cShift+右键点击删除物品"));
             meta.setLore(lore);
             item.setItemMeta(meta);
             return item;
@@ -204,7 +204,7 @@ public class AllSavedMythicItemsMenu extends Menu {
             String uuid = document.getString("uuid");
             String encodedItem = document.getString("item");
 
-            if (clickType == ClickType.RIGHT) {
+            if (clickType == ClickType.SHIFT_RIGHT) {
                 MongoCollection<Document> collection = ThePit.getInstance().getMongoDB().getDatabase().getCollection("saved_mythic_items");
                 collection.deleteOne(new Document("uuid", uuid));
                 player.sendMessage(CC.translate("&a成功删除物品!"));

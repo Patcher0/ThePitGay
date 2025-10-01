@@ -199,12 +199,14 @@ public class CombatListener implements Listener {
                         }
                     }
                 }
+
                 if (itemInHand != null && !PlayerUtil.isVenom(player) && !PlayerUtil.isEquippingSomber(player)) {
                     int enchantLevel = Utils.getEnchantLevel(player.getItemInHand(), "bruiser_enchant");
-                    if (enchantLevel > 0 && player.isBlocking()) {
-                        event.setDamage(event.getDamage() - (enchantLevel / 2F) - (enchantLevel >= 3 ? 0.5 : 0));
-                    } else if (player.isBlocking()) {
+                    if (player.isBlocking()) {
                         event.setDamage(event.getDamage() * 2);
+                        if (enchantLevel > 0) {
+                            event.setDamage(event.getDamage() - (enchantLevel / 2F) - (enchantLevel >= 3 ? 0.5 : 0));
+                        }
                     }
                 }
 

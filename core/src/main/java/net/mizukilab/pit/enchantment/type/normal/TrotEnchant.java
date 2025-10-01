@@ -3,16 +3,23 @@ package net.mizukilab.pit.enchantment.type.normal;
 import cn.charlotte.pit.data.PlayerProfile;
 import com.google.common.util.concurrent.AtomicDouble;
 import lombok.SneakyThrows;
+import net.minecraft.server.v1_8_R3.EnumParticle;
 import net.minecraft.server.v1_8_R3.PacketPlayInFlying;
+import net.minecraft.server.v1_8_R3.PacketPlayOutWorldParticles;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
 import net.mizukilab.pit.enchantment.param.item.ArmorOnly;
 import net.mizukilab.pit.enchantment.rarity.EnchantmentRarity;
 import net.mizukilab.pit.item.IMythicItem;
+import net.mizukilab.pit.parm.AutoRegister;
 import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.cooldown.Cooldown;
 import nya.Skip;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerMoveEvent;
 import spg.lgdev.handler.MovementHandler;
 import spg.lgdev.iSpigot;
 
@@ -23,7 +30,8 @@ import spg.lgdev.iSpigot;
 
 @ArmorOnly
 @Skip
-public class TrotEnchant extends AbstractEnchantment implements MovementHandler {
+@AutoRegister
+public class TrotEnchant extends AbstractEnchantment implements MovementHandler, Listener {
 
     @SneakyThrows
     public TrotEnchant() {
@@ -93,5 +101,41 @@ public class TrotEnchant extends AbstractEnchantment implements MovementHandler 
 
     @Override
     public void handleUpdateRotation(Player player, Location location, Location location1, PacketPlayInFlying packetPlayInFlying) {
+    }
+
+    @EventHandler
+    public void onPlayerMoveEvent(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+        boolean shouldIgnoreEnchant = PlayerUtil.shouldIgnoreEnchant(player);
+        int enchantLevel = getItemEnchantLevel(player.getInventory().getLeggings());
+        Location location = player.getLocation().add(0.0, 0.5, 0.0);
+        if (enchantLevel < 0) return;
+        if (shouldIgnoreEnchant) return;
+        player.getWorld().getPlayers().forEach(target -> {
+            sendRedstoneParticle(target, location, 255f, 255f, 255f);
+        });
+    }
+
+    public void sendRedstoneParticle(
+            Player player,
+            Location location,
+            float r,
+            float g,
+            float b
+    ) {
+        PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(
+                EnumParticle.REDSTONE,
+                true,
+                (float) location.getX(),
+                (float) location.getY(),
+                (float) location.getZ(),
+                r / 255,
+                g / 255,
+                b / 255,
+                1.0f,
+                0
+        );
+        CraftPlayer craftPlayer = (CraftPlayer) player;
+        craftPlayer.getHandle().playerConnection.sendPacket(packet);
     }
 }
