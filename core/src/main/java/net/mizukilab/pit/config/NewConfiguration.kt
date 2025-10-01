@@ -30,6 +30,7 @@ object NewConfiguration {
     var bountyTickInterval = 1;
     var luckGem = 0.30;
     var noobProtect = true
+    var no1_8Effect = false
     var noobProtectLevel = 120
     var noobDamageBoost = 1.1
     var noobDamageReduce = 0.9
@@ -243,6 +244,7 @@ object NewConfiguration {
         }
 
         ThePunchEnchant.PUNCH_Y = config.getDouble("punch_y", 4.0)
+        no1_8Effect = config.getBoolean("no1_8Effect",false)
         alwaysCheckNPC = config.getBoolean("alwaysCheckNPC",false);
         pitSupportPermission = config.getString("pitSupportPermission", pitSupportPermission)
         removeSupportWhenNoPermission = config.getBoolean("removeSupportWhenNoPermission", false)
@@ -462,7 +464,7 @@ object NewConfiguration {
 
         "pitSupportPermission" to pitSupportPermission,
         "removeSupportWhenNoPermission" to false,
-
+        "no1_8Effect" to false,
         //皮肤相关
         "GenesisAngel-npc-skin" to "ewogICJ0aW1lc3RhbXAiIDogMTYxMTcxMzEzMTMyOCwKICAicHJvZmlsZUlkIiA6ICJiMGQ3MzJmZTAwZjc0MDdlOWU3Zjc0NjMwMWNkOThjYSIsCiAgInByb2ZpbGVOYW1lIiA6ICJPUHBscyIsCiAgInNpZ25hdHVyZVJlcXVpcmVkIiA6IHRydWUsCiAgInRleHR1cmVzIiA6IHsKICAgICJTS0lOIiA6IHsKICAgICAgInVybCIgOiAiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS8xOTA3MjdjNjNkMmQ3MjUwZTQ1NTA4NTBiMmQ0YTdlMTEwZDFkMzliNjhmYjcwMmRkYjkzYmIwYjJlZjg0ZCIsCiAgICAgICJtZXRhZGF0YSIgOiB7CiAgICAgICAgIm1vZGVsIiA6ICJzbGltIgogICAgICB9CiAgICB9CiAgfQp9",
         "GenesisDemon-npc-skin" to "ewogICJ0aW1lc3RhbXAiIDogMTY1NzU5OTQzODI2MCwKICAicHJvZmlsZUlkIiA6ICJmZTYxY2RiMjUyMTA0ODYzYTljY2E2ODAwZDRiMzgzZSIsCiAgInByb2ZpbGVOYW1lIiA6ICJNeVNoYWRvd3MiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDAyMWRiYjc3MzdiZDM1MjM0NDRkNTc3NjBlMWY2MzkzOGVlMTI4NjA4MDM4OTU1M2IzYTY4M2VlOGEzYjkwYiIKICAgIH0KICB9Cn0=",
