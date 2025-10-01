@@ -36,6 +36,7 @@ public class PerformanceStatusButton extends Button {
             lores.add("&7debug: &d" + profile.getRegisterTime());
         }
         lores.add("&7总游玩时间: &a" + TimeUtil.millisToRoundedTime(System.currentTimeMillis() - profile.getLastLoginTime() + profile.getTotalPlayedTime()));
+        lores.add("&7战斗时间: &c" + TimeUtil.millisToRoundedTime(profile.getCombatTime()));
         lores.add(" ");
         lores.add("&7击杀/死亡: &a" + (profile.getDeaths() == 0 ? profile.getKills() : new DecimalFormat("0.00").format((float) profile.getKills() / (float) profile.getDeaths())));
         lores.add("&7(击杀+助攻)/死亡: &a" + (profile.getDeaths() == 0 ? profile.getKills() + profile.getAssists() : new DecimalFormat("0.00").format((profile.getKills() + (float) profile.getAssists()) / (float) profile.getDeaths())));

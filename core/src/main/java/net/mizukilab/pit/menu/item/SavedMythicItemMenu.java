@@ -28,10 +28,24 @@ public class SavedMythicItemMenu extends Menu {
 
     private final String uuid;
     private final String encodedItem;
+    private final int returnPage; // 返回的页码
+    private final String playerId; // 玩家的ID
 
     public SavedMythicItemMenu(String uuid, String encodedItem) {
+        this(uuid, encodedItem, 1, null);
+    }
+
+    // 支持返回页码和玩家ID。
+    public SavedMythicItemMenu(
+            String uuid,
+            String encodedItem,
+            int returnPage,
+            String playerId
+    ) {
         this.uuid = uuid;
         this.encodedItem = encodedItem;
+        this.returnPage = returnPage;
+        this.playerId = playerId;
     }
 
     @Override
@@ -91,7 +105,11 @@ public class SavedMythicItemMenu extends Menu {
 
             @Override
             public void clicked(Player player, int slot, ClickType clickType, int hotbarButton, ItemStack currentItem) {
-                new AllSavedMythicItemsMenu().openMenu(player);
+                if (playerId != null) {
+                    new AllSavedMythicItemsMenu(returnPage, playerId).openMenu(player);
+                } else {
+                    new AllSavedMythicItemsMenu(returnPage).openMenu(player);
+                }
             }
         });
 

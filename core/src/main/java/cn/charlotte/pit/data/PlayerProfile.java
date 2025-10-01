@@ -116,6 +116,7 @@ public class PlayerProfile {
     private long lastLoginTime;
     private long lastLogoutTime;
     private long totalPlayedTime;
+    private long combatTime;
     private long yearPlayedTime;
     private long monthPlayedTime;
     private long weekPlayedTime;
@@ -903,6 +904,14 @@ public class PlayerProfile {
 
     public void setTotalPlayedTime(long totalPlayedTime) {
         this.totalPlayedTime = totalPlayedTime;
+    }
+
+    public long getCombatTime() {
+        return this.combatTime;
+    }
+
+    public void setCombatTime(long combatTime) {
+        this.combatTime = combatTime;
     }
 
     public long getYearPlayedTime() {
