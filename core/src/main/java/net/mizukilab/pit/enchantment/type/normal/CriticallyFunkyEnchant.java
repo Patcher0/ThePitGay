@@ -69,7 +69,7 @@ public class CriticallyFunkyEnchant extends AbstractEnchantment implements IPlay
     @PlayerOnly
     public void handlePlayerDamaged(int enchantLevel, Player myself, Entity attacker, double damage, AtomicDouble finalDamage, AtomicDouble boostDamage, AtomicBoolean cancel) {
         Player attackerPlayer = (Player) attacker;
-        if (PlayerUtil.isCritical(attackerPlayer)) {
+        if (PlayerUtil.critical(attackerPlayer)) {
             boostDamage.getAndAdd(-0.05 - 0.15 * enchantLevel);
             if (enchantLevel >= 2) {
                 myself.setMetadata("funky_strike_hit", new FixedMetadataValue(ThePit.getInstance(), enchantLevel));

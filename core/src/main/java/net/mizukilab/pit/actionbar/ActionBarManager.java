@@ -20,7 +20,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Skip
 public class ActionBarManager implements IActionBarManager {
     int tick = 0;
-    Map<UUID, MutablePair<StringBuilder,Map<String, MutablePair<String, Integer>>>> multiMap = new SWMRHashTable<>();
+    SWMRHashTable<UUID, MutablePair<StringBuilder,Map<String, MutablePair<String, Integer>>>> multiMap = new SWMRHashTable<>();
     public void addActionBarOnQueue(Player player, String arg, String val, int repeat,boolean flush) {
         UUID uniqueId = player.getUniqueId();
         MutablePair<StringBuilder,Map<String, MutablePair<String, Integer>>> stringStringMap = multiMap.get(uniqueId);
@@ -37,7 +37,7 @@ public class ActionBarManager implements IActionBarManager {
     }
 
     public void tick() {
-        ((SWMRHashTable<UUID, MutablePair<StringBuilder,Map<String, MutablePair<String, Integer>>>>) multiMap).removeIf((uuid, mappedString) -> { //forEach as multimap
+        multiMap.removeIf((uuid, mappedString) -> { //forEach as multimap
             return tickPiece(uuid, mappedString.getValue(),mappedString.getKey());
         });
     }

@@ -12,9 +12,6 @@ import nya.Skip;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -58,7 +55,7 @@ public class CriticallyRichEnchant extends AbstractEnchantment implements IAttac
 
     @Override
     public void handleAttackEntity(int enchantLevel, Player attacker, Entity target, double damage, AtomicDouble finalDamage, AtomicDouble boostDamage, AtomicBoolean cancel) {
-        if (PlayerUtil.isCritical(attacker)) {
+        if (PlayerUtil.critical(attacker)) {
             PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(attacker.getUniqueId());
             profile.setCoins(profile.getCoins() + enchantLevel * 2);
         }

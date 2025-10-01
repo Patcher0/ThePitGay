@@ -733,19 +733,14 @@ public class CombatListener implements Listener {
         if (shouldRespawn) {
 
             EntityPlayer handle = ((CraftPlayer) player).getHandle();
-            handle.invulnerableTicks = 40;
             // player.setHealth(player.getMaxHealth());
             player.setHealth(player.getMaxHealth());
             doRespawn(player);
             Location location = player.getLocation();
             Einstein.flushPos(player);
             Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), () -> {
-                if (handle.invulnerableTicks == 0) {
-                    return;
-                }
                 player.teleport(location);
                 Einstein.noVelocity(player);
-                handle.invulnerableTicks = 0;
             }, 3L);
         }
     }
