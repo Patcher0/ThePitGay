@@ -85,7 +85,7 @@ class KungFuKnowledgePerk : AbstractPerk(), Listener, IAttackEntity {
         }
 
         event.damage =
-            if (PlayerUtil.isCritical(damager)) {
+            if (PlayerUtil.critical(damager)) {
                 8.0
             } else {
                 7.3

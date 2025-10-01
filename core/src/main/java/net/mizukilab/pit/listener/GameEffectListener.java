@@ -23,7 +23,9 @@ import net.mizukilab.pit.enchantment.EnchantmentFactor;
 import net.mizukilab.pit.enchantment.param.event.NotPlayerOnly;
 import net.mizukilab.pit.enchantment.param.event.PlayerOnly;
 import net.mizukilab.pit.enchantment.rarity.EnchantmentRarity;
+import net.mizukilab.pit.item.AbstractPitItem;
 import net.mizukilab.pit.item.IMythicItem;
+import net.mizukilab.pit.item.MythicColor;
 import net.mizukilab.pit.item.type.mythic.MythicBowItem;
 import net.mizukilab.pit.item.type.mythic.MythicLeggingsItem;
 import net.mizukilab.pit.parm.listener.*;
@@ -112,7 +114,7 @@ public class GameEffectListener implements Listener {
                     || itemInHand.getType() == Material.FISHING_ROD) {
                 event.setDamage(1);
             } else {
-                event.setDamage(Math.min(event.getDamage(), 9));
+                event.setDamage(Einstein.clamp(event.getDamage(), 0, 9));
             }
         }
     }
@@ -136,19 +138,20 @@ public class GameEffectListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void modifyLeatherArmor(EntityDamageByEntityEvent event) {
-        if (event.getEntity() instanceof Player) {
-            if ("kings_helmet".equals(ItemUtil.getInternalName(((Player) event.getEntity()).getInventory().getHelmet()))) {
+        if (event.getEntity() instanceof Player op) {
+            PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(op.getUniqueId());
+            if (ItemUtil.isTheItemType(op.getInventory().getHelmet(),"kings_helmet")) {
                 //0.12是每点伤害 铁裤和皮革裤子的减免差距，所以减去0.12*伤害值，以增加皮革裤子为铁裤防御
                 event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, event.getDamage(EntityDamageEvent.DamageModifier.ARMOR) - 0.06 * event.getDamage());
             }
-
-            if ("mythic_leggings".equals(ItemUtil.getInternalName(((Player) event.getEntity()).getInventory().getLeggings()))) {
-                if (ItemUtil.getItemStringData(((Player) event.getEntity()).getInventory().getLeggings(), "mythic_color").equals("dark")) {
+            AbstractPitItem leggings = profile.leggings;
+            if(leggings instanceof MythicLeggingsItem i){
+                if(i.getColor() == MythicColor.DARK){
                     return;
                 }
-                //0.12是每点伤害 铁裤和皮革裤子的减免差距，所以减去0.12*伤害值，以增加皮革裤子为铁裤防御
                 event.setDamage(EntityDamageEvent.DamageModifier.ARMOR, event.getDamage(EntityDamageEvent.DamageModifier.ARMOR) - 0.12 * event.getDamage());
             }
+
         }
     }
 
@@ -188,7 +191,9 @@ public class GameEffectListener implements Listener {
         if (damagerEntity instanceof Player) {
             damager = (Player) damagerEntity;
 
-            if (PlayerUtil.isCritical(damager)) boostDamage.set(1.5);
+            if (PlayerUtil.critical(damager)){
+                boostDamage.set(1.5);
+            }
             if (NewConfiguration.INSTANCE.getNoobProtect() && playerProfileByUuid.getPrestige() <= 0 && playerProfileByUuid.getLevel() < NewConfiguration.INSTANCE.getNoobProtectLevel()) {
                 boostDamage.getAndAdd(NewConfiguration.INSTANCE.getNoobDamageBoost() - 1);
             }
@@ -223,7 +228,7 @@ public class GameEffectListener implements Listener {
                 }
             }
             //When you were hurt by a projectile
-        } else if (damagerEntity instanceof Projectile projectile && ((Projectile) damagerEntity).getShooter() instanceof Player) {
+        } else if (damagerEntity instanceof Projectile projectile && projectile.getShooter() instanceof Player) {
             damager = (Player) (projectile.getShooter());
 
             if (NewConfiguration.INSTANCE.getNoobProtect() && playerProfileByUuid.getPrestige() <= 0 && playerProfileByUuid.getLevel() < NewConfiguration.INSTANCE.getNoobProtectLevel()) {
@@ -240,8 +245,8 @@ public class GameEffectListener implements Listener {
             if (!enchant.isEmpty()) {
                 final MetadataValue value = enchant.get(0);
                 final Object enchants = value.value();
-                if (enchants instanceof Object2IntOpenHashMap) {
-                    Object2IntOpenHashMap<AbstractEnchantment> ench = (Object2IntOpenHashMap<AbstractEnchantment>) enchants;
+                if (enchants instanceof Object2IntOpenHashMap a) {
+                    Object2IntOpenHashMap<AbstractEnchantment> ench = (Object2IntOpenHashMap<AbstractEnchantment>) a;
                     boolean shouldIgnoreEnchant = PlayerUtil.shouldIgnoreEnchant(damager, event.getEntity());
                     processShot(shouldIgnoreEnchant, event, ench, damager, finalDamage, boostDamage, cancel);
                 }
@@ -272,7 +277,6 @@ public class GameEffectListener implements Listener {
                     boostDamage.getAndAdd(-0.1);
                 }
                 if (damagerEntity instanceof Player) {
-                    damager = (Player) damagerEntity;
                     processPerksDMGed(event, player, profile, perkFactory, disabledPerks, finalDamage, boostDamage, cancel);
 
                     if (!enchantmentFactor.getPlayerDamageds().isEmpty()) {

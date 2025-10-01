@@ -75,7 +75,7 @@ public class PlayerUtil {
         return playerProfile.leggings != null && playerProfile.leggings.getEnchantmentLevel( "somber_enchant") > 0;
     }
 
-    public static boolean isCritical(Player player) {
+    public static boolean critical(Player player) {
         final EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
         return entityPlayer.fallDistance > 0.0F && !entityPlayer.onGround && !entityPlayer.k_() && !entityPlayer.V() && !entityPlayer.hasEffect(MobEffectList.BLINDNESS) && entityPlayer.vehicle == null;
     }

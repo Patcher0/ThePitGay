@@ -220,20 +220,6 @@ public class Utils {
         final String internalName = ItemUtil.getInternalName(item);
         return getMythicItem0(item, internalName);
     }
-    public static double clamp(double value, double lowerBound, double upperBound) {
-        if (value < lowerBound) {
-            return lowerBound;
-        } else {
-            return Math.min(value, upperBound);
-        }
-    }
-    public static float clampf(float value, float lowerBound, float upperBound) {
-        if (value < lowerBound) {
-            return lowerBound;
-        } else {
-            return Math.min(value, upperBound);
-        }
-    }
     public static boolean canUseGem(@NotNull ItemStack item) {
 
         final IMythicItem mythicItem = (IMythicItem) FuncsKt.toMythicItem(item);

@@ -211,7 +211,16 @@ public class ItemUtil {
     }
     public static String getInternalName(ItemStack item) {
         return getItemStringData(item, "internal");
-
+    }
+    public static boolean isTheItemType(ItemStack type,String hel){
+        if(type == null){
+            return false;
+        }
+        String internalName = getInternalName(type);
+        if(internalName == null){
+            return false;
+        }
+        return hel.equals(internalName);
     }
 
     public static Object[] getInternalNameAndUUID(ItemStack stack) {

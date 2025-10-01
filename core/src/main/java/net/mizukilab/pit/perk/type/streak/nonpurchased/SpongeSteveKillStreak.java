@@ -6,6 +6,7 @@ import cn.charlotte.pit.perk.AbstractPerk;
 import cn.charlotte.pit.perk.PerkType;
 import cn.hutool.core.math.MathUtil;
 import net.mizukilab.pit.parm.AutoRegister;
+import net.mizukilab.pit.util.Einstein;
 import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.Utils;
 import nya.Skip;
@@ -97,7 +98,7 @@ public class SpongeSteveKillStreak extends AbstractPerk implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onStreak(PitStreakKillChangeEvent event) {
         PlayerProfile profile = event.getPlayerProfile();
-        Player myself = Bukkit.getPlayer(event.getPlayerProfile().getPlayerUuid());
+        Player myself = Bukkit.getPlayer(profile.getPlayerUuid());
         if (myself == null || !myself.isOnline()) {
             return;
         }
@@ -108,7 +109,7 @@ public class SpongeSteveKillStreak extends AbstractPerk implements Listener {
         int streak = 25;
         if (Math.floor(event.getFrom()) % streak != 0 && Math.floor(event.getTo()) % streak == 0) {
             float heart = (((CraftPlayer) myself).getHandle()).getAbsorptionHearts();
-            (((CraftPlayer) myself).getHandle()).setAbsorptionHearts(Utils.clampf(heart + 30, 0, 40));
+            (((CraftPlayer) myself).getHandle()).setAbsorptionHearts(Einstein.clampf(heart + 30, 0, 40));
         }
     }
 }

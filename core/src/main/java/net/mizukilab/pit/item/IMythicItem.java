@@ -45,7 +45,7 @@ public abstract class IMythicItem extends AbstractPitItem {
     @Getter
     private final static String defUUIDString = "00000000-0000-0000-0000-000000000001";
     @Getter
-    private final static UUID defUUID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private final static UUID defUUID = new UUID(0,1);
     public int maxLive;
     public int live;
     public int tier;
@@ -66,9 +66,6 @@ public abstract class IMythicItem extends AbstractPitItem {
     public int forceCanTrade = -1;
 
     public IMythicItem() {
-    }
-
-    public static void clearCache(ItemStack e) {
     }
 
     public void resetUUID() {

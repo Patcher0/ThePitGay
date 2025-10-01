@@ -151,7 +151,6 @@ public class EnchantButton extends Button {
                 player.playSound(player.getLocation(), Sound.ANVIL_USE, 1, 99);
                 player.sendMessage(CC.translate("&a成功"));
                 player.setItemInHand(bowItem.toItemStack());
-                IMythicItem.clearCache(item);
                 return;
             }
         } else if ("mythic_leggings".equals(ItemUtil.getInternalName(item))) {

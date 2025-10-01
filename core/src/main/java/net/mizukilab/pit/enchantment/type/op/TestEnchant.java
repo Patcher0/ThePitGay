@@ -74,7 +74,7 @@ public class TestEnchant extends AbstractEnchantment implements ITickTask, IAtta
     @Override
     public void handleAttackEntity(int enchantLevel, Player attacker, Entity target, double damage, AtomicDouble finalDamage, AtomicDouble boostDamage, AtomicBoolean cancel) {
         attacker.sendMessage("handleAttackEntity");
-        if (PlayerUtil.isCritical(attacker)) {
+        if (PlayerUtil.critical(attacker)) {
             attacker.sendMessage("handleCriticalHit");
         }
     }

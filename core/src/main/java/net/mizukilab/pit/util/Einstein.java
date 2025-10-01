@@ -12,6 +12,20 @@ public class Einstein {
     public double clamp(double value, double min, double max) {
         return Math.min(Math.max(value, min), max);
     }
+    public float clampf(float value, float lowerBound, float upperBound) {
+        if (value < lowerBound) {
+            return lowerBound;
+        } else {
+            return Math.min(value, upperBound);
+        }
+    }
+    public int clampi(int value, int lowerBound, int upperBound) {
+        if (value < lowerBound) {
+            return lowerBound;
+        } else {
+            return Math.min(value, upperBound);
+        }
+    }
     public void noVelocity(Player player){
         player.setVelocity(vector);
     }
