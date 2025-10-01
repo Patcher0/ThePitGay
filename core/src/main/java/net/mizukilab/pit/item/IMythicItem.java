@@ -56,6 +56,7 @@ public abstract class IMythicItem extends AbstractPitItem {
     public boolean boostedByGem = false;
     public String customName = null;
 
+    public boolean saved = false;
     public boolean boostedByBook = false;
 
     public UUID uuid;
@@ -242,7 +243,16 @@ public abstract class IMythicItem extends AbstractPitItem {
             builder.customName(customName);
         }
         if (uuid != null) {
-            lore.add("&8" + (defUUID.equals(uuid) ? "Refresh on table" : uuid.toString()));
+            boolean equals = uuid == null || defUUID.equals(uuid);
+            boolean saved = this.saved;
+            String uuidColor = "&8";
+            if (saved) {
+                if (MythicColor.DARK.getChatColor().equals(color.getChatColor())) uuidColor = "&d";
+                if (MythicColor.RAGE.getChatColor().equals(color.getChatColor())) uuidColor = "&c";
+                if ("mythic_sword".equals(this.getInternalName())) uuidColor = "&e";
+                if ("mythic_bow".equals(this.getInternalName())) uuidColor = "&b";
+            }
+            lore.add(uuidColor + (equals ? "Refresh on table" : uuid.toString()));
         }
 
         if (this instanceof IMythicSword mythicSword) {
@@ -285,7 +295,9 @@ public abstract class IMythicItem extends AbstractPitItem {
                     .tier(this.tier)
                     .recordEnchantments(enchantmentRecords);
         }
-
+        if (saved) {
+            builder.saved(true);
+        }
         if (dyeColor != null) {
             builder.dyeColor(dyeColor.name());
         }
@@ -350,6 +362,8 @@ public abstract class IMythicItem extends AbstractPitItem {
         if (customName1 instanceof NBTTagString) {
             this.customName = ((NBTTagString) customName1).a_();
         }
+        this.saved = extra.getBoolean("saved");
+
         NBTBase version = extra.get("version");
         if (version instanceof NBTTagString verStr) {
             this.version = verStr.a_();
