@@ -50,9 +50,11 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
+import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.util.Vector;
 
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
@@ -69,7 +71,6 @@ import java.util.function.BiConsumer;
 public class GameEffectListener implements Listener {
 
     private final DecimalFormat numFormatTwo = new DecimalFormat("0.00");
-
     @SneakyThrows
     public static void processKilled(IPlayerKilledEntity ins, int level, Player killer, Entity target, AtomicDouble coin, AtomicDouble exp) {
         if (level != -1) {
@@ -322,10 +323,20 @@ public class GameEffectListener implements Listener {
             //mirror enchant code end
             player.setLastDamageCause(event);
             if (damager != null) {
-                ((CraftPlayer) player).getHandle().killer = ((CraftPlayer) damager).getHandle();
+                EntityPlayer handle = ((CraftPlayer) player).getHandle();
+                handle.killer = ((CraftPlayer) damager).getHandle();
+                if(NewConfiguration.INSTANCE.getNo1_8Effect()){
+                    handle.lastDamage = Float.MAX_VALUE;
+                }
             }
             //we need to ensure the final damage is pushed into the event
             event.setDamage(finalDamage.get() * Einstein.clamp(boostDamage.get(), 0, 100));
+
+            double finalDamage1 = event.getFinalDamage();
+            if((player.getHealth() - finalDamage1) <= 0){
+                player.setVelocity(ZERO);
+            }
+
         }
 
         if (!cancel.get()) {
@@ -339,6 +350,7 @@ public class GameEffectListener implements Listener {
         }
         debug(event, damagerEntity, cancel);
     }
+    static Vector ZERO = new Vector();
 
     private void debug(EntityDamageByEntityEvent event, Entity damagerEntity, AtomicBoolean cancel) {
         if (event.getEntity() instanceof Player player) {
