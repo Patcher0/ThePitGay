@@ -379,7 +379,7 @@ public class PlayerProfile {
     public void onTick(Player bukkitEntity){
         this.inArena = Utils.isInArena(bukkitEntity);
         GameMode gameMode = bukkitEntity.getGameMode();
-        if(gameMode != GameMode.CREATIVE) {
+        if(gameMode != GameMode.CREATIVE && gameMode != GameMode.SPECTATOR) {
             if (isInArena()) {
                 if (gameMode != GameMode.SURVIVAL) {
                     Bukkit.getScheduler().runTask(ThePit.getInstance(),() -> {

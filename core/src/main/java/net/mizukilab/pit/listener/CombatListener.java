@@ -68,6 +68,7 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import static net.mizukilab.pit.util.PublicUtil.processActionBarWithSettingProvided;
 
@@ -573,17 +574,10 @@ public class CombatListener implements Listener {
             }
         }
         //saves performance
-        if (npc) { //NPC Name
-//            if(NewConfiguration.INSTANCE.getAlwaysCheckNPC()){
-//                player.setGameMode(GameMode.SPECTATOR);
-//                player.setNoDamageTicks(40);
-//                player.spigot().respawn();
-//            }
+        if (npc) {
             return;
         }
         final Player finalKiller = killer;
-
-        double respawnTime = playerProfile.getRespawnTime();
 
         PlayerUtil.resetPlayer(player, true, false);
         double mythicProtectChance = 0;
@@ -642,22 +636,21 @@ public class CombatListener implements Listener {
         }
         boolean noProtect = !itemLiveDropEvent.isCancelled() && RandomUtil.hasSuccessfullyByChance(1 - mythicProtectChance);
         if (!itemLiveDropEvent.isCancelled()) {
-            for (int i = 0; i < 36; i++) {
-                ItemStack item = inventory.getItem(i);
+            ListIterator<ItemStack> iterator = inventory.iterator();
+            while(iterator.hasNext()){
+                ItemStack item = iterator.next();
                 if (item == null || item.getType() == Material.AIR) continue;
-
                 final IMythicItem mythicSwordItem = ((ItemFactory) ThePit.getInstance().getItemFactory()).getIMythicItemSync(item);
                 if (mythicSwordItem == null) {
                     continue;
                 }
-
                 if (!noProtect) {
-                    if ((mythicSwordItem instanceof LuckyChestplate) /*|| mythicSwordItem.getEnchantments().containsKey(new RealManEnchant())*/) {
+                    if ((mythicSwordItem instanceof LuckyChestplate)) {
                         noProtect = true;
                     }
                 }
                 if (noProtect) {
-                    inventory.setItem(i, Utils.subtractLive(mythicSwordItem));
+                    iterator.set(Utils.subtractLive(mythicSwordItem));
                 }
             }
         }
@@ -737,15 +730,17 @@ public class CombatListener implements Listener {
             EntityPlayer handle = ((CraftPlayer) player).getHandle();
             // player.setHealth(player.getMaxHealth());
             player.setHealth(player.getMaxHealth());
-            doRespawn(player);
+            doRespawn(player,playerProfile);
             Location location = player.getLocation();
             Einstein.flushPos(player);
             player.teleport(location);
+            handle.dead = false;
+            handle.lastDamage = 0;
             Einstein.noVelocity(player);
         }
     }
 
-    private void doRespawn(Player player) {
+    private void doRespawn(Player player,PlayerProfile profile) {
         if (!player.isOnline()) {
             return;
         }
@@ -753,29 +748,25 @@ public class CombatListener implements Listener {
                 .getSpawnLocations()
                 .get(ThreadLocalRandom.current().nextInt(ThePit.getInstance().getPitConfig().getSpawnLocations().size()));
 
-        if (player.getInventory().getLeggings() != null) {
-            if (Utils.getEnchantLevel(player.getInventory().getLeggings(), "trash_panda_enchant") >= 1) {
+        AbstractPitItem leggings = profile.leggings;
+        if (leggings != null) {
+            if (leggings.getEnchantmentLevel("trash_panda_enchant") >= 1) {
                 location = ThePit.getInstance().getPitConfig().getSewersLocation();
                 player.sendMessage(CC.translate("&2&l垃圾拾荒者! &7你于下水道重生"));
             }
         }
         player.teleport(location);
-
-        PlayerProfile playerProfileByUuid = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
-        playerProfileByUuid.setInArena(false);
+        profile.setInArena(false);
 
         PlayerUtil.resetPlayer(player, true, false);
-        player.setGameMode(GameMode.SURVIVAL);
 
-        playerProfileByUuid.applyExperienceToPlayer(player);
-        playerProfileByUuid.getUnlockedPerkMap().forEach((a, i) -> {
+        profile.applyExperienceToPlayer(player);
+        profile.getUnlockedPerkMap().forEach((a, i) -> {
             AbstractPerk handle = i.getHandle(ThePit.getInstance().getPerkFactory().getPerkMap());
             if (handle instanceof IPlayerRespawn c) {
                 c.handleRespawn(i.getLevel(), player);
             }
         });
-
-        AbstractPitItem leggings = playerProfileByUuid.leggings;
         if (leggings instanceof IMythicItem i) {
             Object2IntOpenHashMap<AbstractEnchantment> enchantments = i.getEnchantments();
             enchantments.forEach((c, a) -> {
@@ -936,7 +927,7 @@ public class CombatListener implements Listener {
                 killerProfile.setCoins(killerProfile.getCoins() + playerProfile.getBounty());
             }
             if (killerProfile.getBuffData().getBuff("bounty_solvent").getTier() > 0) {
-                if (UtilKt.hasRealMan(Bukkit.getPlayer(killerProfile.getUuid()))) return;
+                //if (UtilKt.hasRealMan(Bukkit.getPlayer(killerProfile.getUuid()))) return;
                 coin.set(coin.get() * 1.5);
             }
 //            if (playerProfile.getBounty() >= 5000) {
@@ -988,26 +979,21 @@ public class CombatListener implements Listener {
         if (enchantPerkLevel > -1) {
             Bukkit.getScheduler().runTaskAsynchronously(ThePit.getInstance(), () -> {
                 double chance = NewConfiguration.INSTANCE.getMythicDropChance(killer) * (1 + (enchantPerkLevel - 1) * 0.02);
-                int level = Utils.getEnchantLevel((IMythicItem) killerProfile.leggings, "pants_radar");
-                if (level > 0) {
-                    chance = (1 + level * 0.3) * chance;
-                }
-                level = Utils.getEnchantLevel((IMythicItem) killerProfile.heldItem, "pants_radar");
+                int level = Utils.getEnchantLevel(killerProfile.leggings, "pants_radar");
                 if (level > 0) {
                     chance = (1 + level * 0.3) * chance;
                 }
                 boolean b = RandomUtil.hasSuccessfullyByChance(chance);
                 if (b) {
-                    AbstractPitItem item;
+                    Supplier<IMythicItem> item;
                     if (enchantPerkLevel >= 4) {
-                        item = (AbstractPitItem) RandomUtil.helpMeToChooseOne(
-                                new MythicBowItem(), new MythicSwordItem(), new MythicLeggingsItem());
+                        item =  RandomUtil.helpMeToChooseOne(
+                                MythicBowItem::new, MythicSwordItem::new, MythicLeggingsItem::new);
                     } else {
-                        item = (AbstractPitItem) RandomUtil.helpMeToChooseOne(
-                                new MythicBowItem(), new MythicSwordItem());
+                        item =  RandomUtil.helpMeToChooseOne(MythicBowItem::new, MythicSwordItem::new);
                     }
 
-                    ItemStack itemStack = item.toItemStack();
+                    ItemStack itemStack = item.get().toItemStack();
 
                     if (!killerProfile.isNotMythDrop()) {
                         if (InventoryUtil.isInvFull(killer.getInventory())) {
@@ -1026,19 +1012,10 @@ public class CombatListener implements Listener {
                         CC.send(MessageType.MISC, killer, "&6&l炼金术士! &7成功将神话物品转化为 &62❤ 生命吸收");
                     }
                     //fixme: change to sound system
-                    new BukkitRunnable() {
-                        int task = 0;
-
-                        @Override
-                        public void run() {
-                            killer.playSound(beKilledPlayer.getLocation(), Sound.NOTE_PLING, 1, 0.1F + (0.5F * task));
-                            task++;
-
-                            if (task >= 6) {
-                                cancel();
-                            }
-                        }
-                    }.runTaskTimerAsynchronously(ThePit.getInstance(), 10, 5);
+                    LzScheduler.runTaskWithFixedExecutingCount(5,10,6,(z) -> {
+                        killer.playSound(beKilledPlayer.getLocation(), Sound.NOTE_PLING, 1, 0.1F + (0.5F * z));
+                        return false;
+                    });
                 }
             });
         }
