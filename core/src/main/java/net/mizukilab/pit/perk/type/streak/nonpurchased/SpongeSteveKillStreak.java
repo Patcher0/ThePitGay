@@ -4,8 +4,10 @@ import cn.charlotte.pit.data.PlayerProfile;
 import cn.charlotte.pit.event.PitStreakKillChangeEvent;
 import cn.charlotte.pit.perk.AbstractPerk;
 import cn.charlotte.pit.perk.PerkType;
+import cn.hutool.core.math.MathUtil;
 import net.mizukilab.pit.parm.AutoRegister;
 import net.mizukilab.pit.util.PlayerUtil;
+import net.mizukilab.pit.util.Utils;
 import nya.Skip;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -106,7 +108,7 @@ public class SpongeSteveKillStreak extends AbstractPerk implements Listener {
         int streak = 25;
         if (Math.floor(event.getFrom()) % streak != 0 && Math.floor(event.getTo()) % streak == 0) {
             float heart = (((CraftPlayer) myself).getHandle()).getAbsorptionHearts();
-            (((CraftPlayer) myself).getHandle()).setAbsorptionHearts(heart + 30);
+            (((CraftPlayer) myself).getHandle()).setAbsorptionHearts(Utils.clampf(heart + 30, 0, 40));
         }
     }
 }

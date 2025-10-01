@@ -24,6 +24,8 @@ public class EnchantmentFactor {
 
     private final Collection<AbstractEnchantment> enchantments;
     private final Map<String, AbstractEnchantment> enchantmentMap;
+
+    private final Map<Class<?>, AbstractEnchantment> class2EnchMap;
     private final List<IPlayerDamaged> playerDamageds;
     private final List<IAttackEntity> attackEntities;
     @Getter
@@ -40,6 +42,7 @@ public class EnchantmentFactor {
 
     public EnchantmentFactor() {
         this.enchantmentMap = new Object2ObjectOpenHashMap<>();
+        this.class2EnchMap = new Object2ObjectOpenHashMap<>();
         this.enchantments = enchantmentMap.values();
         this.playerDamageds = new ObjectArrayList<>();
         this.iItemDamages = new ObjectArrayList<>();
@@ -74,6 +77,8 @@ public class EnchantmentFactor {
 
     public void registerEnchantment(AbstractEnchantment enchantment) {
         this.enchantmentMap.put(enchantment.getNbtName(), enchantment);
+
+        class2EnchMap.put(enchantment.getClass(),enchantment);
         PublicUtil.register(enchantment.getClass(), enchantment, playerDamageds, attackEntities, iItemDamages, playerBeKilledByEntities, playerKilledEntities, playerRespawns, playerShootEntities);
         registerTickTask(enchantment.getClass(), enchantment);
     }
@@ -102,6 +107,7 @@ public class EnchantmentFactor {
             boolean b = nbt.equalsIgnoreCase(finalNbtName) || enchObj.getEnchantName().equalsIgnoreCase(finalEnchantName);
             if (b) {
                 removeEnchantment(enchObj, iterator);
+                class2EnchMap.remove(enchObj.getClass());
             }
         }
         log.info("Enchantments {} -> {}", size, enchantmentMap.size());
@@ -130,6 +136,9 @@ public class EnchantmentFactor {
         if (IActionDisplayEnchant.class.isAssignableFrom(clazz)) {
             actionDisplayEnchants.put(enchantment, (IActionDisplayEnchant) enchantment);
         }
+    }
+    public AbstractEnchantment getEnchByClass(Class<?> claz){
+        return class2EnchMap.get(claz);
     }
 
     public Collection<AbstractEnchantment> getEnchantments() {

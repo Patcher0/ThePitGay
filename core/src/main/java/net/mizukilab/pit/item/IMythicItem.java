@@ -13,6 +13,7 @@ import net.minecraft.server.v1_8_R3.*;
 import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
 import net.mizukilab.pit.enchantment.rarity.EnchantmentRarity;
+import net.mizukilab.pit.enchantment.type.dark_normal.SomberEnchant;
 import net.mizukilab.pit.item.type.ArmageddonBoots;
 import net.mizukilab.pit.item.type.mythic.MagicFishingRod;
 import net.mizukilab.pit.item.type.mythic.MythicBowItem;
@@ -90,21 +91,19 @@ public abstract class IMythicItem extends AbstractPitItem {
             }
         }
 
-        ChatColor mythColor = color.getChatColor();
-        ChatColor dyeColorLocal = dyeColor.getChatColor();
         if (this instanceof MythicLeggingsItem) {
-            name = mythColor + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + color.getDisplayName() + "色" + getItemDisplayName();
+            name = color.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + color.getDisplayName() + "色" + getItemDisplayName();
             if (dyeColor != null) {
-                name = dyeColorLocal + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "染色神话之甲";
+                name = dyeColor.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "染色神话之甲";
             }
             if (color == MythicColor.DARK) {
-                name = mythColor + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "暗黑之甲";
+                name = color.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "暗黑之甲";
             }
             if (color == MythicColor.RAGE) {
-                name = mythColor + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "暴怒之甲";
+                name = color.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "暴怒之甲";
             }
             if (color == MythicColor.DARK_GREEN) {
-                name = mythColor + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "下水道之甲";
+                name = color.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "下水道之甲";
             }
         } else if (this instanceof MythicSwordItem) {
             name = (tier >= 3 ? "&c" : "&e") + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + getItemDisplayName();
@@ -121,10 +120,10 @@ public abstract class IMythicItem extends AbstractPitItem {
         int enchantTotalLevel = 0;
 
 
-        for (AbstractEnchantment abstractEnchantment : enchantments.keySet()) {
-            int enchantLevel = enchantments.get(abstractEnchantment);
+        for (var s : enchantments.object2IntEntrySet()) {
+            int enchantLevel = s.getIntValue();
             enchantTotalLevel += enchantLevel;
-
+            AbstractEnchantment abstractEnchantment = s.getKey();
             if (abstractEnchantment.getRarity() == EnchantmentRarity.RARE) {
                 rareAmount++;
                 if (color == MythicColor.RAGE && abstractEnchantment.getMaxEnchantLevel() == enchantLevel) {
@@ -148,10 +147,7 @@ public abstract class IMythicItem extends AbstractPitItem {
 
         if (this.maxLive >= 100) {
             if (color == MythicColor.DARK) {
-                if (darkRareAmount >= 1) {
-                    this.prefix = "邪恶的";
-                }
-                name = mythColor + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "恶魔之甲";
+                name = color.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + "恶魔之甲";
             } else {
                 this.prefix = "精制的";
             }
@@ -192,9 +188,8 @@ public abstract class IMythicItem extends AbstractPitItem {
             lore.add("");
         }
 
-        ChatColor finalColor = dyeColor == null ? mythColor : dyeColorLocal;
         if (isEnchanted()) {
-            final AbstractEnchantment somber = ThePit.getInstance().getEnchantmentFactor().getEnchantmentMap().get("somber_enchant");
+            final AbstractEnchantment somber = ThePit.getInstance().getEnchantmentFactor().getEnchByClass(SomberEnchant.class);
             if (color == MythicColor.DARK && !enchantments.containsKey(somber)) {
                 enchantments.put(somber, 1);
             }
@@ -210,24 +205,25 @@ public abstract class IMythicItem extends AbstractPitItem {
 
             if (this instanceof MythicLeggingsItem) {
                 if (color != MythicColor.DARK) {
-                    lore.add(finalColor + "穿着时提供与铁护腿相同的伤害减免效果 &8| " + NewConfiguration.INSTANCE.getWatermarks());
+                    lore.add((dyeColor == null ? color.getChatColor() : dyeColor.getChatColor()) + "穿着时提供与铁护腿相同的伤害减免效果 &8| " + NewConfiguration.INSTANCE.getWatermarks());
                 } else {
-                    lore.add(finalColor + "穿着时提供与皮革护腿相同的伤害减免效果 &8| " + NewConfiguration.INSTANCE.getWatermarks());
+                    lore.add((dyeColor == null ? color.getChatColor() : dyeColor.getChatColor()) + "穿着时提供与皮革护腿相同的伤害减免效果 &8| " + NewConfiguration.INSTANCE.getWatermarks());
                 }
             } else {
                 lore.add(NewConfiguration.INSTANCE.getWatermarks());
             }
 
+
             if (genesisFound) {
-                lore.add(mythColor + "阵营活动奖励");
+                lore.add(color.getChatColor() + "阵营活动奖励");
             }
 
         } else {
             lore.add("&7死亡后保留");
             lore.add("");
             if (this instanceof MythicLeggingsItem) {
-                lore.add(finalColor + "在神话之井中附魔");
-                lore.add(finalColor + "同时,也是一种象征 &8| " + NewConfiguration.INSTANCE.getWatermarks());
+                lore.add((dyeColor == null ? color.getChatColor() : dyeColor.getChatColor()) + "在神话之井中附魔");
+                lore.add((dyeColor == null ? color.getChatColor() : dyeColor.getChatColor()) + "同时,也是一种象征 &8| " + NewConfiguration.INSTANCE.getWatermarks());
             } else {
                 lore.add("&7在神话之井中附魔 &8| " + ThePit.getApi().getWatermark());
             }
@@ -235,7 +231,7 @@ public abstract class IMythicItem extends AbstractPitItem {
         }
 
         if (dyeColor != null && this instanceof MythicLeggingsItem) {
-            lore.add("&7原: " + mythColor + color.getDisplayName() + "色神话之甲");
+            lore.add("&7原: " + color.getChatColor() + color.getDisplayName() + "色神话之甲");
         }
         //Dark Pants
         ItemBuilder builder = new ItemBuilder(this.getItemDisplayMaterial());
