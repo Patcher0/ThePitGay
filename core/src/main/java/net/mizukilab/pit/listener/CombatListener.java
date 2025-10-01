@@ -726,10 +726,8 @@ public class CombatListener implements Listener {
             doRespawn(player);
             Location location = player.getLocation();
             Einstein.flushPos(player);
-            Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), () -> {
-                player.teleport(location);
-                Einstein.noVelocity(player);
-            }, 3L);
+            player.teleport(location);
+            Einstein.noVelocity(player);
         }
     }
 

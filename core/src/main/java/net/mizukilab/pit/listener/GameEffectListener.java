@@ -322,8 +322,8 @@ public class GameEffectListener implements Listener {
             }
             //mirror enchant code end
             player.setLastDamageCause(event);
+            EntityPlayer handle = ((CraftPlayer) player).getHandle();
             if (damager != null) {
-                EntityPlayer handle = ((CraftPlayer) player).getHandle();
                 handle.killer = ((CraftPlayer) damager).getHandle();
                 if(NewConfiguration.INSTANCE.getNo1_8Effect()){
                     handle.lastDamage = Float.MAX_VALUE;
@@ -331,12 +331,6 @@ public class GameEffectListener implements Listener {
             }
             //we need to ensure the final damage is pushed into the event
             event.setDamage(finalDamage.get() * Einstein.clamp(boostDamage.get(), 0, 100));
-
-            double finalDamage1 = event.getFinalDamage();
-            if((player.getHealth() - finalDamage1) <= 0){
-                player.setVelocity(ZERO);
-            }
-
         }
 
         if (!cancel.get()) {
@@ -350,6 +344,7 @@ public class GameEffectListener implements Listener {
         }
         debug(event, damagerEntity, cancel);
     }
+
     static Vector ZERO = new Vector();
 
     private void debug(EntityDamageByEntityEvent event, Entity damagerEntity, AtomicBoolean cancel) {
