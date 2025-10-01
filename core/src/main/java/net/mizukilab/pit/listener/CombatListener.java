@@ -739,6 +739,8 @@ public class CombatListener implements Listener {
             Location location = player.getLocation();
             Einstein.flushPos(player);
             player.teleport(location);
+            handle.dead = false;
+            handle.lastDamage = 0;
             Einstein.noVelocity(player);
         }
     }
