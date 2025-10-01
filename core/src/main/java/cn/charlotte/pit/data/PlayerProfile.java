@@ -25,6 +25,7 @@ import net.mizukilab.pit.UtilKt;
 import net.mizukilab.pit.item.AbstractPitItem;
 import net.mizukilab.pit.medal.impl.challenge.HundredLevelMedal;
 import net.mizukilab.pit.quest.AbstractQuest;
+import net.mizukilab.pit.util.Utils;
 import net.mizukilab.pit.util.chat.CC;
 import net.mizukilab.pit.util.chat.MessageType;
 import net.mizukilab.pit.util.chat.TitleUtil;
@@ -35,6 +36,7 @@ import net.mizukilab.pit.util.random.RandomUtil;
 import net.mizukilab.pit.util.rank.RankUtil;
 import nya.Skip;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.Warning;
 import org.bukkit.entity.Entity;
@@ -374,7 +376,26 @@ public class PlayerProfile {
         }
         return false;
     }
+    public void onTick(Player bukkitEntity){
+        this.inArena = Utils.isInArena(bukkitEntity);
+        GameMode gameMode = bukkitEntity.getGameMode();
+        if(gameMode != GameMode.CREATIVE) {
+            if (isInArena()) {
+                if (gameMode != GameMode.SURVIVAL) {
+                    Bukkit.getScheduler().runTask(ThePit.getInstance(),() -> {
+                        bukkitEntity.setGameMode(GameMode.SURVIVAL);
+                    });
+                }
+            } else {
+                if (gameMode != GameMode.ADVENTURE) {
+                    Bukkit.getScheduler().runTask(ThePit.getInstance(),() -> {
+                        bukkitEntity.setGameMode(GameMode.ADVENTURE);
+                    });
+                }
+            }
+        }
 
+    }
     /**
      * 本方法仅作为兼容桥, 向下兼容存在代码, 已最大保证线程安全性以及最大解决bug等问题
      * 重定向于 PackedOperator
@@ -2464,6 +2485,9 @@ public class PlayerProfile {
         @Override
         public int getBounty() {
             return 0;
+        }
+        public void onTick(Player buk){
+
         }
     }
 }

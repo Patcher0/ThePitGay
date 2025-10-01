@@ -54,8 +54,12 @@ public class PackedOperator implements IOperator {
         if (player != null && player.isOnline()) {
             this.quitFlag = false;
             this.fireExit = false;
+            if (profile.isLoaded()) {
+                this.profile.onTick(player);
+            }
         }
         this.lastHeartBeat = System.currentTimeMillis();
+
     }
 
     public void loadAs(UUID uuid, String name) {

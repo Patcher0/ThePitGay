@@ -248,8 +248,6 @@ object PitHook {
         AsyncTickHandler().runTaskTimerAsynchronously(ThePit.getInstance(), 1, 1)
         GoldDropRunnable().runTaskTimer(ThePit.getInstance(), 20, 20)
 
-        ProtectRunnable().runTaskTimer(ThePit.getInstance(), 20, 20)
-
         FreeExpRunnable().runTaskTimer(ThePit.getInstance(), 20 * 60 * 15, 20 * 60 * 15)
         NightVisionRunnable().runTaskTimer(ThePit.getInstance(), 20, 20)
 
