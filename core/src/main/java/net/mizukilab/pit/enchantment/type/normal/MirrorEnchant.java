@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Skip
 @ArmorOnly
-public class MirrorEnchant extends AbstractEnchantment implements Listener,IPlayerDamaged {
+public class MirrorEnchant extends AbstractEnchantment implements Listener {
 
     @Override
     public String getEnchantName() {
@@ -62,33 +62,7 @@ public class MirrorEnchant extends AbstractEnchantment implements Listener,IPlay
                 + (enchantLevel > 1 ? "/s&7且反弹真实伤害的 &f" + (enchantLevel * 25 - 25) + "% &7至伤害来源(伤害类型为&c必中&7) (0.5秒冷却)"
                 + "/s&c(必中伤害无法被抵抗或免疫)" : "");
     }
-    //                if (profile.leggings != null) {
-    //                    int enchantLevel = profile.leggings.getEnchantmentLevel("Mirror");
-    //                    if (enchantLevel > 1 && finalDamage.get() > 0 && finalDamage.get() < 1000) {
-    //                        MetadataValue mirrorLatestActive = null;
-    //                        List<MetadataValue> values = player.getMetadata("mirror_latest_active");
-    //                        if (values != null && !values.isEmpty()) {
-    //                            mirrorLatestActive = values.get(0);
-    //                        }
-    //                        long l = System.currentTimeMillis();
-    //                        if (damager1 instanceof Player && (mirrorLatestActive == null ||
-    //                                l - mirrorLatestActive.asLong() > 500L)) {
-    //                            //damage giveback
-    //                            player.setMetadata("mirror_latest_active", new FixedMetadataValue(instance, l));
-    //                            damager = (Player) damager1;
-    //                            if (!player.getUniqueId().equals(damager.getUniqueId())) {
-    //                                damager.damage(0.01, player);
-    //                                float mirrorDamage = (float) (((enchantLevel * 25 - 25) * 0.01) * finalDamage.get());
-    //                                double newDamagerHealth = damager.getHealth() - mirrorDamage;
-    //                                // 确保生命值在有效范围内
-    //                                damager.setHealth(Math.max(0.1, Math.min(newDamagerHealth, damager.getMaxHealth())));
-    //                            }
-    //                        }
-    //                    }
-    //                    if (enchantLevel > 0 && finalDamage.get() > 0 && finalDamage.get() < 1000) {
-    //                        finalDamage.set(0);
-    //                    }
-    //                }
+
     @EventHandler
     public void onHandleDamageEvent(PitDamagePlayerEvent event){
         Player victim = event.getVictim();
@@ -124,9 +98,5 @@ public class MirrorEnchant extends AbstractEnchantment implements Listener,IPlay
                 event1.setCancelled(true);
             }
         }
-    }
-    @Override
-    @PlayerOnly
-    public void handlePlayerDamaged(int enchantLevel, Player myself, Entity attacker, double damage, AtomicDouble finalDamage, AtomicDouble boostDamage, AtomicBoolean cancel) {
     }
 }

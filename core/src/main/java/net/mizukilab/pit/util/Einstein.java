@@ -28,6 +28,14 @@ public class Einstein {
             return Math.min(value, upperBound);
         }
     }
+    public void push0Velocity(Player player) {
+        player.setVelocity(vector);
+    }
+
+    Vector vector_0 = new Vector(0,0.05,0);
+    public void push0_1Velocity(Player player) {
+        player.setVelocity(vector_0);
+    }
     public void noVelocity(Player player){
         if(player instanceof CraftPlayer h) {
             EntityPlayer handle = h.getHandle();
