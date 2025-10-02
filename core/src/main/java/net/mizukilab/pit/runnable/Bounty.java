@@ -5,9 +5,8 @@ import cn.charlotte.pit.util.hologram.Hologram;
 import cn.charlotte.pit.util.hologram.HologramAPI;
 import cn.hutool.core.collection.ConcurrentHashSet;
 import io.irina.backports.utils.SWMRHashTable;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.util.PlayerUtil;
@@ -26,16 +25,11 @@ import java.util.*;
  * @Date: 2021/1/1 17:33
  */
 @Skip
-public class BountyRunnable extends BukkitRunnable {
+public class Bounty extends BukkitRunnable {
 
-    private final Random random = new Random();
-    private static final SWMRHashTable<UUID, AnimationData> animationDataMap = new SWMRHashTable<>();
+    private final SWMRHashTable<UUID, AnimationData> animationDataMap = new SWMRHashTable<>();
 
-    public static Map<UUID, AnimationData> getAnimationDataMap() {
-        return animationDataMap;
-    }
-
-    public void gc(Set<HologramDisplay> sets) {
+    public void delete(Set<HologramDisplay> sets) {
         sets.removeIf(holo -> {
             if (!holo.hologram.isSpawned()) {
                 return false;
@@ -44,55 +38,51 @@ public class BountyRunnable extends BukkitRunnable {
             return true;
         });
     }
-
-    @Override
-    public void run() {
-        Set<UUID> shouldRemove = new ObjectOpenHashSet<>();
-        animationDataMap.forEach((i, a) -> {
+    public void removeInvalidHolograms(){
+        animationDataMap.removeIf((i, a) -> {
             Player player = Bukkit.getPlayer(i);
             if (player == null || !player.isOnline()) {
                 if (a != null) {
-                    gc(a.holograms);
-                    if (a.holograms.isEmpty()) {
-                        shouldRemove.add(i);
-                    }
+                    delete(a.holograms);
+                    return a.holograms.isEmpty();
                 } else {
-                    shouldRemove.add(i);
+                    return true;
                 }
             }
+            PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
+            return profile.getBounty() < 500;
         });
-        shouldRemove.forEach(animationDataMap::remove);
+    }
+    @Override
+    public void run() {
+        removeInvalidHolograms();
+        tick();
+    }
+    public void tick(){
         for (Player player : Bukkit.getOnlinePlayers()) {
             UUID uniqueId = player.getUniqueId();
             PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(uniqueId);
-            if (profile.getBounty() >= 500 || profile.getBounty() < 0) {
-                animationDataMap.putIfAbsent(uniqueId, new AnimationData());
+            int bounty = profile.getBounty();
+            if (bounty >= 500) {
+                AnimationData animationData = animationDataMap.computeIfAbsent(uniqueId, i -> new AnimationData());
                 String color = profile.bountyColor();
-                playAnimation(player, profile.getBounty(), color);
-            } else {
-                AnimationData animationData = animationDataMap.get(uniqueId);
-                if (animationData != null) {
-                    gc(animationData.holograms);
-                }
+                playAnimation(player,animationData, bounty, color);
             }
         }
     }
 
 
     @SneakyThrows
-    private void playAnimation(Player player, int bounty, String color) {
-        AnimationData animationData = animationDataMap.get(player.getUniqueId());
-        Set<HologramDisplay> holograms = animationData.holograms;
+    private void playAnimation(Player player,AnimationData animationData, int bounty, String color) {
+        Set<HologramDisplay> holograms = animationData.getHolograms();
 
         if (holograms.size() < 3) {
             Location playerLocation = player.getLocation();
             double x = generatorLocDouble();
             double z = generatorLocDouble();
-            Hologram newHologram = HologramAPI
-                    .createHologram(playerLocation.clone().add(x, 0.1, z)
-                            , CC.translate(color + "&l" + bounty + "g"));
+            Hologram newHologram = HologramAPI.createHologram(playerLocation.add(x, 0.1, z), CC.translate(color + "&l" + bounty + "g"));
 
-            List<Player> reviewers = new ObjectArrayList<>(Bukkit.getOnlinePlayers());
+            var reviewers = new LinkedList<>(Bukkit.getOnlinePlayers());
             if (!player.hasPermission("pit.admin")) {
                 reviewers.remove(player);
             }
@@ -109,7 +99,7 @@ public class BountyRunnable extends BukkitRunnable {
             newHologram.spawn(reviewers);
             holograms.add(new HologramDisplay(newHologram, x, z));
 
-            animationData.spawnCooldown = new Cooldown(650);
+            animationData.setSpawnCooldown(new Cooldown(650));
         }
         holograms.removeIf(hologram -> {
             if (System.currentTimeMillis() > hologram.endTime) {
@@ -129,13 +119,11 @@ public class BountyRunnable extends BukkitRunnable {
     }
 
     private double generatorLocDouble() {
-        if (random.nextBoolean()) {
-            return random.nextDouble();
-        } else {
-            return -random.nextDouble();
-        }
+        return (Math.random() * 2) - 1;
     }
 
+    @Getter
+    @Setter
     public static class AnimationData {
 
         private final Set<HologramDisplay> holograms;
@@ -146,13 +134,7 @@ public class BountyRunnable extends BukkitRunnable {
             this.spawnCooldown = new Cooldown(0);
         }
 
-        public Set<HologramDisplay> getHolograms() {
-            return holograms;
-        }
 
-        public Cooldown getSpawnCooldown() {
-            return spawnCooldown;
-        }
     }
 
     @Getter

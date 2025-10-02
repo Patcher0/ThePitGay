@@ -239,7 +239,7 @@ public class Utils {
         for (Object2IntMap.Entry<AbstractEnchantment> entry : entries) {
             int intValue = entry.getIntValue();
             AbstractEnchantment key = entry.getKey();
-            if (key.getRarity().getParentType() != EnchantmentRarity.RarityType.RARE && intValue < key.getMaxEnchantLevel()) {
+            if (key.getRarity().getParentType() != EnchantmentRarity.RarityType.RARE && intValue <= key.getMaxEnchantLevel()) {
                 return true;
             }
         }

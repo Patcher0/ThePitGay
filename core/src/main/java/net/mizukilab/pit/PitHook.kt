@@ -254,7 +254,7 @@ object PitHook {
         PacketHologramRunnable().runTaskTimerAsynchronously(ThePit.getInstance(), 20, 20)
 
         LeaderBoardRunnable().runTaskTimerAsynchronously(ThePit.getInstance(), 0, 10 * 20 * 60)
-        BountyRunnable().runTaskTimerAsynchronously(
+        Bounty().runTaskTimerAsynchronously(
             ThePit.getInstance(),
             5,
             NewConfiguration.bountyTickInterval.toLong()
