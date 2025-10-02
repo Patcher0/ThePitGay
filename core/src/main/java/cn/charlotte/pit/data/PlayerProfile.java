@@ -1911,6 +1911,9 @@ public class PlayerProfile {
     public String getEnchantingBook() {
         return enchantingBook;
     }
+    public ItemStack getEnchantingBookItemStackFormed() {
+        return InventoryUtil.deserializeItemStack(enchantingBook);
+    }
 
     public void setEnchantingBook(String enchantingBook) {
         this.enchantingBook = enchantingBook;

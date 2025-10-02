@@ -51,7 +51,7 @@ public class Utils {
     public static net.minecraft.server.v1_8_R3.ItemStack toNMStackQuick(ItemStack item) {
         return PublicUtil.toNMStackQuick(item);
     }
-    public static final long toUnsignedInt(int data){
+    public static long toUnsignedInt(int data){
         return data & 0xFFFFFFFFL;
     }
 
@@ -88,16 +88,18 @@ public class Utils {
      */
     @SneakyThrows
     public static void readEnchantments(Object2IntMap<AbstractEnchantment> ment, NBTTagList nbtTagList) {
-        for (int i = 0, size = nbtTagList.size(); i < size; i++) {
+        int size = nbtTagList.size();
+        for (int i = 0; i < size; i++) {
             String s = nbtTagList.getString(i);
             int length = s.length();
-            int splitIndex = s.lastIndexOf(':',length - 1);
+            int splitIndex = s.lastIndexOf(':',length - 2);
 
+            ThePit instance = ThePit.getInstance();
             if (splitIndex != -1) {
                 String enchantmentName = s.substring(0, splitIndex);
                 try {
                     int level = IntegerUtils.fastParse0(s,splitIndex + 1,length);
-                    AbstractEnchantment enchantment = ThePit.getInstance()
+                    AbstractEnchantment enchantment = instance
                             .getEnchantmentFactor()
                             .getEnchantmentMap()
                             .get(enchantmentName);
@@ -107,8 +109,10 @@ public class Utils {
                     }
                 } catch (NumberFormatException e) {
                     String levelString = s.substring(splitIndex + 1);
-                    ThePit.getInstance().getLogger().warning("Can't serialize level: " + levelString);
+                    instance.getLogger().warning("Can't serialize level: " + levelString);
                 }
+            } else {
+                instance.getLogger().warning("Can't serialize level: " + s);
             }
         }
     }
@@ -333,7 +337,7 @@ public class Utils {
         }
 
         if (profile.getEnchantingBook() != null) {
-            return "mythic_reel".equals(ItemUtil.getInternalName(InventoryUtil.deserializeItemStack(profile.getEnchantingBook())));
+            return "mythic_reel".equals(ItemUtil.getInternalName(profile.getEnchantingBookItemStackFormed()));
         }
         return false;
     }

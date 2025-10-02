@@ -110,6 +110,11 @@ public class PackedOperator implements IOperator {
             return !operations.isEmpty() && !this.pendingExecuting.isEmpty();
         }
     }
+    public boolean hasAnyExecutingOp() {
+        synchronized (operations) {
+            return this.pendingExecuting.isEmpty();
+        }
+    }
 
     boolean fireExit = false;
     boolean quitFlag = false;
@@ -175,6 +180,9 @@ public class PackedOperator implements IOperator {
     }
 
     public void drainTask() {
+        if(hasAnyExecutingOp()){
+            return;
+        } //we need to ensure the tasks is done
         Runnable currentOperation = gainTask();
         if (currentOperation == null) return;
 
