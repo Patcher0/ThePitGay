@@ -97,9 +97,14 @@ public class BountyRunnable extends BukkitRunnable {
                 reviewers.remove(player);
             }
             reviewers.removeIf(
-                    target -> PlayerProfile.getPlayerProfileByUuid(target.getUniqueId())
-                            .getPlayerOption().isBountyHiddenWhenNear()
-                            && PlayerUtil.getDistance(target, player) < 8);
+                    target -> {
+                        PlayerProfile playerProfileByUuid = PlayerProfile.getPlayerProfileByUuid(target.getUniqueId());
+
+                        PlayerProfile playerProfileByUuid2 = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
+                        boolean bountyHiddenWhenNear = playerProfileByUuid
+                                .getPlayerOption().isBountyHiddenWhenNear();
+                        return (NewConfiguration.INSTANCE.getDynamicInvisible() && (playerProfileByUuid.isInArena() != playerProfileByUuid2.isInArena())) || bountyHiddenWhenNear && PlayerUtil.getDistance(target, player) < 8;
+                    });
 
             newHologram.spawn(reviewers);
             holograms.add(new HologramDisplay(newHologram, x, z));
