@@ -32,6 +32,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -222,7 +223,10 @@ public class Utils {
     }
     public static boolean canUseGem(@NotNull ItemStack item) {
 
-        final IMythicItem mythicItem = (IMythicItem) FuncsKt.toMythicItem(item);
+        return canUseGem0(false,item);
+    }
+    public static boolean canUseGem0(boolean rare, ItemStack item){
+        final IMythicItem mythicItem = Utils.getMythicItem(item);
         if (mythicItem == null || !mythicItem.isEnchanted() || mythicItem.isBoostedByGem() || mythicItem.isBoostedByGlobalGem()) {
             return false;
         }
@@ -231,15 +235,15 @@ public class Utils {
             return false;
         }
 
-        return canUseGemSeries(mythicItem);
+        return canUseGemSeries(rare,mythicItem);
     }
-
-    private static boolean canUseGemSeries(IMythicItem mythicItem) {
+    private static boolean canUseGemSeries(boolean rare, IMythicItem mythicItem) {
         Object2IntMap.FastEntrySet<AbstractEnchantment> entries = mythicItem.getEnchantments().object2IntEntrySet();
         for (Object2IntMap.Entry<AbstractEnchantment> entry : entries) {
-            int intValue = entry.getIntValue();
+            int level = entry.getIntValue();
             AbstractEnchantment key = entry.getKey();
-            if (key.getRarity().getParentType() != EnchantmentRarity.RarityType.RARE && intValue <= key.getMaxEnchantLevel()) {
+            boolean rareResult = rare == (key.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
+            if (rareResult && key.getMaxEnchantLevel() > level) {
                 return true;
             }
         }
@@ -251,7 +255,7 @@ public class Utils {
             return false;
         }
         //?? same method?
-        return canUseGem(item);
+        return canUseGem0(true,item);
     }
 
     public static boolean isNPC(org.bukkit.entity.Entity entity) {
