@@ -139,9 +139,6 @@ public class PlayerUtil {
 
     //进行合并方法
     public static boolean isNPC(org.bukkit.entity.Entity entity) {
-        if(entity.getName().equals("666")){
-            return true;
-        }
         return ((CraftEntity) entity).getHandle().getClass().getSuperclass().equals(EntityPlayer.class);
     }
 

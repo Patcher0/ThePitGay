@@ -1,5 +1,6 @@
 package net.mizukilab.pit.menu.gem
 
+import net.mizukilab.pit.enchantment.rarity.EnchantmentRarity
 import net.mizukilab.pit.menu.gem.button.EnchantChoseButtonGlobalGem
 import net.mizukilab.pit.util.menu.Button
 import net.mizukilab.pit.util.menu.Menu
@@ -34,8 +35,10 @@ class SecondChoseGlobalGemMenu(private val itemStack: ItemStack, var index: Int)
 
         var slot = 0
         mythicItem.enchantments.forEach { (enchant, level) ->
-            map[SLOTS[min(2, slot)]] = EnchantChoseButtonGlobalGem(itemStack, index, slot, enchant, level)
-            slot++
+            if(enchant.rarity.parentType == EnchantmentRarity.RarityType.RARE) {
+                map[SLOTS[min(2, slot)]] = EnchantChoseButtonGlobalGem(itemStack, index, slot, enchant, level)
+                slot++
+            }
         }
 
         return map

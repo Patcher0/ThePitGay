@@ -503,6 +503,7 @@ public class EnchantButton extends Button {
                 enchantments.add(enchantment);
                 mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b, 1));
                 mythicItem.boostedByBook = true;
+                return announcement;
             } else {
                 for (int i = 0; i < 2; i++) {
                     results.removeAll(enchantments);
@@ -544,6 +545,7 @@ public class EnchantButton extends Button {
                 PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
                 profile.setEnchantingBook(null);
                 mythicItem.boostedByBook = true;
+                return announcement;
             } else {
                 results.removeAll(enchantments);
                 AbstractEnchantment enchantment;
@@ -640,6 +642,7 @@ public class EnchantButton extends Button {
                 PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
                 profile.setEnchantingBook(null);
                 mythicItem.boostedByBook = true;
+                return true;
             } else {
                 int singleLevel = 0;
                 AbstractEnchantment enchantment = null;
@@ -705,6 +708,7 @@ public class EnchantButton extends Button {
                 PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
                 profile.setEnchantingBook(null);
                 mythicItem.boostedByBook = true;
+                return true;
             }
 
             switch (choice) {
@@ -775,6 +779,7 @@ public class EnchantButton extends Button {
             PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
             profile.setEnchantingBook(null);
             mythicItem.boostedByBook = true;
+            return true;
         }
 
         switch (choice) {
