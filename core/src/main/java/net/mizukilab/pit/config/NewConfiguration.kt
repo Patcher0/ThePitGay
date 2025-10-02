@@ -41,6 +41,7 @@ object NewConfiguration {
     var alwaysT2Enchant = true
     var scoreboardShowtime = true
     var scoreboardAnimationInterval = 80
+    var prestige = 35;
 
     var pitSupportPermission = "pit.vip"
     var scoreBoardAnimation = listOf<String>()
@@ -237,6 +238,7 @@ object NewConfiguration {
         customChatFormat = config.getString("custom-chat-format.format", "%pit_level_tag_roman% %s&f: %s")
 
         PrestigeStatusButton.limit = config.getInt("highest-prestige")
+        prestige = PrestigeStatusButton.limit;
         patchCaches()
         config.getConfigurationSection("event-online-required")?.let {
             it.getKeys(false).forEach { eventName ->

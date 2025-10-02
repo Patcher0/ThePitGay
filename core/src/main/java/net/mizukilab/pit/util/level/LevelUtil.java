@@ -1,6 +1,7 @@
 package net.mizukilab.pit.util.level;
 
 import cn.charlotte.pit.ThePit;
+import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.config.PitGlobalConfig;
 import net.mizukilab.pit.menu.prestige.button.PrestigeStatusButton;
 import net.mizukilab.pit.util.chat.RomanUtil;
@@ -167,12 +168,14 @@ public class LevelUtil {
     public static void bootCache() {
         booting = true;
         booted = false;
-        int limit = PrestigeStatusButton.limit;
-        double[] plevelMappingRaw = new double[(limit + 40) * (ThePit.getInstance().getGlobalConfig().maxLevel + 1)];
-        for (int i = 0; i <= limit; i++) {
-            int append = i * ThePit.getInstance().getGlobalConfig().maxLevel;
-            for (int ia = 0; ia < ThePit.getInstance().getGlobalConfig().maxLevel; ia++) {
-                plevelMappingRaw[append + ia] = getLevelExpRequired(i, ia);
+        int limit = NewConfiguration.INSTANCE.getPrestige();
+        PitGlobalConfig globalConfig = ThePit.getInstance().getGlobalConfig();
+        int maxLevel = globalConfig.maxLevel;
+        double[] plevelMappingRaw = new double[limit * maxLevel];
+        for (int prestige = 0; prestige < limit; prestige++) {
+            int levelMapping = prestige * maxLevel;
+            for (int ia = 0; ia < maxLevel; ia++) {
+                plevelMappingRaw[levelMapping + ia] = getaDouble(prestige,ia,1.1);
             }
         }
         plevelMapping = plevelMappingRaw;

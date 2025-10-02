@@ -49,11 +49,6 @@ import kotlin.math.min
 @Command(name = "pit")
 @Permission("pit.admin")
 class PitAdminCommands {
-    @Execute(name = "dbg")
-    fun dbg(@Context player: Player){
-        Log.log = !Log.log;
-        player.sendMessage("done")
-    }
     @Execute(name = "switchMap")
     @Shortcut("swm")
     fun switchMap(@Context player: Player, @OptionalArg("cursor") cursor: Integer) {

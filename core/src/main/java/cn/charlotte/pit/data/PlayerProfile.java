@@ -22,6 +22,8 @@ import io.irina.backports.utils.SWMRHashTable;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.mizukilab.pit.UtilKt;
+import net.mizukilab.pit.data.operator.ProfileOperator;
+import net.mizukilab.pit.database.MongoDB;
 import net.mizukilab.pit.item.AbstractPitItem;
 import net.mizukilab.pit.medal.impl.challenge.HundredLevelMedal;
 import net.mizukilab.pit.quest.AbstractQuest;
@@ -278,8 +280,8 @@ public class PlayerProfile {
     }
 
     public synchronized PlayerProfile disallow() {
-        if (this.code == -1) {
-            this.code = -2;
+        if (this.code == ProfileOperator.OPCODE_FREE) {
+            this.code = ProfileOperator.OPCODE_BUSY;
             return this;
         }
         return NONE_PROFILE;
@@ -291,8 +293,8 @@ public class PlayerProfile {
     }
 
     public synchronized PlayerProfile allow() {
-        if (this.code == -2) {
-            this.code = -1;
+        if (this.code == ProfileOperator.OPCODE_BUSY) {
+            this.code = ProfileOperator.OPCODE_FREE;
             return this;
         }
         return NONE_PROFILE;
@@ -476,12 +478,11 @@ public class PlayerProfile {
      * @return 目标玩家玩家档案，如果该玩家未注册，则返回null
      */
     public static PlayerProfile loadPlayerProfileByUuid(UUID uuid) {
-        if (Bukkit.getServer().isPrimaryThread()) {
-            new RuntimeException("Shouldn't load profile on primary thread!").printStackTrace();
-        }
 
-        PlayerProfile playerProfile = ThePit.getInstance()
-                .getMongoDB()
+        MongoDB mongoDB = ThePit.getInstance()
+                .getMongoDB();
+
+        PlayerProfile playerProfile = mongoDB
                 .getProfileCollection()
                 .findOne(Filters.eq("uuid", uuid.toString()));
 

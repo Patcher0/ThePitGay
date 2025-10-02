@@ -174,7 +174,9 @@ public class ProfileOperator implements IProfilerOperator {
             }
         }
     }
+    public final static int OPCODE_BUSY = -2;
 
+    public final static int OPCODE_FREE = 0;
     public void tick() {
         operators.removeIf((uuid, operator) -> {
             if (operator == null) {
@@ -187,7 +189,7 @@ public class ProfileOperator implements IProfilerOperator {
                 if(operator.throwable != null){
                     return true;
                 }
-                if (operator.profile.code == -2) {
+                if (operator.profile.code == OPCODE_BUSY) {
                     return false;
                 }
                 boolean b = !operator.hasAnyOperation();

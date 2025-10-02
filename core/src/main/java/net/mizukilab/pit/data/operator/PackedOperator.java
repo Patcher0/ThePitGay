@@ -4,8 +4,11 @@ import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
 import cn.charlotte.pit.data.operator.IOperator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.SneakyThrows;
 import lombok.ToString;
+import net.mizukilab.pit.util.Log;
 import nya.Skip;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -13,6 +16,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -83,6 +89,9 @@ public class PackedOperator implements IOperator {
     }
 
     public void loadAs0(UUID uuid, String name) {
+
+        Instant instant = Instant.now();
+        Log.WriteLine("Loading " + uuid + "'s data");
         if (profile != PlayerProfile.NONE_PROFILE) {
             return;
         }
@@ -94,10 +103,12 @@ public class PackedOperator implements IOperator {
         }
         PlayerProfile.bootstrapProfile(rawProfile);
         profile = rawProfile;
+
+        Log.WriteLine("Loaded " + uuid + "'s data, costs " + ChronoUnit.MILLIS.between(instant, Instant.now()) + "ms");
     }
 
-    final ObjectArrayList<Runnable> operations = new ObjectArrayList<>(); //safer
-    Set<Runnable> pendingExecuting = new CopyOnWriteArraySet<>(); //正常情况下就一个
+    final LinkedList<Runnable> operations = new LinkedList<>(); //safer
+    ObjectLinkedOpenHashSet<Runnable> pendingExecuting = new ObjectLinkedOpenHashSet<>(); //正常情况下就一个
 
     public void fail(Throwable throwable) {
         pending(i -> {
@@ -112,7 +123,7 @@ public class PackedOperator implements IOperator {
     }
     public boolean hasAnyExecutingOp() {
         synchronized (operations) {
-            return this.pendingExecuting.isEmpty();
+            return !this.pendingExecuting.isEmpty();
         }
     }
 
@@ -136,11 +147,14 @@ public class PackedOperator implements IOperator {
         }
         if (quitFlag && !this.quitFlag) {
             pending(prof -> {
+                Instant instant = Instant.now();
+                Log.WriteLine("Saving " + prof.getUuid() + "'s data");
                 PlayerProfile playerProfile = prof.disallowUnsafe();
                 PlayerProfile save = playerProfile.save(null);
                 pending(unk -> {
                     save.allow();
                 });
+                Log.WriteLine("Saved " + prof.getUuid() + "'s data, costs: " + ChronoUnit.MILLIS.between(instant,Instant.now()) + "ms");
             });
             this.quitFlag = true;
         }
@@ -227,15 +241,16 @@ public class PackedOperator implements IOperator {
                 operation = next;
                 break;
             }
-
             pendingExecuting.add(operation);
             final Runnable operationFinaled = operation;
 
             currentOperation = () -> {
                 try {
                     operationFinaled.run();
-                    operations.remove(operationFinaled);
-                    pendingExecuting.remove(operationFinaled);
+                    synchronized (operations) {
+                        operations.remove(operationFinaled);
+                        pendingExecuting.remove(operationFinaled);
+                    }
                     policy.success(PackedOperator.this);
                 } catch (Exception e) {
                     throwable = e;

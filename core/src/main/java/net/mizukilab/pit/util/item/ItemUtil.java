@@ -40,7 +40,6 @@ public class ItemUtil {
         if(up == 0 || down == 0) {
             UUID uuidObj = getUUIDObj(item);
             if (uuidObj != null) {
-                Log.WriteLine("SET UUID OBJECT for " + up + " d:" + down + "by: " + item + " to: " + extra);
                 setUUIDObj(extra, uuidObj);
 
                 return uuidObj.hashCode();

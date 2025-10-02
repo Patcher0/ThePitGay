@@ -60,7 +60,6 @@ public class MongoDB {
             databaseName = ThePit.getInstance().getGlobalConfig().getDatabaseName();
         }
 
-        //hook PowerOFTwo
         ConnectionString connectionString = new ConnectionString("mongodb://" + address + ":" + port);
         MongoClientSettings thePit;
         MongoClientSettings.Builder builder1 = MongoClientSettings.builder().serverApi(ServerApi.builder()
@@ -69,10 +68,10 @@ public class MongoDB {
         if (mongoUser != null && mongoPassword != null && !mongoUser.isEmpty() && !mongoPassword.isEmpty()) {
             MongoCredential credential = MongoCredential.createCredential(mongoUser, databaseName, mongoPassword.toCharArray());
             thePit = builder1
-                    .credential(credential).applicationName("ThePitRequiredPass")
+                    .credential(credential).applicationName("ThePitSafe")
                     .build();
         } else {
-            thePit = builder1.applicationName("ThePitUnsafe").build();
+            thePit = builder1.applicationName("ThePit-Unsafe").build();
         }
         this.mongoClient = MongoClients.create(thePit);
         this.database = mongoClient.getDatabase(databaseName);

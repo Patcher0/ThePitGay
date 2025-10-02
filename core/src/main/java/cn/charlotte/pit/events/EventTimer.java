@@ -3,6 +3,7 @@ package cn.charlotte.pit.events;
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.events.trigger.type.IEpicEvent;
 import cn.charlotte.pit.events.trigger.type.INormalEvent;
+import lombok.Getter;
 import lombok.Setter;
 import net.mizukilab.pit.util.cooldown.Cooldown;
 
@@ -13,14 +14,11 @@ import java.util.concurrent.TimeUnit;
  * @Author: EmptyIrony
  * @Date: 2021/1/9 13:14
  */
+@Getter
 public class EventTimer implements Runnable {
 
     @Setter
     private Cooldown cooldown = new Cooldown(0L);
-
-    public Cooldown getCooldown() {
-        return cooldown;
-    }
 
     @Override
     public void run() {

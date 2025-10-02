@@ -63,8 +63,6 @@ import org.bukkit.util.BlockIterator;
 
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -108,7 +106,7 @@ public class PlayerListener implements Listener {
     }
     public boolean isSaving(PackedOperator op){
         if(op.profile() != null){
-            return op.profile().code == -2;
+            return op.profile().code == ProfileOperator.OPCODE_BUSY;
         }
         return false;
     }
