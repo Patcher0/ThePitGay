@@ -799,7 +799,9 @@ private fun registerListeners() {
 
     ProtocolLibrary.getProtocolManager().asynchronousManager
         .registerAsyncHandler(PacketListener()).start()
-
+    if(NewConfiguration.dynamicInvisible){
+        Bukkit.getPluginManager().registerEvents(PandaExtListener(), ThePit.getInstance())
+    }
     if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null) {
         Bukkit.getPluginManager().registerEvents(MythicMobListener, ThePit.getInstance());
     }

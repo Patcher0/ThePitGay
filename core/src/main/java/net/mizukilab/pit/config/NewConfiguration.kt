@@ -13,6 +13,7 @@ import java.util.*
 
 object NewConfiguration {
     private var serverId = "null"
+    var dynamicInvisible = false;
     var alwaysCheckNPC = false;
     var rapidEnchanting = false;
     var repairFeatures = false
@@ -222,7 +223,7 @@ object NewConfiguration {
         sewersSpawn = config.getInt("sewers-spawn", 60)
         priceName = config.getString("price-name", "点券")
         lobbyCommand = config.getString("lobby-command", "hub")
-
+        dynamicInvisible = config.getBoolean("dynamicInvisible",false)
         dateFormat = config.getString("dateFormat", "MM/dd HH:mm")
         alwaysT2Enchant = config.getBoolean("alwaysT2Enchant", false)
         noobProtect = config.getBoolean("noob-protect.enable")
@@ -461,7 +462,7 @@ object NewConfiguration {
         "boost" to 2.0,
 
         "dateFormat" to "MM/dd HH:mm",
-
+        "dynamicInvisible" to false,
         "pitSupportPermission" to pitSupportPermission,
         "removeSupportWhenNoPermission" to false,
         "no1_8Effect" to false,

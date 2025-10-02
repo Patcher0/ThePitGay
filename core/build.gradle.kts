@@ -145,6 +145,7 @@ tasks.named<ShadowJar>("shadowJar") {
     mergeServiceFiles()
 }
 dependencies {
+
     compileOnly(fileTree("../packLib"))
     compileOnly(fileTree(mapOf("dir" to "../libs", "include" to listOf("*.jar"))))
     implementation(libs.reflectionhelper)
@@ -170,7 +171,6 @@ dependencies {
     compileOnly(fileTree("libs"))
 
     compileOnly(libs.fastutil)
-
     compileOnly("us.crazycrew.crazycrates:api:0.7")
     compileOnly(libs.spigot.get8())
     compileOnly(libs.luckperms)
