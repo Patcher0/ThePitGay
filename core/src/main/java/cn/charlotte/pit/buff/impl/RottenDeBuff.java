@@ -16,7 +16,6 @@ import java.util.List;
 @AutoRegister
 public class RottenDeBuff extends AbstractPitBuff implements Listener {
 
-
     @Override
     public String getInternalBuffName() {
         return "rotten_de_buff";

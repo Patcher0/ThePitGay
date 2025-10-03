@@ -19,17 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger
 class ArmorStandHelper {
     companion object {
         @JvmStatic
-        var ATOM: AtomicInteger = AtomicInteger(60000);
-        @JvmStatic
-        var FIELD_ACCESS = net.minecraft.server.v1_8_R3.Entity::class.java.getDeclaredField("id");
-        @JvmStatic
-        var HANDLE_ACCESS: VarHandle? = null;
-        init {
-            FIELD_ACCESS.trySetAccessible()
-            HANDLE_ACCESS = MethodHandles.privateLookupIn(net.minecraft.server.v1_8_R3.Entity::class.java,
-                MethodHandles.lookup()).unreflectVarHandle(FIELD_ACCESS);
-        }
-        @JvmStatic
         fun applyLocation(location: Location, armorStand: PacketArmorStand) {
             armorStand.move(location, true)
         }
@@ -37,16 +26,17 @@ class ArmorStandHelper {
         //傻逼幻梦。
         @JvmStatic
         @JvmOverloads
-        fun memoryEntity(location: Location,entityId :Int = ATOM.incrementAndGet()): ArmorStand {
+        fun memoryEntity(location: Location): ArmorStand {
+
             val worldServer = (location.world as CraftWorld).handle
             val entityArmorStand = EntityArmorStand(worldServer, location.x, location.y, location.z)
-            HANDLE_ACCESS!!.set(entityArmorStand, entityId)
             return entityArmorStand.bukkitEntity as ArmorStand
         }
 
         @JvmStatic
         fun setEntityLocation(entity: Entity, to: Location) {
             entity as CraftEntity
+            //causes memory leak
             entity.handle.setLocation(to.x, to.y, to.z, to.yaw, to.pitch) //crasher code -->
             //locate to public void entityJoinedWorld(Entity entity, boolean flag)
             //it will not add to Minecraft Server Entity System, but it will be added to the chunk, that is bug from bukkit

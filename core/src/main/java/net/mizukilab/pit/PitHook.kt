@@ -109,6 +109,7 @@ import real.nanoneko.EnchantedConstructor
 import real.nanoneko.ItemConstructor
 import real.nanoneko.PerkConstructor
 import spg.lgdev.iSpigot
+import java.lang.Boolean
 
 object PitHook {
     @JvmStatic
@@ -254,11 +255,19 @@ object PitHook {
         PacketHologramRunnable().runTaskTimerAsynchronously(ThePit.getInstance(), 20, 20)
 
         LeaderBoardRunnable().runTaskTimerAsynchronously(ThePit.getInstance(), 0, 10 * 20 * 60)
-        Bounty().runTaskTimerAsynchronously(
-            ThePit.getInstance(),
-            5,
-            NewConfiguration.bountyTickInterval.toLong()
-        )
+        if (Boolean.getBoolean("unsafeBounty")) {
+            Bounty().runTaskTimerAsynchronously(
+                ThePit.getInstance(),
+                5,
+                NewConfiguration.bountyTickInterval.toLong()
+            )
+        } else {
+            Bounty().runTaskTimer(
+                ThePit.getInstance(),
+                5,
+                NewConfiguration.bountyTickInterval.toLong()
+            )
+        }
     }
 
 
