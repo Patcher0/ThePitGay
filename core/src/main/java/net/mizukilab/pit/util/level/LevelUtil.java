@@ -5,6 +5,7 @@ import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.config.PitGlobalConfig;
 import net.mizukilab.pit.menu.prestige.button.PrestigeStatusButton;
 import net.mizukilab.pit.util.chat.RomanUtil;
+import net.royawesome.jlibnoise.Utils;
 
 /**
  * @Author: Misoryan
@@ -125,12 +126,16 @@ public class LevelUtil {
         if (plevelMapping == null && !booting) {
             bootCache();
         } else if (booted && plevelMapping != null) {
-            if (plevelMapping.length > prestige) {
+
+            PitGlobalConfig globalConfig = ThePit.getInstance().getGlobalConfig();
+            int maxLevel = globalConfig.maxLevel;
+            int i = (prestige * maxLevel) + level;
+            if (plevelMapping.length > i) {
                 try {
-                    PitGlobalConfig globalConfig = ThePit.getInstance().getGlobalConfig();
-                    return plevelMapping[prestige * globalConfig.maxLevel + level];
+                    double v = plevelMapping[i];
+                    return v;
                 } catch (Exception e) {
-                    return Double.MAX_VALUE - 1000.0D;
+                    return Double.MAX_VALUE - 1000;
                 }
             }
         }
@@ -138,7 +143,7 @@ public class LevelUtil {
         if (level >= 10) {
             double v = getaDouble(prestige, level, boost);
             if (v <= 0) {
-                return Double.MAX_VALUE;
+                return Double.MAX_VALUE - 1000;
             }
             return v;
         } else {

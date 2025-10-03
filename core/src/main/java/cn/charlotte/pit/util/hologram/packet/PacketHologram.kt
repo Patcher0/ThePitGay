@@ -61,18 +61,23 @@ class PacketHologram(var displayText: String, var loc: Location) : Parent {
         PacketHologramRunnable.holograms.add(this)
         return true
     }
-
+    var fullyDespawned = false;
     override fun deSpawn(): Boolean {
+        spawned = false
         if (Bukkit.isPrimaryThread()) {
             hologram.removeAll()
-            spawned = false
             HologramAPI.removeHologram(this)
+            fullyDespawned = true;
         } else {
             Bukkit.getScheduler().runTask(ThePit.getInstance()) {
                 deSpawn()
             }
         }
         return true
+    }
+
+    override fun isFullyDespawned(): Boolean {
+        return fullyDespawned
     }
 
     override fun getText(): String {

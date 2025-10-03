@@ -31,6 +31,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.server.PluginDisableEvent;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
@@ -60,8 +61,10 @@ public class DemonHenEnchant extends AbstractEnchantment implements IActionDispl
                 }
                 final float healthScaled = (float) (i.getHealth() / i.getMaxHealth());
                 i.remove();
+
                 World world = location.getWorld();
                 Collection<Entity> nearbyEntities = world.getNearbyEntities(location, 3, 3, 3);
+
                 Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
                     masters.add(s.getKey());
                     ((CraftWorld) world).getHandle().createExplosion(((CraftEntity) s.getKey()).getHandle(), location.getX(), location.getY(), location.getZ(),
@@ -80,7 +83,6 @@ public class DemonHenEnchant extends AbstractEnchantment implements IActionDispl
         });
         entitySet.removeAll(entities);
     }, 0, 20);
-
     @Override
     public String getEnchantName() {
         return "恶魔鸡";

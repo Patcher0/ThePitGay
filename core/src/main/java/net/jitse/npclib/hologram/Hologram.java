@@ -184,7 +184,7 @@ public class Hologram {
         List<Object> updatePackets = new ArrayList<>();
 
         if (this.text.size() != text.size()) {
-            throw new IllegalArgumentException("When updating the text, the old and new text should have the same amount of lines");
+            text = text.subList(0,this.text.size());
         }
 
         Reflection.MethodInvoker customNameMethod = Reflection.getMethod(ENTITY_CLASS, "setCustomName",

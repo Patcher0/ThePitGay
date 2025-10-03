@@ -17,7 +17,7 @@ public interface Hologram {
      * @return <code>true</code> if the hologram is spawned
      */
     boolean isSpawned();
-
+    boolean isFullyDespawned();
     /**
      * Spawns the hologram and despawns it after the specified timeout
      *

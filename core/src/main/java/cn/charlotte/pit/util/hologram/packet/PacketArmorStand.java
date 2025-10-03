@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 2022/2/26<br>
@@ -27,7 +28,6 @@ import java.util.Set;
  * @author huanmeng_qwq
  */
 public class PacketArmorStand {
-
     public static final double DISTANCE = 64;
     protected String text;
     public Location location;

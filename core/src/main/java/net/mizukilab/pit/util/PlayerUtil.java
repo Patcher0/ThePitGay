@@ -318,12 +318,23 @@ public class PlayerUtil {
         Location lc2 = p2.getLocation();
         return getDistance(lc1, lc2);
     }
+    public static float getDistanceSQ(Player p1, Player p2) {
+        Location lc1 = p1.getLocation();
+        Location lc2 = p2.getLocation();
+        return getDistanceSQ(lc1, lc2);
+    }
 
     public static float getDistance(Location lc1, Location lc2) {
         if (lc1.getWorld() != lc2.getWorld()) {
             return Float.MAX_VALUE;
         }
         return (float) lc1.distance(lc2);
+    }
+    public static float getDistanceSQ(Location lc1, Location lc2) {
+        if (lc1.getWorld() != lc2.getWorld()) {
+            return Float.MAX_VALUE;
+        }
+        return (float) lc1.distanceSquared(lc2);
     }
 
     public static int getPlayerUnlockedPerkLevel(Player player, String internal) {
