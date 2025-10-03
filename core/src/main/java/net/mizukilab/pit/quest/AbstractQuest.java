@@ -46,7 +46,7 @@ public abstract class AbstractQuest {
         questData.setCurrent(0);
         questData.setStartTime(now);
         //replace the end time if it is a night quest
-        if (profile.isNightQuestEnable() && TimeUtil.getMinecraftTick(now) > 12000) {
+        if (profile.isNightQuestEnable() && TimeUtil.getRealTimeToMCTick(now) > 12000) {
             questData.setEndTime(now + 36 * 60 * 1000 - now % (36 * 60 * 1000));
         } else {
             questData.setEndTime(now + this.getDuration(level));
@@ -83,7 +83,7 @@ public abstract class AbstractQuest {
         PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
 
         int level = questData.getLevel();
-        if (profile.isNightQuestEnable() && TimeUtil.getMinecraftTick(questData.getStartTime()) > 12000) {
+        if (profile.isNightQuestEnable() && TimeUtil.getRealTimeToMCTick(questData.getStartTime()) > 12000) {
             profile.setExperience(profile.getExperience() + level * 250);
             player.sendMessage(CC.translate("&7奖励已交付:"));
             player.sendMessage(CC.translate(" &8+ &b" + (level * 250) + " &7天坑乱斗经验值"));

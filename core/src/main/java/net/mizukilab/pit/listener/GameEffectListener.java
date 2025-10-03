@@ -177,6 +177,13 @@ public class GameEffectListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerDamagePlayer(EntityDamageByEntityEvent event) {
         Entity damagerEntity = event.getDamager();
+        Entity entity = event.getEntity();
+        if(entity instanceof LivingEntity){
+            if(((LivingEntity) entity).getHealth() <= 0) {
+                event.setCancelled(true);
+                return;
+            }
+        }
         fixDamage(event, damagerEntity);
 
         ThePit instance = ThePit.getInstance();
@@ -207,7 +214,7 @@ public class GameEffectListener implements Listener {
             List<IAttackEntity> attackEntities = enchantmentFactor.getAttackEntities();
             if (!attackEntities.isEmpty()) {
                 shouldIgnoreEnchant = PlayerUtil.shouldIgnoreEnchant(damager
-                        , event.getEntity());
+                        , entity);
             } else {
                 shouldIgnoreEnchant = false;
             }
@@ -224,7 +231,7 @@ public class GameEffectListener implements Listener {
             if (currentQuest1 != null) {
                 AbstractQuest handle = currentQuest1.getHandle();
                 if (handle instanceof IAttackEntity iac) {
-                    processAttackEntity(iac, currentQuest1.getLevel(), damager, event.getEntity(), event.getFinalDamage(), finalDamage, boostDamage, cancel);
+                    processAttackEntity(iac, currentQuest1.getLevel(), damager, entity, event.getFinalDamage(), finalDamage, boostDamage, cancel);
 
                 }
             }
@@ -239,7 +246,7 @@ public class GameEffectListener implements Listener {
             for (IPlayerShootEntity ins : perkFactory.getPlayerShootEntities()) {
                 AbstractPerk perk = (AbstractPerk) ins;
                 int level = perk.getPlayerLevel(damager);
-                processShootEntity(ins, level, damager, event.getEntity(), damagerEntity, event.getFinalDamage(), finalDamage, boostDamage, cancel);
+                processShootEntity(ins, level, damager, entity, damagerEntity, event.getFinalDamage(), finalDamage, boostDamage, cancel);
             }
             //projectile handler
             List<MetadataValue> enchant = projectile.getMetadata("enchant");
@@ -248,7 +255,7 @@ public class GameEffectListener implements Listener {
                 final Object enchants = value.value();
                 if (enchants instanceof Object2IntOpenHashMap a) {
                     Object2IntOpenHashMap<AbstractEnchantment> ench = (Object2IntOpenHashMap<AbstractEnchantment>) a;
-                    boolean shouldIgnoreEnchant = PlayerUtil.shouldIgnoreEnchant(damager, event.getEntity());
+                    boolean shouldIgnoreEnchant = PlayerUtil.shouldIgnoreEnchant(damager, entity);
                     processShot(shouldIgnoreEnchant, event, ench, damager, finalDamage, boostDamage, cancel);
                 }
             }
@@ -256,19 +263,19 @@ public class GameEffectListener implements Listener {
             if (currentQuest1 != null) {
                 AbstractQuest handle = currentQuest1.getHandle();
                 if (handle instanceof IPlayerShootEntity isc) {
-                    processShootEntity(isc, currentQuest1.getLevel(), damager, event.getEntity(), damagerEntity, event.getFinalDamage(), finalDamage, boostDamage, cancel);
+                    processShootEntity(isc, currentQuest1.getLevel(), damager, entity, damagerEntity, event.getFinalDamage(), finalDamage, boostDamage, cancel);
 
                 }
             }
             projectile.removeMetadata("enchant", instance); //garbage collector
         }
 
-        if (event.getEntity() instanceof Player player) {
+        if (entity instanceof Player player) {
 
             boolean npc = PlayerUtil.isNPC(player);
 
             if (!npc) {//针对npc不生效。
-                PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(event.getEntity().getUniqueId());
+                PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(entity.getUniqueId());
 
                 if (NewConfiguration.INSTANCE.getNoobProtect() && profile.getPrestige() <= 0
                         && profile.getLevel() < NewConfiguration.INSTANCE.getNoobProtectLevel()) {
@@ -281,7 +288,7 @@ public class GameEffectListener implements Listener {
                     processPerksDMGed(event, player, profile, perkFactory, disabledPerks, finalDamage, boostDamage, cancel);
 
                     if (!enchantmentFactor.getPlayerDamageds().isEmpty()) {
-                        boolean shouldIgnoreEnchant = PlayerUtil.shouldIgnoreEnchant(damager, event.getEntity());
+                        boolean shouldIgnoreEnchant = PlayerUtil.shouldIgnoreEnchant(damager, entity);
                         IMythicItem leggings = (IMythicItem) profile.leggings;
                         IMythicItem sword = (IMythicItem) profile.heldItem;
                         if (!(sword instanceof MythicLeggingsItem)) {
@@ -300,7 +307,7 @@ public class GameEffectListener implements Listener {
                     processPerksDMGed(event, player, profile, perkFactory, disabledPerks, finalDamage, boostDamage, cancel);
 
                     if (!enchantmentFactor.getPlayerDamageds().isEmpty()) {
-                        boolean shouldIgnoreEnchant = PlayerUtil.shouldIgnoreEnchant(damager, event.getEntity());
+                        boolean shouldIgnoreEnchant = PlayerUtil.shouldIgnoreEnchant(damager, entity);
                         IMythicItem leggings = (IMythicItem) profile.leggings;
                         IMythicItem sword = (IMythicItem) profile.heldItem;
                         processEnchDMGed(event, player, leggings, shouldIgnoreEnchant, finalDamage, boostDamage, cancel);

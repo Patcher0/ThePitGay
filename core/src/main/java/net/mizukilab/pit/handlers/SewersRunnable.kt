@@ -1,4 +1,4 @@
-package net.mizukilab.pit.runnable
+package net.mizukilab.pit.handlers
 
 import cn.charlotte.pit.ThePit
 import net.mizukilab.pit.config.NewConfiguration
@@ -21,8 +21,6 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.metadata.FixedMetadataValue
 import org.bukkit.scheduler.BukkitRunnable
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlin.random.Random
 @Skip
 object SewersRunnable : BukkitRunnable(), Listener {

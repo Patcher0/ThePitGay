@@ -1,4 +1,4 @@
-package net.mizukilab.pit.runnable;
+package net.mizukilab.pit.handlers;
 
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.events.EventFactory;

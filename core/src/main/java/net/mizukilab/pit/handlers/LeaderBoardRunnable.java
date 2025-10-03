@@ -1,17 +1,18 @@
-package net.mizukilab.pit.runnable;
+package net.mizukilab.pit.handlers;
 
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.LeaderBoardEntry;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Sorts;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import lombok.SneakyThrows;
 import net.mizukilab.pit.util.rank.RankUtil;
 import nya.Skip;
 import org.bson.Document;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -33,14 +34,14 @@ public class LeaderBoardRunnable extends BukkitRunnable {
                 .getMongoDB()
                 .getCollection()
                 .find()
-                .sort(Filters.eq("totalExp", -1))
+                .projection(Projections.include("totalExp", "uuid", "experience", "prestige", "lastLogoutTime"))
+                .sort(Sorts.descending("totalExp"))
                 .filter(Filters.gte("lastLogoutTime", System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000));
 
-        List<LeaderBoardEntry> entries = new ObjectArrayList<>();
+        Object2ObjectLinkedOpenHashMap<UUID,LeaderBoardEntry> entries = new Object2ObjectLinkedOpenHashMap<>();
         int i = 1;
         for (Document document : documents) {
             try {
-                String name = document.getString("playerName");
                 String uuid = document.getString("uuid");
                 final Object expObj = document.get("experience");
                 Double experience;
@@ -53,14 +54,12 @@ public class LeaderBoardRunnable extends BukkitRunnable {
                 int rank = i;
                 UUID uuid1 = UUID.fromString(uuid);
                 String playerRealColoredName = RankUtil.getPlayerRealColoredName(uuid1);
-                entries.add(new LeaderBoardEntry(playerRealColoredName, uuid1, rank, experience, prestige));
-
+                entries.putAndMoveToLast(uuid1,new LeaderBoardEntry(playerRealColoredName, uuid1, rank, experience, prestige));
                 i++;
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-
         LeaderBoardEntry.setLeaderBoardEntries(entries);
     }
 }

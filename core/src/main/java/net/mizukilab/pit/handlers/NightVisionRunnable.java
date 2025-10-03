@@ -1,4 +1,4 @@
-package net.mizukilab.pit.runnable;
+package net.mizukilab.pit.handlers;
 
 import nya.Skip;
 import org.bukkit.Bukkit;

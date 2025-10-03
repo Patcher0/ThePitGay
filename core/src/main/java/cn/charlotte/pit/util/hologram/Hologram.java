@@ -10,6 +10,7 @@ import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Set;
 
 public interface Hologram {
 
@@ -140,8 +141,10 @@ public interface Hologram {
     /**
      * Removes all {@link ViewHandler}s from the hologram
      */
-    void clearViewHandlers();
+    Set<Player> members();
 
+    void clearViewHandlers();
+    void hide(Player player);
     /**
      * Adds a {@link Hologram} line below this hologram
      *

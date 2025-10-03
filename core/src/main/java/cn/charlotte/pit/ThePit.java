@@ -30,21 +30,18 @@ import net.mizukilab.pit.config.PitGlobalConfig;
 import net.mizukilab.pit.config.PitWorldConfig;
 import net.mizukilab.pit.database.MongoDB;
 import net.mizukilab.pit.enchantment.EnchantmentFactor;
+import net.mizukilab.pit.handlers.*;
 import net.mizukilab.pit.hologram.HologramFactory;
+import net.mizukilab.pit.hologram.HologramMarco;
 import net.mizukilab.pit.item.IItemFactory;
 import net.mizukilab.pit.item.ItemFactor;
 import net.mizukilab.pit.listener.SafetyJoinListener;
 import net.mizukilab.pit.map.MapSelector;
 import net.mizukilab.pit.medal.MedalFactory;
 import net.mizukilab.pit.minigame.MiniGameController;
-import net.mizukilab.pit.movement.PlayerMoveHandler;
 import net.mizukilab.pit.npc.NpcFactory;
 import net.mizukilab.pit.pet.PetFactory;
 import net.mizukilab.pit.quest.QuestFactory;
-import net.mizukilab.pit.runnable.ClearRunnable;
-import net.mizukilab.pit.runnable.DayNightCycleRunnable;
-import net.mizukilab.pit.runnable.ProfileLoadRunnable;
-import net.mizukilab.pit.runnable.RebootRunnable;
 import net.mizukilab.pit.trade.TradeMonitorRunnable;
 import net.mizukilab.pit.util.BannerUtil;
 import net.mizukilab.pit.util.DateCodeUtils;
@@ -75,20 +72,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.slf4j.Logger;
-import pku.yim.license.MagicLicense;
-import pku.yim.license.PluginProxy;
-import pku.yim.license.Resource;
 import redis.clients.jedis.JedisPool;
 import spg.lgdev.iSpigot;
 import zone.rong.imaginebreaker.ImagineBreaker;
 
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Function;
 
 
 /**
@@ -167,6 +158,12 @@ public class ThePit extends JavaPlugin implements PluginMessageListener {
     @Setter
     @Getter
     private IActionBarManager actionBarManager;
+    @Getter
+    @Setter
+    private AsyncTickHandler singleAsyncScheduler;
+    @Getter
+    @Setter
+    private HologramMarco hologramMarco;
 
     //这里别用fastutil 依赖没加载会报错
     @Getter

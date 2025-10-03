@@ -21,7 +21,7 @@ import net.mizukilab.pit.medal.impl.challenge.LuckyDiamondMedal;
 import net.mizukilab.pit.medal.impl.challenge.TrickleDownMedal;
 import net.mizukilab.pit.menu.item.cactus.CactusMenu;
 import net.mizukilab.pit.parm.AutoRegister;
-import net.mizukilab.pit.runnable.ProfileLoadRunnable;
+import net.mizukilab.pit.handlers.ProfileLoadRunnable;
 import net.mizukilab.pit.util.PitProfileUpdater;
 import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.Utils;
@@ -74,23 +74,19 @@ import java.util.stream.Stream;
  */
 @Skip
 @AutoRegister
-public class PlayerListener implements Listener {
+public class PlayerMarco implements Listener {
 
-    private final Map<UUID, Long> goldenAppleCooldown = new HashMap<>();
-
-    private final Map<UUID, Cooldown> firstAidEggCooldown = new HashMap<>();
 
     private final DecimalFormat numFormat = new DecimalFormat("0.00");
 
     public PackedOperator loadData(PlayerJoinEvent event) {
         final Player player = event.getPlayer();
-        ThePit.getInstance().getParker().hideAlways(player);
         PackedOperator orLoadOperator = ((ProfileOperator) ThePit.getInstance().getProfileOperator()).getOrLoadOperator(player);
         orLoadOperator.pendingUntilLoaded(prof -> {
             //post init, when checked
             orLoadOperator.heartBeat();
 
-            this.whenLoaded(prof, player);
+            this.whenLoaded(orLoadOperator, prof, player);
         });
         event.setJoinMessage(null);
         return orLoadOperator;
@@ -156,7 +152,7 @@ public class PlayerListener implements Listener {
     }
 
 
-    public void whenLoaded(PlayerProfile load, Player player) {
+    public void whenLoaded(PackedOperator op,PlayerProfile load, Player player) {
         updateLoginTime(load);
         load.setPlayerName(player.getName());
         load.setLowerName(player.getName().toLowerCase());
@@ -167,10 +163,9 @@ public class PlayerListener implements Listener {
             load.setLogin(true);
             Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
                 PlayerUtil.postResetPlayer(player);
-                new PitProfileLoadedEvent(load).callEvent();
+                new PitProfileLoadedEvent(load,op).callEvent();
             });
             FixedRewardData.Companion.sendMail(load, player);
-            ThePit.getInstance().getParker().showAlways(player);
         }
     }
 
@@ -263,7 +258,9 @@ public class PlayerListener implements Listener {
             this.welcomePlayer(player);
         }
     }
+    private final Map<UUID, Long> goldenAppleCooldown = new HashMap<>();
 
+    private final Map<UUID, Cooldown> firstAidEggCooldown = new HashMap<>();
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         firstAidEggCooldown.remove(event.getPlayer().getUniqueId());

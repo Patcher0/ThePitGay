@@ -45,7 +45,6 @@ import net.mizukilab.pit.enchantment.type.sewer_rare.TrashPandaEnchant
 import net.mizukilab.pit.enchantment.type.special.SoulRipperEnchant
 import net.mizukilab.pit.events.impl.*
 import net.mizukilab.pit.events.impl.major.*
-import net.mizukilab.pit.hologram.HologramListener
 import net.mizukilab.pit.hook.ItemPapiHook
 import net.mizukilab.pit.hook.PitPapiHook
 import net.mizukilab.pit.impl.PitInternalImpl.loaded
@@ -95,7 +94,8 @@ import net.mizukilab.pit.perk.type.streak.tothemoon.ToTheMoonMegaStreak
 import net.mizukilab.pit.perk.type.streak.tothemoon.XPStack
 import net.mizukilab.pit.perk.type.streak.uber.UberStreak
 import net.mizukilab.pit.quest.type.*
-import net.mizukilab.pit.runnable.*
+import net.mizukilab.pit.handlers.*
+import net.mizukilab.pit.hologram.HologramMarco
 import net.mizukilab.pit.scoreboard.Scoreboard
 import net.mizukilab.pit.sound.impl.*
 import net.mizukilab.pit.tab.TabHandle
@@ -246,7 +246,9 @@ object PitHook {
 
         //AnnouncementRunnable.runTaskTimerAsynchronously(ThePit.getInstance(), 0, 40 * 60)
         TickHandler().runTaskTimer(ThePit.getInstance(), 1, 1)
-        AsyncTickHandler().runTaskTimerAsynchronously(ThePit.getInstance(), 1, 1)
+        var asyncTickHandler = AsyncTickHandler()
+        ThePit.getInstance().singleAsyncScheduler = asyncTickHandler
+        asyncTickHandler.runTaskTimerAsynchronously(ThePit.getInstance(), 0, 1)
         GoldDropRunnable().runTaskTimer(ThePit.getInstance(), 20, 20)
 
         FreeExpRunnable().runTaskTimer(ThePit.getInstance(), 20 * 60 * 15, 20 * 60 * 15)
@@ -783,7 +785,7 @@ private fun registerListeners() {
         DataListener::class.java,
         EnderChestListener::class.java,
         ChatListener::class.java,
-        PlayerListener::class.java,
+        PlayerMarco::class.java,
         ProtectListener::class.java,
         PantsBundleShopButton::class.java,
         SwordBundleShopButton::class.java,
@@ -795,11 +797,14 @@ private fun registerListeners() {
         TradeListener::class.java,
         WarehouseListener::class.java,
         iSpigot::class.java,
-        HologramListener::class.java,
+        HologramMarco::class.java,
     )
     for (aClass in classes) {
         try {
             val o = aClass.getConstructor().newInstance()
+            if(o is HologramMarco){
+                ThePit.getInstance().hologramMarco = o
+            }
             Bukkit.getPluginManager().registerEvents(o as Listener, ThePit.getInstance())
         } catch (e: Exception) {
             e.printStackTrace()

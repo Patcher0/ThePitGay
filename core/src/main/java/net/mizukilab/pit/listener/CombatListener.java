@@ -27,13 +27,13 @@ import net.mizukilab.pit.item.type.mythic.MythicBowItem;
 import net.mizukilab.pit.item.type.mythic.MythicLeggingsItem;
 import net.mizukilab.pit.item.type.mythic.MythicSwordItem;
 import net.mizukilab.pit.map.kingsquests.item.Cherry;
-import net.mizukilab.pit.movement.PlayerMoveHandler;
+import net.mizukilab.pit.handlers.PlayerMoveHandler;
 import net.mizukilab.pit.parm.AutoRegister;
 import net.mizukilab.pit.parm.listener.IPlayerAssist;
 import net.mizukilab.pit.parm.listener.IPlayerBeKilledByEntity;
 import net.mizukilab.pit.parm.listener.IPlayerKilledEntity;
 import net.mizukilab.pit.parm.listener.IPlayerRespawn;
-import net.mizukilab.pit.runnable.ProfileLoadRunnable;
+import net.mizukilab.pit.handlers.ProfileLoadRunnable;
 import net.mizukilab.pit.util.*;
 import net.mizukilab.pit.util.chat.ActionBarUtil;
 import net.mizukilab.pit.util.chat.CC;
@@ -61,7 +61,6 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.metadata.MetadataValue;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
@@ -272,6 +271,7 @@ public class CombatListener implements Listener {
         event.getEntity().setNoDamageTicks(40);
         event.setDeathMessage(null);
         handlePlayerDeath(event, event.getEntity(), event.getEntity().getKiller(), true);
+        event.getEntity().setNoDamageTicks(0);
     }
 
     /**
@@ -1014,7 +1014,7 @@ public class CombatListener implements Listener {
                     //fixme: change to sound system
                     LzScheduler.runTaskWithFixedExecutingCount(5,10,6,(z) -> {
                         killer.playSound(beKilledPlayer.getLocation(), Sound.NOTE_PLING, 1, 0.1F + (0.5F * z));
-                        return false;
+                        return true;
                     });
                 }
             });

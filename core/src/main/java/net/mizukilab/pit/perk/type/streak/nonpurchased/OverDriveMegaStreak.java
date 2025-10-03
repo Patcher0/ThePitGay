@@ -191,8 +191,8 @@ public class OverDriveMegaStreak extends AbstractPerk implements Listener, IPlay
             if (myself.getHealth() > tier * 0.2) {
                 myself.setHealth(Math.max(0.1, myself.getHealth() - tier * 0.2));
             } else {
+                myself.setHealth(0);
                 cancel.set(true);
-                finalDamage.getAndAdd(9999);
             }
         }
     }

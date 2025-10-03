@@ -34,7 +34,7 @@ public class QuestButton extends Button {
     }
 
     private static boolean isNightQuest(PlayerProfile profile, QuestData quest) {
-        return profile.isNightQuestEnable() && TimeUtil.getMinecraftTick(quest.getStartTime()) > 12000;
+        return profile.isNightQuestEnable() && TimeUtil.getRealTimeToMCTick(quest.getStartTime()) > 12000;
     }
 
     @Override
@@ -102,12 +102,12 @@ public class QuestButton extends Button {
             lore.add("&7任务内容:");
             lore.add("  &7于&c附加条件&7下在规定时间内击杀指定数量玩家.");
             lore.add("&7附加条件:");
-            for (String desc : quest.getQuestDescription(level, profile.isNightQuestEnable() && TimeUtil.getMinecraftTick() > 12000)) {
+            for (String desc : quest.getQuestDescription(level, profile.isNightQuestEnable() && TimeUtil.getRealTimeToMCTick() > 12000)) {
                 lore.add("  " + desc);
             }
             lore.add(" ");
             lore.add("&7击杀要求: &a" + quest.getTotal(level) + " 不同玩家击杀");
-            if (profile.isNightQuestEnable() && TimeUtil.getMinecraftTick() > 12000) {
+            if (profile.isNightQuestEnable() && TimeUtil.getRealTimeToMCTick() > 12000) {
                 addNightTimeLore(lore);
                 addNightReward(lore);
             } else {

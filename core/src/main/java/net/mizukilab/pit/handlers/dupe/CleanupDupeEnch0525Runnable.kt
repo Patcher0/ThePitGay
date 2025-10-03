@@ -1,4 +1,4 @@
-package net.mizukilab.pit.runnable.dupe
+package net.mizukilab.pit.handlers.dupe
 
 import net.mizukilab.pit.item.IMythicItem
 import net.mizukilab.pit.util.MythicUtil

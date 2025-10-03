@@ -25,7 +25,7 @@ import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.item.type.mythic.MythicLeggingsItem;
 import net.mizukilab.pit.medal.impl.challenge.PizzaEventMedal;
-import net.mizukilab.pit.runnable.ClearRunnable;
+import net.mizukilab.pit.handlers.ClearRunnable;
 import net.mizukilab.pit.util.NameUtils;
 import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.Utils;

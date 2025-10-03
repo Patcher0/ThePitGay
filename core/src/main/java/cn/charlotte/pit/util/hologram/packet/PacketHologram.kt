@@ -141,6 +141,9 @@ class PacketHologram(var displayText: String, var loc: Location) : Parent {
     override fun removeTouchHandler(handler: TouchHandler) {
 
     }
+    override fun members(): Set<Player> {
+        return HashSet(hologram.users);
+    }
 
     override fun getTouchHandlers(): MutableCollection<TouchHandler> {
         TODO("Not yet implemented")
@@ -164,6 +167,10 @@ class PacketHologram(var displayText: String, var loc: Location) : Parent {
 
     override fun clearViewHandlers() {
 
+    }
+
+    override fun hide(player: Player?) {
+        this.hologram.hide(player,true);
     }
 
     override fun addLineBelow(text: String): Parent {

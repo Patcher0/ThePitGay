@@ -45,7 +45,7 @@ public final class TimeUtil {
     }
 
     //获取游戏内昼夜时间 (0 ~ 24000 其中0~12000为白天 12000~24000为黑夜)
-    public static long getMinecraftTick(long mills) {
+    public static long getRealTimeToMCTick(long mills) {
         //0~36min
         long time = mills % (36 * 60 * 1000);
         float percent;
@@ -57,8 +57,8 @@ public final class TimeUtil {
         return (long) (percent * 12000);
     }
 
-    public static long getMinecraftTick() {
-        return getMinecraftTick(System.currentTimeMillis());
+    public static long getRealTimeToMCTick() {
+        return getRealTimeToMCTick(System.currentTimeMillis());
     }
 
     public static Date getNextDayDate() {

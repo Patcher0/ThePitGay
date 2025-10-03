@@ -1,9 +1,8 @@
-package net.mizukilab.pit.runnable;
+package net.mizukilab.pit.handlers;
 
 import cn.charlotte.pit.data.PlayerProfile;
 import cn.charlotte.pit.util.hologram.Hologram;
 import cn.charlotte.pit.util.hologram.HologramAPI;
-import cn.hutool.core.collection.ConcurrentHashSet;
 import io.irina.backports.utils.SWMRHashTable;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,8 +18,6 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
-import org.spigotmc.SpigotConfig;
-import org.spigotmc.SpigotWorldConfig;
 
 import java.util.*;
 
@@ -93,36 +90,36 @@ public class Bounty extends BukkitRunnable {
             if (!player.hasPermission("pit.admin")) {
                 reviewers.remove(player);
             }
-            reviewers.removeIf(
-                    target -> {
-                        PlayerProfile playerProfileByUuid = PlayerProfile.getPlayerProfileByUuid(target.getUniqueId());
-                        PlayerProfile playerProfileByUuid2 = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
-                        if ((NewConfiguration.INSTANCE.getDynamicInvisible() &&
-                                (playerProfileByUuid.isInArena() != playerProfileByUuid2.isInArena()))) {
-                            return true;
-                        }
-
-                        float distance = PlayerUtil.getDistanceSQ(target, player);
-                        int viewDistance = dist;
-                        int value = viewDistance - 1;
-                        int i = Einstein.clampi(value,0,viewDistance) << 4;
-                        if (distance > (i * i)) {
-                            return true;
-                        }
-
-                        boolean bountyHiddenWhenNear = playerProfileByUuid
-                                .getPlayerOption().isBountyHiddenWhenNear();
-                        return bountyHiddenWhenNear && distance < 64;
-                    });
+            reviewers.removeIf(target -> shouldRemove(player,target));
             newHologram.spawn(reviewers);
             holograms.add(new HologramDisplay(newHologram, x, z));
 
             animationData.setSpawnCooldown(new Cooldown(650));
         }
     }
+    public boolean shouldRemove(Player player, Player in){
+        PlayerProfile playerProfileByUuid = PlayerProfile.getPlayerProfileByUuid(in.getUniqueId());
+        PlayerProfile playerProfileByUuid2 = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
+        if ((NewConfiguration.INSTANCE.getDynamicInvisible() &&
+                (playerProfileByUuid.isInArena() != playerProfileByUuid2.isInArena()))) {
+            return true;
+        }
+
+        float distance = PlayerUtil.getDistanceSQ(in, player);
+        int viewDistance = dist;
+        int value = viewDistance - 1;
+        int i = Einstein.clampi(value,0,viewDistance) << 4;
+        if (distance > (i * i)) {
+            return true;
+        }
+
+        boolean bountyHiddenWhenNear = playerProfileByUuid
+                .getPlayerOption().isBountyHiddenWhenNear();
+        return bountyHiddenWhenNear && distance < 64;
+    }
 
     @NotNull
-    private static List<HologramDisplay> getAndRemoveHologramData(Player player, AnimationData animationData) {
+    private List<HologramDisplay> getAndRemoveHologramData(Player player, AnimationData animationData) {
         List<HologramDisplay> holograms = animationData.getHolograms();
         holograms.removeIf(hologram -> {
             if (System.currentTimeMillis() > hologram.endTime) {
@@ -131,6 +128,11 @@ public class Bounty extends BukkitRunnable {
                 }
                 return hologram.hologram.isFullyDespawned();
             } else if(hologram.hologram.isSpawned()){
+                for (Player member : hologram.hologram.members()) {
+                    if(shouldRemove(player,member)){
+                        hologram.hologram.hide(member);
+                    }
+                }
                 Location location = player.getLocation().clone();
                 location.setX(location.getX() + hologram.boostX);
                 Hologram hologram1 = hologram.getHologram();
@@ -138,6 +140,7 @@ public class Bounty extends BukkitRunnable {
                 location.setY(location1.getY() + (0.05 * Math.max(1,NewConfiguration.INSTANCE.getBountyTickInterval())));
                 location.setZ(location.getZ() + hologram.boostZ);
                 hologram1.setLocation(location);
+
                 return false;
             }
             return false;

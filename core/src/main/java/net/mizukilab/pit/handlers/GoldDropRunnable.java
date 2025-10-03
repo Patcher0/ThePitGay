@@ -1,4 +1,4 @@
-package net.mizukilab.pit.runnable;
+package net.mizukilab.pit.handlers;
 
 import cn.charlotte.pit.ThePit;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedList;
 
 /**
  * @Author: EmptyIrony
@@ -20,7 +20,7 @@ import java.util.List;
 @Skip
 public class GoldDropRunnable extends BukkitRunnable {
 
-    private final ObjectArrayList<Item> itemGarbageList = new ObjectArrayList<>();
+    private final LinkedList<Item> itemGarbageList = new LinkedList<>();
     private long tick;
 
     @Override

@@ -1,5 +1,6 @@
 package cn.charlotte.pit.data;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
 
@@ -13,7 +14,7 @@ import java.util.UUID;
 @Getter
 public class LeaderBoardEntry {
 
-    private static List<LeaderBoardEntry> leaderBoardEntries = new ObjectArrayList<>();
+    private static Object2ObjectLinkedOpenHashMap<UUID,LeaderBoardEntry> leaderBoardEntries = new Object2ObjectLinkedOpenHashMap<>();
 
     private final String name;
     private final UUID uuid;
@@ -29,11 +30,11 @@ public class LeaderBoardEntry {
         this.prestige = prestige;
     }
 
-    public static List<LeaderBoardEntry> getLeaderBoardEntries() {
+    public static Object2ObjectLinkedOpenHashMap<UUID,LeaderBoardEntry> getLeaderBoardEntries() {
         return LeaderBoardEntry.leaderBoardEntries;
     }
 
-    public static void setLeaderBoardEntries(List<LeaderBoardEntry> leaderBoardEntries) {
+    public static void setLeaderBoardEntries(Object2ObjectLinkedOpenHashMap<UUID,LeaderBoardEntry> leaderBoardEntries) {
         LeaderBoardEntry.leaderBoardEntries = leaderBoardEntries;
     }
 

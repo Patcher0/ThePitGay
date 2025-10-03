@@ -9,8 +9,7 @@ import net.jitse.npclib.nms.v1_8_R3.NPC_v1_8_R3;
 import net.mizukilab.pit.medal.impl.challenge.ObsidianBreakMedal;
 import net.mizukilab.pit.npc.AbstractPitNPC;
 import net.mizukilab.pit.parm.AutoRegister;
-import net.mizukilab.pit.runnable.ClearRunnable;
-import net.mizukilab.pit.util.Log;
+import net.mizukilab.pit.handlers.ClearRunnable;
 import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.Utils;
 import net.mizukilab.pit.util.chat.CC;
@@ -33,7 +32,6 @@ import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 

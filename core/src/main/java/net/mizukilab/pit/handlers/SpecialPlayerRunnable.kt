@@ -1,4 +1,4 @@
-package net.mizukilab.pit.runnable
+package net.mizukilab.pit.handlers
 
 import net.mizukilab.pit.util.isSpecial
 import nya.Skip

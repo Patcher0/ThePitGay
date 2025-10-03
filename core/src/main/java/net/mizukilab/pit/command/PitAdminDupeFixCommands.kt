@@ -8,8 +8,8 @@ import dev.rollczi.litecommands.annotations.command.Command
 import dev.rollczi.litecommands.annotations.context.Context
 import dev.rollczi.litecommands.annotations.execute.Execute
 import dev.rollczi.litecommands.annotations.permission.Permission
-import net.mizukilab.pit.runnable.dupe.CleanupDupeEnch0525Runnable
-import net.mizukilab.pit.runnable.dupe.CleanupDupeEnchTheKMGodRunnable
+import net.mizukilab.pit.handlers.dupe.CleanupDupeEnch0525Runnable
+import net.mizukilab.pit.handlers.dupe.CleanupDupeEnchTheKMGodRunnable
 import net.mizukilab.pit.util.inventory.InventoryUtil
 import net.mizukilab.pit.util.item.ItemUtil
 import org.bukkit.Material

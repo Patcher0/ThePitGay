@@ -33,8 +33,8 @@ import net.mizukilab.pit.menu.quest.main.QuestMenu
 import net.mizukilab.pit.menu.trade.ShowInvBackupButton
 import net.mizukilab.pit.menu.trade.TradeManager
 import net.mizukilab.pit.menu.trade.TradeMenu
-import net.mizukilab.pit.runnable.LeaderBoardRunnable
-import net.mizukilab.pit.runnable.RebootRunnable.RebootTask
+import net.mizukilab.pit.handlers.LeaderBoardRunnable
+import net.mizukilab.pit.handlers.RebootRunnable.RebootTask
 import net.mizukilab.pit.util.PlayerUtil
 import net.mizukilab.pit.util.Utils
 import net.mizukilab.pit.util.chat.CC

@@ -28,7 +28,7 @@ import net.mizukilab.pit.item.type.SpireArmor;
 import net.mizukilab.pit.item.type.SpireSword;
 import net.mizukilab.pit.item.type.mythic.MythicLeggingsItem;
 import net.mizukilab.pit.medal.impl.challenge.SpireFloorMedal;
-import net.mizukilab.pit.movement.PlayerMoveHandler;
+import net.mizukilab.pit.handlers.PlayerMoveHandler;
 import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.Utils;
 import net.mizukilab.pit.util.chat.CC;

@@ -6,6 +6,7 @@ import cn.charlotte.pit.data.operator.IOperator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import net.mizukilab.pit.util.Log;
@@ -30,7 +31,7 @@ public class PackedOperator implements IOperator {
     ExecutionPolicy policy;
     ThePit pit;
     long lastHeartBeat = 0;
-
+    @Getter
     Player lastBoundPlayer = null;
     @NotNull
     PlayerProfile profile = PlayerProfile.NONE_PROFILE;

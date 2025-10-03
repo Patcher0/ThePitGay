@@ -21,9 +21,8 @@ import net.mizukilab.pit.events.impl.QuickMathEvent
 import net.mizukilab.pit.item.AbstractPitItem
 import net.mizukilab.pit.item.MythicColor
 import net.mizukilab.pit.medal.impl.challenge.hidden.KaboomMedal
-import net.mizukilab.pit.runnable.RebootRunnable.RebootTask
+import net.mizukilab.pit.handlers.RebootRunnable.RebootTask
 import net.mizukilab.pit.sendMessage
-import net.mizukilab.pit.util.Log
 import net.mizukilab.pit.util.MythicUtil
 import net.mizukilab.pit.util.PlusPlayer
 import net.mizukilab.pit.util.Utils
