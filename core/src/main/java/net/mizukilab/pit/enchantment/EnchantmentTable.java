@@ -158,7 +158,7 @@ public class EnchantmentTable {
                     if(mythicItem.isRage()){
                         chance = 0D;
                     }
-                    var result = RandomUtil.randEnchMultipleApplyRNPrefer(3,chance, min, clampi, enchantments1,normal,rare,0.4,(a, i) -> i.getMaxEnchantLevel() > a);
+                    var result = RandomUtil.randEnchMultipleApplyRNPrefer(3,chance, min, clampi, enchantments1,normal,rare,0.6,(a, i) -> i.getMaxEnchantLevel() > a);
                     return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                 },
                 (chance, enchMap, mythicItem) -> TIER_1.useBook.invoke(chance, enchMap, mythicItem),
