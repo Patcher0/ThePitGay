@@ -41,7 +41,6 @@ public class ItemUtil {
             UUID uuidObj = getUUIDObj(item);
             if (uuidObj != null) {
                 setUUIDObj(extra, uuidObj);
-
                 return uuidObj.hashCode();
             } else {
                 return -1;
@@ -73,6 +72,18 @@ public class ItemUtil {
             updateMagic(compound,uuid);
         }
     }
+    public static void checkAndUpdateMagic(ItemStack stack,UUID uuid){
+        NBTTagCompound extra = getExtra(stack);
+        if(extra != null){
+            long up = getLong(extra, "up");
+            long d0 = getLong(extra, "do");
+            //        tag.setLong("up",PublicUtil.getMostSignificantBits(uuidseq));
+            //        tag.setLong("do",PublicUtil.getLeastSignificantBits(uuidseq));
+            if(up != uuid.getMostSignificantBits() || d0 != uuid.getLeastSignificantBits()) {
+                updateMagic(extra,uuid);
+            }
+        }
+    }
     public static long getLong(NBTTagCompound tag,String what) {
         return tag.getLong(what);
     }
@@ -81,6 +92,10 @@ public class ItemUtil {
         tag.set("up",new NBTTagLong(PublicUtil.getMostSignificantBits(uuidseq)));
         tag.set("do",new NBTTagLong(PublicUtil.getLeastSignificantBits(uuidseq)));
 
+    }
+    public static void updateMagic(NBTTagCompound tag,UUID uuidseq) {
+        tag.set("up",new NBTTagLong(uuidseq.getMostSignificantBits()));
+        tag.set("do",new NBTTagLong(uuidseq.getLeastSignificantBits()));
     }
     public static void setVer(ItemStack stack, String ver) {
         NBTTagCompound extra = getExtra(stack);

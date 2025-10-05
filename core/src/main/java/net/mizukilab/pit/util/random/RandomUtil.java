@@ -181,6 +181,50 @@ public class RandomUtil {
         }
         return a;
     }
+    public static <T> List<T> randEnchMultipleApplyRNPrefer(int maxEnch,double chance,int min,int maxL2,Object2IntMap<T> tM,List<T> normalInput,List<T> rare,double preferChance,Function2<Integer,T,Boolean> predicate) {
+        maxL2 = rand(maxL2, min);
+        List<T> a = new LinkedList<>();
+        List<T> normal;
+        routine1:
+        for (int z = 0; z < maxL2; z++) {
+            if (hasSuccessfullyByChance(chance)) {
+                normal = rare;
+            } else {
+                normal = normalInput;
+            }
+
+            if (tM.size() >= maxEnch || hasSuccessfullyByChance(preferChance)) {
+                var entries = tM.object2IntEntrySet();
+                var iterator = entries.iterator();
+
+                while (iterator.hasNext()) {
+                    Map.Entry<T, Integer> next = iterator.next();
+                    if (!predicate.invoke(next.getValue(), next.getKey())) {
+                        continue;
+                    }
+                    next.setValue(next.getValue() + 1);
+                    a.add(next.getKey());
+                    continue routine1;
+                }
+                System.out.println("Ignoring, 333 enchant");
+            } else {
+                int index = RandomUtil.random.nextInt(normal.size());
+                T t;
+                while (true) {
+                    t = normal.get(index);
+                    int anInt = tM.getOrDefault(t, 0);
+                    if (!predicate.invoke(anInt + 1, t)) {
+                        index = (index + 1) % normal.size();
+                        continue;
+                    }
+                    break;
+                }
+                tM.compute(t, (i, val) -> val == null ? 1 : val + 1);
+                a.add(t);
+            }
+        }
+        return a;
+    }
     public static <T> List<T> randEnchMultipleApplyRN(int maxEnch,double chance,int min,int maxL2,Object2IntMap<T> tM,List<T> normalInput,List<T> rare,Function2<Integer,T,Boolean> predicate) {
         maxL2 = rand(maxL2, min);
         List<T> a = new LinkedList<>();

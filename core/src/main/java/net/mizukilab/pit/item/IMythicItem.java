@@ -2,10 +2,7 @@ package net.mizukilab.pit.item;
 
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.sub.EnchantmentRecord;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,19 +16,24 @@ import net.mizukilab.pit.item.type.mythic.MagicFishingRod;
 import net.mizukilab.pit.item.type.mythic.MythicBowItem;
 import net.mizukilab.pit.item.type.mythic.MythicLeggingsItem;
 import net.mizukilab.pit.item.type.mythic.MythicSwordItem;
+import net.mizukilab.pit.util.Einstein;
 import net.mizukilab.pit.util.Utils;
 import net.mizukilab.pit.util.chat.RomanUtil;
 import net.mizukilab.pit.util.item.ItemBuilder;
+import net.mizukilab.pit.util.item.ItemUtil;
 import net.mizukilab.pit.util.random.RandomUtil;
 import nya.Skip;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static net.mizukilab.pit.enchantment.rarity.EnchantmentRarity.RAGE_RARE;
 
 /**
  * @Author: EmptyIrony
@@ -422,6 +424,57 @@ public abstract class IMythicItem extends AbstractPitItem {
                     this.tier = extra.getInt("tier");
                 }
             }
+        }
+        enchCheck(item);
+    }
+    static boolean enchCheck = Boolean.getBoolean("pitCheck");
+    public void checkVersion(ItemStack item){
+        NBTTagCompound extra = ItemUtil.getExtra(item);
+        if(extra == null){
+            return;
+        }
+        boolean a = extra.getBoolean("b");
+        if(!a){
+            enchCheck(item);
+            extra = ItemUtil.getExtra(item);
+            if(extra != null) {
+                extra.setBoolean("b", true);
+            }
+        }
+    }
+    public void enchCheck(ItemStack stack) {
+        if(!enchCheck){
+            return;
+        }
+        boolean changed = false;
+        int count = 0;
+        int rageCount = 0;
+        int maxEnchCount = 8;
+        ObjectIterator<Map.Entry<AbstractEnchantment, Integer>> iterator = this.enchantments.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<AbstractEnchantment, Integer> next = iterator.next();
+            Integer value = next.getValue();
+            if (next.getKey().getRarity() == EnchantmentRarity.RAGE || next.getKey().getRarity() == RAGE_RARE) {
+                rageCount++;
+                if (rageCount >= 2) {
+                    iterator.remove();
+                    changed = true;
+                    continue;
+                }
+            }
+
+            count += value;
+
+            if (count > maxEnchCount) {
+                changed = true;
+                int i = value - maxEnchCount;
+                next.setValue(Einstein.clampi(value - i, 1, value));
+            }
+        }
+        if (changed) {
+            ItemStack itemStack = toItemStack();
+            ItemMeta itemMeta = itemStack.getItemMeta();
+            stack.setItemMeta(itemMeta);
         }
     }
 

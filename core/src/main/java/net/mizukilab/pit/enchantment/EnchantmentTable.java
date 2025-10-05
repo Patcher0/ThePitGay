@@ -116,10 +116,9 @@ public class EnchantmentTable {
                         mythicItem.getEnchantments().put(abstractEnchantment, RandomUtil.rand(2, 1));
                         return abstractEnchantment.getRarity() == EnchantmentRarity.RAGE_RARE;
                     } else {
-                        var abstractEnchantments = enchMap.get(EnchantmentRarity.NORMAL);
-                        RandomUtil.randEnchMultipleApply(2, abstractEnchantments, mythicItem.getEnchantments()
-                                , (a, i) -> i.getMaxEnchantLevel() > a);
-                        return false;
+                        var normal = enchMap.get(EnchantmentRarity.NORMAL);
+                        var rare = enchMap.get(EnchantmentRarity.RARE);
+                        return RandomUtil.randEnchMultipleApplyRN(2,chance,1,2,mythicItem.getEnchantments(),normal,rare,(a, i) -> i.getMaxEnchantLevel() > a).stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                     }
                 },
                 (chance, enchMap, mythicItem) -> {
@@ -154,21 +153,12 @@ public class EnchantmentTable {
                         count += value;
                     }
                     //9
-                    int clampi = Einstein.clampi(9 - count, 1, 3);
-                    int min = Math.min(3,clampi);
-                    List<AbstractEnchantment>[] normals;
-                    List<AbstractEnchantment>[] rares;
+                    int clampi = Einstein.clampi(8 - count, 1, 3);
+                    int min = Math.min(2,clampi);
                     if(mythicItem.isRage()){
-                        ObjectArrayList<AbstractEnchantment> rareRage = enchMap.get(EnchantmentRarity.RAGE_RARE);
-                        ObjectArrayList<AbstractEnchantment> normalRage = enchMap.get(EnchantmentRarity.RAGE);
-                        normals = new List[]{normalRage,normal};
-                        rares = new List[]{rareRage,rareRage};
-                    } else {
-                        normals = new List[]{normal};
-                        rares = new List[]{rare};
+                        chance = 0D;
                     }
-                    var result = RandomUtil.randEnchMultipleApplyRNMultiple(3,chance, min, clampi, enchantments1,
-                            (a, i) -> i.getMaxEnchantLevel() > a,rares,normals);
+                    var result = RandomUtil.randEnchMultipleApplyRNPrefer(3,chance, min, clampi, enchantments1,normal,rare,0.4,(a, i) -> i.getMaxEnchantLevel() > a);
                     return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                 },
                 (chance, enchMap, mythicItem) -> TIER_1.useBook.invoke(chance, enchMap, mythicItem),
@@ -180,18 +170,41 @@ public class EnchantmentTable {
                             item.maxLive = RandomUtil.helpMeToChooseOneInt(40, 45, 50, 55, 60);
                         }
                     } else  {
-                        item.maxLive = RandomUtil.rand(20, 11);
+                        item.maxLive = RandomUtil.rand(16, 11);
                     }
                 }),
         TIER_3(3,
-                (chance, enchMap, mythicItem) -> TIER_2.normal.invoke(chance, enchMap, mythicItem),
+                (chance, enchMap, mythicItem) -> {
+                    if (mythicItem.isDark()) {
+                        Object2IntOpenHashMap<AbstractEnchantment> enchantments1 = mythicItem.getEnchantments();
+                        ObjectArrayList<AbstractEnchantment> rage = enchMap.get(EnchantmentRarity.DARK_RARE);
+                        ObjectArrayList<AbstractEnchantment> normal = enchMap.get(EnchantmentRarity.DARK_NORMAL);
+                        AbstractEnchantment abstractEnchantment = RandomUtil.chooseAndApplyMultipleTypeRN(chance, true, enchantments1, 1, normal, rage);
+                        return abstractEnchantment.getRarity() == EnchantmentRarity.DARK_RARE;
+                    }
+                    Object2IntOpenHashMap<AbstractEnchantment> enchantments1 = mythicItem.getEnchantments();
+                    ObjectArrayList<AbstractEnchantment> rare = enchMap.get(EnchantmentRarity.RARE);
+                    ObjectArrayList<AbstractEnchantment> normal = enchMap.get(EnchantmentRarity.NORMAL);
+                    int count = 0;
+                    for (Integer value : enchantments1.values()) {
+                        count += value;
+                    }
+                    //9
+                    int clampi = Einstein.clampi(8 - count, 1, 3);
+                    int min = Math.min(3,clampi);
+                    if(mythicItem.isRage()){
+                        chance = 0D;
+                    }
+                    var result = RandomUtil.randEnchMultipleApplyRN(3,chance, min, clampi, enchantments1,normal,rare,(a, i) -> i.getMaxEnchantLevel() > a);
+                    return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
+                },
                 (chance, enchMap, mythicItem) -> TIER_1.useBook.invoke(chance, enchMap, mythicItem),
                 (item) -> {
                     if (!item.isDark()) {
                         if (RandomUtil.hasSuccessfullyByChance(0.01)) { //Artifact Prefix -> 100 Lives
                             item.setMaxLive(100);
                         } else {
-                            item.setMaxLive(RandomUtil.rand(35, 21)); //16-23
+                            item.setMaxLive(RandomUtil.rand(23, 21)); //16-23
                         }
                     }
                 });
@@ -227,9 +240,9 @@ public class EnchantmentTable {
             boolean completed = false;
             boolean announce = false;
 
-            double chance = NewConfiguration.INSTANCE.getChance(enq.getPlayer(), item.getColor(), item.getTier());
             try {
                 item.tier++;
+                double chance = NewConfiguration.INSTANCE.getChance(enq.getPlayer(), item.getColor(), item.getTier());
                 if (!item.canUseBook() || enchantingBook == null) {
                     announce = normal.invoke(chance, level, item);
                 } else {

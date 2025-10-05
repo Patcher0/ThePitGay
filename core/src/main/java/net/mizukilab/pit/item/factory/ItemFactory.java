@@ -21,7 +21,7 @@ public class ItemFactory implements IItemFactory {
 
     public boolean clientSide = false;
     //这里是存玩家的
-    ItemGlobalReference theReference = new ItemGlobalReference(() -> Bukkit.getOnlinePlayers().size() * 60L);
+    ItemGlobalReference theReference = new ItemGlobalReference(() -> Bukkit.getOnlinePlayers().size() * 120L);
 
     //简易LRU
     public boolean hasItem(UUID uuid) {
@@ -85,12 +85,14 @@ public class ItemFactory implements IItemFactory {
         }
         IMythicItem iMythicItem = getIMythicItem(hashCodeForUUID);
 
+
         if (iMythicItem == null || clientSide) { //会导致不掉命bug, 有点厉害
             runnable.run();
 
             return getIMythicItem0(stack, internalName,clientSide);
         } else {
             runnable.run();
+            iMythicItem.checkVersion(stack);
             return iMythicItem;
         }
 
@@ -136,7 +138,6 @@ public class ItemFactory implements IItemFactory {
 
         IMythicItem mythicItem = Utils.getMythicItem0(stack, internalName);
         if (mythicItem != null) {
-
             if (mythicItem.uuid != null) {
                 boolean sameAsDefault = mythicItem.uuid.equals(IMythicItem.getDefUUID());
                 if(!clientSide) {
@@ -145,6 +146,7 @@ public class ItemFactory implements IItemFactory {
                     }
                 }
                 if(!sameAsDefault){
+                    ItemUtil.checkAndUpdateMagic(stack,mythicItem.uuid);
                     theReference.putValue(mythicItem.uuid, mythicItem);
                 }
             } else {
