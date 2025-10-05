@@ -13,6 +13,7 @@ import org.bukkit.World;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -95,6 +96,31 @@ public class RandomUtil {
             break;
         }
     }
+    public static <T> void chooseAndApplyChecked(boolean unique, List<T> ench, Object2IntMap<T> t, int level, int maxEnch, Function<T,Integer> maxEnchant) {
+        int size = ench.size();
+        if(t.size() >= maxEnch){
+            for (Object2IntMap.Entry<T> tEntry : t.object2IntEntrySet()) {
+                int maxEnchLevel = maxEnchant.apply(tEntry.getKey());
+                int clampi = Einstein.clampi(level, 0, maxEnchLevel);
+                if(tEntry.getIntValue() >= clampi){
+                    continue;
+                }
+                tEntry.setValue(clampi);
+                return;
+            }
+        }
+        int i1 = random.nextInt(size);
+        while (true) {
+            T t1 = ench.get(i1);
+            if (unique && t.containsKey(t1)) {
+
+                i1 = (i1 + 1) % size;
+                continue;
+            }
+            t.put(t1, level);
+            break;
+        }
+    }
     public static <T> int chooseAndApplyMultipleType(boolean unique, Object2IntMap<T> t,int level,List<T>... ench) {
         int i = random.nextInt(ench.length);
         List<T> ench1 = ench[i];
@@ -165,6 +191,50 @@ public class RandomUtil {
                 normal = rare;
             } else {
                 normal = normalInput;
+            }
+
+            if (tM.size() >= maxEnch) {
+                var entries = tM.object2IntEntrySet();
+                var iterator = entries.iterator();
+
+                while (iterator.hasNext()) {
+                    Map.Entry<T, Integer> next = iterator.next();
+                    if (!predicate.invoke(next.getValue(), next.getKey())) {
+                        continue;
+                    }
+                    next.setValue(next.getValue() + 1);
+                    a.add(next.getKey());
+                    continue routine1;
+                }
+                System.out.println("Ignoring, 333 enchant");
+            } else {
+                int index = RandomUtil.random.nextInt(normal.size());
+                T t;
+                while (true) {
+                    t = normal.get(index);
+                    int anInt = tM.getOrDefault(t, 0);
+                    if (!predicate.invoke(anInt + 1, t)) {
+                        index = (index + 1) % normal.size();
+                        continue;
+                    }
+                    break;
+                }
+                tM.compute(t, (i, val) -> val == null ? 1 : val + 1);
+                a.add(t);
+            }
+        }
+        return a;
+    }
+    public static <T> List<T> randEnchMultipleApplyRNMultiple(int maxEnch,double chance,int min,int maxL2,Object2IntMap<T> tM,Function2<Integer,T,Boolean> predicate,List<T>[] rareInputs,List<T>[] normalInputs) {
+        maxL2 = rand(maxL2, min);
+        List<T> a = new LinkedList<>();
+        List<T> normal;
+        routine1:
+        for (int z = 0; z < maxL2; z++) {
+            if (hasSuccessfullyByChance(chance)) {
+                normal = rareInputs[random.nextInt(rareInputs.length)];
+            } else {
+                normal = normalInputs[random.nextInt(normalInputs.length)];
             }
 
             if (tM.size() >= maxEnch) {

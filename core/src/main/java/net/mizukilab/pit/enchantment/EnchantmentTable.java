@@ -27,6 +27,7 @@ import net.mizukilab.pit.util.random.RandomUtil;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiFunction;
@@ -126,15 +127,12 @@ public class EnchantmentTable {
                         throw new IllegalEnchantInputException("Can't enchant RD mythicItem with mythBook");
                     }
                     var abstractEnchantments = enchMap.get(EnchantmentRarity.RARE);
-                    RandomUtil.chooseAndApply(true, abstractEnchantments, mythicItem.getEnchantments(), 3);
-
+                    RandomUtil.chooseAndApplyChecked(true, abstractEnchantments, mythicItem.getEnchantments(), 3,3, AbstractEnchantment::getMaxEnchantLevel);
                     return true;
                 }
                 , (item) -> {
             if (item.isDark()) {
                 item.maxLive = RandomUtil.helpMeToChooseOneInt(20, 25, 30, 35);
-            } else if (item.isRage()) {
-                item.maxLive = RandomUtil.helpMeToChooseOneInt(4, 5, 6, 7, 8, 9);
             } else {
                 item.maxLive = RandomUtil.rand(10, 3);
             }
@@ -149,19 +147,29 @@ public class EnchantmentTable {
                         return abstractEnchantment.getRarity() == EnchantmentRarity.DARK_RARE;
                     }
                     Object2IntOpenHashMap<AbstractEnchantment> enchantments1 = mythicItem.getEnchantments();
-                    ObjectArrayList<AbstractEnchantment> rage = enchMap.get(EnchantmentRarity.RARE);
+                    ObjectArrayList<AbstractEnchantment> rare = enchMap.get(EnchantmentRarity.RARE);
                     ObjectArrayList<AbstractEnchantment> normal = enchMap.get(EnchantmentRarity.NORMAL);
                     int count = 0;
                     for (Integer value : enchantments1.values()) {
                         count += value;
                     }
                     //9
-
                     int clampi = Einstein.clampi(9 - count, 1, 3);
                     int min = Math.min(3,clampi);
-                    var result = RandomUtil.randEnchMultipleApplyRN(3,chance, min, clampi, enchantments1, normal, rage,
-                            (a, i) -> i.getMaxEnchantLevel() > a);
-                    return result.stream().anyMatch(i -> i.getRarity() == EnchantmentRarity.RARE);
+                    List<AbstractEnchantment>[] normals;
+                    List<AbstractEnchantment>[] rares;
+                    if(mythicItem.isRage()){
+                        ObjectArrayList<AbstractEnchantment> rareRage = enchMap.get(EnchantmentRarity.RAGE_RARE);
+                        ObjectArrayList<AbstractEnchantment> normalRage = enchMap.get(EnchantmentRarity.RAGE);
+                        normals = new List[]{normalRage,normal};
+                        rares = new List[]{rareRage,rareRage};
+                    } else {
+                        normals = new List[]{normal};
+                        rares = new List[]{rare};
+                    }
+                    var result = RandomUtil.randEnchMultipleApplyRNMultiple(3,chance, min, clampi, enchantments1,
+                            (a, i) -> i.getMaxEnchantLevel() > a,rares,normals);
+                    return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                 },
                 (chance, enchMap, mythicItem) -> TIER_1.useBook.invoke(chance, enchMap, mythicItem),
                 (item) -> {
@@ -171,19 +179,19 @@ public class EnchantmentTable {
                         } else {
                             item.maxLive = RandomUtil.helpMeToChooseOneInt(40, 45, 50, 55, 60);
                         }
-                    } else if (!item.isRage()) {
-                        item.maxLive = RandomUtil.rand(10, 3);
+                    } else  {
+                        item.maxLive = RandomUtil.rand(20, 11);
                     }
                 }),
         TIER_3(3,
                 (chance, enchMap, mythicItem) -> TIER_2.normal.invoke(chance, enchMap, mythicItem),
                 (chance, enchMap, mythicItem) -> TIER_1.useBook.invoke(chance, enchMap, mythicItem),
                 (item) -> {
-                    if (!(item.isDark() || item.isRage())) {
+                    if (!item.isDark()) {
                         if (RandomUtil.hasSuccessfullyByChance(0.01)) { //Artifact Prefix -> 100 Lives
                             item.setMaxLive(100);
                         } else {
-                            item.setMaxLive(RandomUtil.rand(16, 7)); //16-23
+                            item.setMaxLive(RandomUtil.rand(35, 21)); //16-23
                         }
                     }
                 });
@@ -222,7 +230,6 @@ public class EnchantmentTable {
             double chance = NewConfiguration.INSTANCE.getChance(enq.getPlayer(), item.getColor(), item.getTier());
             try {
                 item.tier++;
-                System.out.println(item.tier);
                 if (!item.canUseBook() || enchantingBook == null) {
                     announce = normal.invoke(chance, level, item);
                 } else {
@@ -231,14 +238,13 @@ public class EnchantmentTable {
                     item.boostedByBook = true;
                 }
 
-                System.out.println("COMPLETED");
                 completed = true;
             } catch (IllegalEnchantInputException e) {
                 enq.fail();
                 e.printStackTrace();
             } catch (Throwable t) {
                 t.printStackTrace();
-            }finally {
+            } finally {
                 int lastMaxLive = item.maxLive;
 
                 post.accept(item);
@@ -247,8 +253,6 @@ public class EnchantmentTable {
                 } else {
                     item.setLive(item.getMaxLive());
                 }
-
-                System.out.println(item.tier);
                 if (completed) {
                     enq.complete(item, true, announce);
                 }

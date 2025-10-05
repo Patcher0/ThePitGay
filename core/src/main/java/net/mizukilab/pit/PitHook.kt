@@ -163,7 +163,7 @@ object PitHook {
         Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), {
             ThePit.getInstance().enchTable.reload();
             loaded = true
-        }, 40L)
+        }, 100L)
 
     }
 

@@ -49,7 +49,12 @@ public class Utils {
     ) {
         CraftPlayer craftPlayer = (CraftPlayer) player;
         World world = craftPlayer.getHandle().world;
+
         if(world instanceof WorldServer e){
+            EntityTrackerEntry entityTrackerEntry = e.tracker.trackedEntities.get(craftPlayer.getEntityId());
+            if(entityTrackerEntry == null){
+                return;
+            }
             PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(
                     EnumParticle.REDSTONE,
                     true,
@@ -62,7 +67,6 @@ public class Utils {
                     1.0f,
                     0
             );
-            EntityTrackerEntry entityTrackerEntry = e.tracker.trackedEntities.get(craftPlayer.getEntityId());
             entityTrackerEntry.broadcastIncludingSelf(packet);
         }
     }

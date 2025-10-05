@@ -3,6 +3,7 @@ package net.mizukilab.pit.enchantment.runnable;
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import net.mizukilab.pit.config.NewConfiguration;
@@ -298,8 +299,7 @@ public class AnimationRunnable extends BukkitRunnable {
         }
     }
 
-    @Getter
-    @Setter
+    @Data
     public static class AnimationData {
 
         private final Player player;
@@ -313,25 +313,13 @@ public class AnimationRunnable extends BukkitRunnable {
         public void reset() {
             animationTick = 0;
             startEnchanting = false;
+            end = true;
             finished = false;
         }
 
         public AnimationData(Player player) {
-            Thread.dumpStack();
             this.player = player;
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            AnimationData data = (AnimationData) o;
-            return Objects.equals(player.getUniqueId(), data.player.getUniqueId());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(player.getUniqueId());
-        }
     }
 }

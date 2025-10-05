@@ -202,7 +202,7 @@ public class MythicWellMenu extends Menu {
                             .build(), true));
                 }
             }
-        } else {
+        } else if(animationData.isEnd()){
             for (int i = 0; i < ANIMATIONS_SLOT.length; i++) {
                 int currentPosition = (animationData.getAnimationTick() / 4) % 8;
                 if (currentPosition == i) {
