@@ -196,14 +196,15 @@ public class GameEffectListener implements Listener {
 
         PlayerProfile playerProfileByUuid = PlayerProfile.getPlayerProfile(damagerEntity);
         Set<AbstractPerk> disabledPerks = instance.getDisabledPerks();
+        NewConfiguration instance1 = NewConfiguration.INSTANCE;
         if (damagerEntity instanceof Player) {
             damager = (Player) damagerEntity;
 
             if (PlayerUtil.critical(damager)){
                 boostDamage.set(1.5);
             }
-            if (NewConfiguration.INSTANCE.getNoobProtect() && playerProfileByUuid.getPrestige() <= 0 && playerProfileByUuid.getLevel() < NewConfiguration.INSTANCE.getNoobProtectLevel()) {
-                boostDamage.getAndAdd(NewConfiguration.INSTANCE.getNoobDamageBoost() - 1);
+            if (instance1.getNoobProtect() && playerProfileByUuid.getPrestige() <= 0 && playerProfileByUuid.getLevel() < instance1.getNoobProtectLevel()) {
+                boostDamage.getAndAdd(instance1.getNoobDamageBoost() - 1);
             }
             //TODO perk handlers
             //perk handler
@@ -239,8 +240,8 @@ public class GameEffectListener implements Listener {
         } else if (damagerEntity instanceof Projectile projectile && projectile.getShooter() instanceof Player) {
             damager = (Player) (projectile.getShooter());
 
-            if (NewConfiguration.INSTANCE.getNoobProtect() && playerProfileByUuid.getPrestige() <= 0 && playerProfileByUuid.getLevel() < NewConfiguration.INSTANCE.getNoobProtectLevel()) {
-                boostDamage.getAndAdd(NewConfiguration.INSTANCE.getNoobDamageBoost() - 1);
+            if (instance1.getNoobProtect() && playerProfileByUuid.getPrestige() <= 0 && playerProfileByUuid.getLevel() < instance1.getNoobProtectLevel()) {
+                boostDamage.getAndAdd(instance1.getNoobDamageBoost() - 1);
             }
 
             for (IPlayerShootEntity ins : perkFactory.getPlayerShootEntities()) {
@@ -277,9 +278,9 @@ public class GameEffectListener implements Listener {
             if (!npc) {//针对npc不生效。
                 PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(entity.getUniqueId());
 
-                if (NewConfiguration.INSTANCE.getNoobProtect() && profile.getPrestige() <= 0
-                        && profile.getLevel() < NewConfiguration.INSTANCE.getNoobProtectLevel()) {
-                    boostDamage.getAndAdd(NewConfiguration.INSTANCE.getNoobDamageReduce() - 1);
+                if (instance1.getNoobProtect() && profile.getPrestige() <= 0
+                        && profile.getLevel() < instance1.getNoobProtectLevel()) {
+                    boostDamage.getAndAdd(instance1.getNoobDamageReduce() - 1);
                 }
                 if (PlayerUtil.isEquippingAngelChestplate(player)) {
                     boostDamage.getAndAdd(-0.1);
@@ -319,8 +320,9 @@ public class GameEffectListener implements Listener {
                     processQuestDmged(event, player, currentQuest1, finalDamage, boostDamage, cancel);
                 }
                 if (damager != null) {
-                    new PitDamagePlayerEvent(event, damager, event.getFinalDamage(), event.getDamage(), player).callEvent();
-                    new PitDamageEvent(event, damager, event.getFinalDamage(), event.getDamage()).callEvent();
+                    double finalDamage1 = event.getFinalDamage();
+                    new PitDamagePlayerEvent(event, damager, finalDamage1, event.getDamage(), player).callEvent();
+                    new PitDamageEvent(event, damager, finalDamage1, event.getDamage()).callEvent();
                     RangedStreamLineList<KillRecap.DamageData> damageLogs = playerProfileByUuid.getKillRecap().getDamageLogs();
                     if (!damageLogs.isEmpty()) {
                         damageLogs.peekFirst().setBoostDamage(boostDamage.get());
@@ -332,7 +334,7 @@ public class GameEffectListener implements Listener {
             EntityPlayer handle = ((CraftPlayer) player).getHandle();
             if (damager != null) {
                 handle.killer = ((CraftPlayer) damager).getHandle();
-                if(NewConfiguration.INSTANCE.getNo1_8Effect()){
+                if(instance1.getNo1_8Effect()){
                     handle.lastDamage = Float.MAX_VALUE;
                 }
             }

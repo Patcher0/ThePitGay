@@ -12,6 +12,7 @@ import net.mizukilab.pit.enchantment.rarity.EnchantmentRarity;
 import net.mizukilab.pit.item.IMythicItem;
 import net.mizukilab.pit.parm.AutoRegister;
 import net.mizukilab.pit.util.PlayerUtil;
+import net.mizukilab.pit.util.Utils;
 import net.mizukilab.pit.util.cooldown.Cooldown;
 import nya.Skip;
 import org.bukkit.Location;
@@ -95,6 +96,9 @@ public class TrotEnchant extends AbstractEnchantment implements MovementHandler,
                 default:
                     break;
             }
+
+            Location location = player.getLocation().add(0.0, 0.5, 0.0);
+            Utils.sendRedstoneParticle(player, location, 255f, 255f, 255f);
         }
         speed.set(targetSpeed);
     }
@@ -103,39 +107,4 @@ public class TrotEnchant extends AbstractEnchantment implements MovementHandler,
     public void handleUpdateRotation(Player player, Location location, Location location1, PacketPlayInFlying packetPlayInFlying) {
     }
 
-    @EventHandler
-    public void onPlayerMoveEvent(PlayerMoveEvent event) {
-        Player player = event.getPlayer();
-        boolean shouldIgnoreEnchant = PlayerUtil.shouldIgnoreEnchant(player);
-        int enchantLevel = getItemEnchantLevel(player.getInventory().getLeggings());
-        Location location = player.getLocation().add(0.0, 0.5, 0.0);
-        if (enchantLevel < 0) return;
-        if (shouldIgnoreEnchant) return;
-        player.getWorld().getPlayers().forEach(target -> {
-            sendRedstoneParticle(target, location, 255f, 255f, 255f);
-        });
-    }
-
-    public void sendRedstoneParticle(
-            Player player,
-            Location location,
-            float r,
-            float g,
-            float b
-    ) {
-        PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(
-                EnumParticle.REDSTONE,
-                true,
-                (float) location.getX(),
-                (float) location.getY(),
-                (float) location.getZ(),
-                r / 255,
-                g / 255,
-                b / 255,
-                1.0f,
-                0
-        );
-        CraftPlayer craftPlayer = (CraftPlayer) player;
-        craftPlayer.getHandle().playerConnection.sendPacket(packet);
-    }
 }

@@ -28,6 +28,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -71,23 +72,20 @@ public abstract class IMythicItem extends AbstractPitItem {
     public void resetUUID() {
         this.uuid = defUUID;
     }
-
+    public boolean canUseBook() {
+        return !(isBoostedByBook() || isRage() || isDark());
+    }
     @Override
     public ItemStack toItemStack() {
-        List<String> lore = new ObjectArrayList<>();
+        List<String> lore = new LinkedList<>();
         String name = getItemDisplayName();
         if (this.color == null) {
-            this.color = (MythicColor) RandomUtil.helpMeToChooseOne(MythicColor.RED
+            this.color = RandomUtil.helpMeToChooseOne(MythicColor.RED
                     , MythicColor.ORANGE, MythicColor.BLUE, MythicColor.GREEN, MythicColor.YELLOW);
         }
 
         //Guardian Enchant for Archangel Chestplate
 
-        if (isEnchanted()) {
-            if (tier == 0) {
-                tier = 3;
-            }
-        }
 
         if (this instanceof MythicLeggingsItem) {
             name = color.getChatColor() + (tier > 0 ? RomanUtil.convert(tier) + " 阶" : "") + color.getDisplayName() + "色" + getItemDisplayName();
@@ -187,10 +185,6 @@ public abstract class IMythicItem extends AbstractPitItem {
         }
 
         if (isEnchanted()) {
-            final AbstractEnchantment somber = ThePit.getInstance().getEnchantmentFactor().getEnchByClass(SomberEnchant.class);
-            if (color == MythicColor.DARK && !enchantments.containsKey(somber)) {
-                enchantments.put(somber, 1);
-            }
             boolean genesisFound = false;
 
             var entries = enchantments.object2IntEntrySet();
@@ -325,7 +319,12 @@ public abstract class IMythicItem extends AbstractPitItem {
     public boolean isBoostedByGlobalGem() {
         return this.boostedByGlobalGem;
     }
-
+    public boolean isDark(){
+        return this.color == MythicColor.DARK;
+    }
+    public boolean isRage(){
+        return this.color == MythicColor.RAGE;
+    }
     @Override
     public void loadFromItemStack(ItemStack item) {
         if (item == null || item.getType() == Material.AIR) {

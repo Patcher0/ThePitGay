@@ -4,10 +4,7 @@ import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.SneakyThrows;
-import net.minecraft.server.v1_8_R3.BlockPosition;
-import net.minecraft.server.v1_8_R3.NBTTagCompound;
-import net.minecraft.server.v1_8_R3.NBTTagList;
-import net.minecraft.server.v1_8_R3.PacketPlayOutWorldEvent;
+import net.minecraft.server.v1_8_R3.*;
 import net.mizukilab.pit.config.PitWorldConfig;
 import net.mizukilab.pit.data.operator.PackedOperator;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
@@ -43,6 +40,32 @@ import java.util.concurrent.ThreadLocalRandom;
 @Skip
 public class Utils {
 
+    public static void sendRedstoneParticle(
+            Player player,
+            Location location,
+            float r,
+            float g,
+            float b
+    ) {
+        CraftPlayer craftPlayer = (CraftPlayer) player;
+        World world = craftPlayer.getHandle().world;
+        if(world instanceof WorldServer e){
+            PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(
+                    EnumParticle.REDSTONE,
+                    true,
+                    (float) location.getX(),
+                    (float) location.getY(),
+                    (float) location.getZ(),
+                    r / 255,
+                    g / 255,
+                    b / 255,
+                    1.0f,
+                    0
+            );
+            EntityTrackerEntry entityTrackerEntry = e.tracker.trackedEntities.get(craftPlayer.getEntityId());
+            entityTrackerEntry.broadcastIncludingSelf(packet);
+        }
+    }
     /**
      * 需要Paper支持。
      *

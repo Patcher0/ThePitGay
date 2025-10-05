@@ -30,6 +30,7 @@ import net.mizukilab.pit.config.PitGlobalConfig;
 import net.mizukilab.pit.config.PitWorldConfig;
 import net.mizukilab.pit.database.MongoDB;
 import net.mizukilab.pit.enchantment.EnchantmentFactor;
+import net.mizukilab.pit.enchantment.EnchantmentTable;
 import net.mizukilab.pit.handlers.*;
 import net.mizukilab.pit.hologram.HologramFactory;
 import net.mizukilab.pit.hologram.HologramMarco;
@@ -132,6 +133,9 @@ public class ThePit extends JavaPlugin implements PluginMessageListener {
     private BossBarHandler bossBar;
     @Getter
     private MapSelector mapSelector;
+    @Getter
+    @Setter
+    private EnchantmentTable enchTable;
     @Getter
     private ItemFactor itemFactor;
     @Getter
@@ -267,7 +271,6 @@ public class ThePit extends JavaPlugin implements PluginMessageListener {
 
         this.miniGameController = new MiniGameController();
         this.miniGameController.runTaskTimerAsynchronously(this, 1, 1);
-        new DayNightCycleRunnable().runTaskTimer(this, 20, 20);
 
 
         //TODO 待修复

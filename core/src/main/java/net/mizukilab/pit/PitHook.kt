@@ -18,6 +18,7 @@ import net.mizukilab.pit.command.handler.metaKey
 import net.mizukilab.pit.config.NewConfiguration
 import net.mizukilab.pit.config.TabConfiguration
 import net.mizukilab.pit.data.operator.ProfileOperator
+import net.mizukilab.pit.enchantment.EnchantmentTable
 import net.mizukilab.pit.enchantment.type.addon.AngelArmsEnchant
 import net.mizukilab.pit.enchantment.type.aqua.ClubRodEnchant
 import net.mizukilab.pit.enchantment.type.aqua.GrandmasterEnchant
@@ -149,27 +150,23 @@ object PitHook {
         val field = PluginDescriptionFile::class.java.getDeclaredField("version")
         field.isAccessible = true
         field.set(description, gitVersion)
-
-        ActionBarDisplayRunnable.start()
-
         KingsQuests.enable()
 
         CDKData.loadAllCDKFromData()
 
         Bukkit.getPluginManager().registerEvents(SewersRunnable, ThePit.getInstance())
         SewersRunnable.runTaskTimer(ThePit.getInstance(), 10L, 10L)
-        //CleanupDupeEnch0525Runnable.runTaskTimer(ThePit.getInstance(), 20L, 20L)
-        //SpecialPlayerRunnable.runTaskTimer(ThePit.getInstance(), 1L, 1L)
-        //PrivatePlayerRunnable.runTaskTimer(ThePit.getInstance(),1L,1L)
+
         PlayerPointsAPI.init()
+        ThePit.getInstance().enchTable = EnchantmentTable(ThePit.getInstance().enchantmentFactor)
         println("Done")
-        Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), { checkBlackList() }, 40L)
-        Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), { loaded = true }, 20L)
+        Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), {
+            ThePit.getInstance().enchTable.reload();
+            loaded = true
+        }, 40L)
 
     }
 
-    private fun checkBlackList() {
-    }
 
 
     private fun loadParker() {

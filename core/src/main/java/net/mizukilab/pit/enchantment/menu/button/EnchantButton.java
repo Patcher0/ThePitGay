@@ -8,14 +8,18 @@ import cn.charlotte.pit.events.genesis.GenesisTeam;
 import cn.hutool.core.lang.func.Consumer3;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import lombok.Setter;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.mizukilab.pit.config.NewConfiguration;
+import net.mizukilab.pit.data.operator.SuPromise;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
+import net.mizukilab.pit.enchantment.info.EnchantRequest;
 import net.mizukilab.pit.enchantment.menu.MythicWellMenu;
 import net.mizukilab.pit.enchantment.rarity.EnchantmentRarity;
+import net.mizukilab.pit.enchantment.runnable.AnimationRunnable;
 import net.mizukilab.pit.enchantment.type.limit.ILimit;
 import net.mizukilab.pit.event.PitPlayerEnchantEvent;
 import net.mizukilab.pit.item.AbstractPitItem;
@@ -62,10 +66,8 @@ import java.util.stream.Collectors;
 @Skip
 public class EnchantButton extends Button {
 
-    SecureRandom random = RandomUtil.random;
     private final ItemStack item;
     private final MythicWellMenu menu;
-
     public EnchantButton(ItemStack item, MythicWellMenu menu) {
         this.item = item;
         this.menu = menu;
@@ -184,7 +186,7 @@ public class EnchantButton extends Button {
             return;
         }
 
-        IMythicItem mythicItem = ((ItemFactory)ThePit.getInstance().getItemFactory()).getIMythicItem(actualItem);
+        IMythicItem mythicItem = Utils.getMythicItem(actualItem);
 
         if (mythicItem == null) return;
 
@@ -221,11 +223,11 @@ public class EnchantButton extends Button {
             }
         }
         profile.setCoins(profile.getCoins() - getPrice(player, level + 1, color));
-        //handle enchant - 使用最新的物品数据
-        doEnchant(actualItem, player, mythicItem);
 
         menu.getAnimationData().setFinished(false);
         menu.getAnimationData().setStartEnchanting(true);
+        doEnchant(actualItem, player,profile, mythicItem,menu.getAnimationData());
+
         menu.getAnimationData().setAnimationTick(0);
 
         menu.setClosedByMenu(true);
@@ -239,7 +241,7 @@ public class EnchantButton extends Button {
      * @param player
      * @param mythicItem
      */
-    private void doEnchant(ItemStack item, Player player, IMythicItem mythicItem) {
+    private void doEnchant(ItemStack item, Player player, PlayerProfile profile, IMythicItem mythicItem, AnimationRunnable.AnimationData data) {
 
         StartEnchantLogicEvent startEnchantLogicEvent = new StartEnchantLogicEvent(player);
         startEnchantLogicEvent.callEvent();
@@ -255,185 +257,29 @@ public class EnchantButton extends Button {
         if(!startEnchantLogicEvent.isAllowEnchant()){
             return;
         }
-        MythicColor color = mythicItem.getColor();
-        int level = mythicItem.getTier();
-        int maxLive = 0;
-        if (level > 0) {
-            maxLive = mythicItem.getMaxLive();
-        }
-        //根据附魔物品颜色的不同,maxLive也有所不同
-        if (color == MythicColor.DARK) {
-            switch (level) {
-                case 0:
-                    mythicItem.setMaxLive((Integer) RandomUtil.helpMeToChooseOne(20, 25, 30, 35));
-                    break;
-                case 1:
-                    mythicItem.setMaxLive((Integer) RandomUtil.helpMeToChooseOne(40, 45, 50, 55, 60));
-                    if (RandomUtil.hasSuccessfullyByChance(0.01)) {
-                        mythicItem.setMaxLive(135);
-                    }
-                    break;
-                default:
-                    mythicItem.setMaxLive(random.nextInt(36) + 5); //5-40
-                    break;
-            }
-        } else {
-            if (color == MythicColor.RAGE && level == 0) {
-                mythicItem.setMaxLive(((Integer) RandomUtil.helpMeToChooseOne(4, 5, 6, 7, 8, 9)));
-            } else {
-                switch (level) {
-                    case 0:
-                        mythicItem.setMaxLive(random.nextInt(7) + 3); //3-9
-                        break;
-                    case 1:
-                        mythicItem.setMaxLive(random.nextInt(6) + 10); //10-15
-                        break;
-                    case 2:
-                        if (RandomUtil.hasSuccessfullyByChance(0.01)) { //Artifact Prefix -> 100 Lives
-                            mythicItem.setMaxLive(100);
-                        } else {
-                            mythicItem.setMaxLive(random.nextInt(8) + 16); //16-23
-                        }
-                        break;
-                    default:
-                        mythicItem.setMaxLive(random.nextInt(36) + 5); //5-40
-                        break;
-                }
-            }
-        }
-        if (level > 0) {
-            mythicItem.setLive(mythicItem.getLive() + mythicItem.getMaxLive() - maxLive);
-        } else {
 
-            mythicItem.setLive(mythicItem.getMaxLive());
-        }
-        level++;
-
-        mythicItem.setTier(level);
-
-        List<AbstractEnchantment> list = ThePit.getInstance()
-                .getEnchantmentFactor()
-                .getEnchantments()
-                .stream()
-                .filter(abstractEnchantment -> abstractEnchantment.canApply(item))
-                .collect(Collectors.toList());
-        List<AbstractEnchantment> enchantments = new ObjectArrayList<>();
-        if (level > 1) {
-            enchantments = new ObjectArrayList<>(mythicItem.getEnchantments().keySet());
-        }
-        boolean announcement = false;
-
-        List<AbstractEnchantment> results = list.stream()
-                .filter(abstractEnchantment -> abstractEnchantment.getRarity() == EnchantmentRarity.NORMAL).collect(Collectors.toList());
-        List<AbstractEnchantment> rareResults = list.stream()
-                .filter(abstractEnchantment -> abstractEnchantment.getRarity() == EnchantmentRarity.RARE).collect(Collectors.toList());
-
-        //different type of mythic item have different rarity enchantments
-        if (color == MythicColor.DARK) {
-            results = list.stream()
-                    .filter(abstractEnchantment -> abstractEnchantment.getRarity() == EnchantmentRarity.DARK_NORMAL).collect(Collectors.toList());
-            rareResults = list.stream()
-                    .filter(abstractEnchantment -> abstractEnchantment.getRarity() == EnchantmentRarity.DARK_RARE).collect(Collectors.toList());
-        } else if (color == MythicColor.RAGE && level == 1) {
-            results = list.stream()
-                    .filter(abstractEnchantment -> abstractEnchantment.getRarity() == EnchantmentRarity.RAGE).collect(Collectors.toList());
-            rareResults = list.stream().filter(abstractEnchantment -> abstractEnchantment.getRarity() == EnchantmentRarity.RAGE_RARE).collect(Collectors.toList());
-        } else if (color == MythicColor.DARK_GREEN) {
-            results = list.stream()
-                    .filter(abstractEnchantment -> abstractEnchantment.getRarity() == EnchantmentRarity.SEWER_NORMAL).collect(Collectors.toList());
-            rareResults = list.stream().filter(abstractEnchantment -> abstractEnchantment.getRarity() == EnchantmentRarity.SEWER_RARE).collect(Collectors.toList());
-        }
-
-        rareResults = rareResults.stream().filter(abstractEnchantment -> !isBlackList(player, abstractEnchantment)).collect(Collectors.toList());
-        results = results.stream().filter(abstractEnchantment -> !isBlackList(player, abstractEnchantment)).collect(Collectors.toList());
-        //Enchant Start
-        switch (color) {
-            case DARK: {
-                RandomUtil.switchSeed();
-                if (level == 1) {
-                    //t1 dark pants have only somber1
-                    mythicItem.getEnchantments().put(ThePit.getInstance().getEnchantmentFactor().getEnchantmentMap().get("somber_enchant"), 1);
-                    break;
-                }
-                if (level == 2) {
-                    if (RandomUtil.hasSuccessfullyByChance(NewConfiguration.INSTANCE.getChance(player, color,level))) {
-                        AbstractEnchantment enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
-                        mythicItem.getEnchantments().put(enchantment, 1);
-                        announcement = true;
-                    } else {
-                        results.removeIf(enchant -> enchant.getNbtName().equals("somber_enchant"));
-                        AbstractEnchantment enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(results.toArray());
-                        mythicItem.getEnchantments().put(enchantment, 1);
-                    }
-                }
-                break;
-            }
-            case RAGE: {
-                if (level == 1) {
-                    if (RandomUtil.hasSuccessfullyByChance(NewConfiguration.INSTANCE.getChance(player, color,level))) {
-                        AbstractEnchantment enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
-                        mythicItem.getEnchantments().put(enchantment, RandomUtil.random.nextInt(enchantment.getMaxEnchantLevel() - 1) + 1);
-                        announcement = true;
-                    } else {
-                        AbstractEnchantment enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(results.toArray());
-                        mythicItem.getEnchantments().put(enchantment, RandomUtil.random.nextInt(enchantment.getMaxEnchantLevel() - 1) + 1);
-                    }
-                    break;
-                }
-            }
-            default: {
-                RandomUtil.switchSeed();
-                if (level == 1) {
-                    if(!NewConfiguration.INSTANCE.getAlwaysT2Enchant()) {
-                        announcement = levelTier1MythicEnchantLogic(item, player, mythicItem,level, rareResults, announcement, results, enchantments);
-                        //Tier 1 Enchant End
-                    } else{
-                        announcement = levelTier2MythicEnchantLogic(item, player, mythicItem,level, rareResults, announcement, color, enchantments,results);
-
-                    }
-                } else if (level == 2) {
-                    announcement = levelTier2MythicEnchantLogic(item, player, mythicItem,level, rareResults, announcement, color, enchantments, results);
-                } else if (level == 3) {
-                    announcement = levelTier3MythicEnchantLogic(item, player, mythicItem,level, rareResults, announcement, results, enchantments, color);
-                }
-            }
-        }
-
-        if (mythicItem.color == MythicColor.DARK_GREEN && mythicItem.getEnchantmentLevel("trash_panda_enchant") >= 1) {
-            int randomLive = RandomUtil.random.nextInt(11) + 30; // 30-40
-            mythicItem.live = randomLive;
-            mythicItem.maxLive = randomLive;
-        }
-
-        mythicItem.getEnchantmentRecords()
-                .add(new EnchantmentRecord(
-                        player.getName(),
-                        "Enchant Table",
-                        System.currentTimeMillis()
-                ));
-
-        //Check if the mythic item have a prefix and announce it
-        //reload it , maybe trash code
-        //mythicItem.loadFromItemStack(mythicItem.toItemStack());
         if(startEnchantLogicEvent.isCancelled()){
             return;
         }
-        new PitPlayerEnchantEvent(player, mythicItem, mythicItem).callEvent();
-        if (mythicItem.getPrefix() != null) {
-            announcement = true;
-        }
 
-        if (announcement) {
-            PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
-
-            beginAnnounceAsync(player, mythicItem, profile);
-        }
-        end(player, mythicItem);
-    }
-    public void writeOut(ItemStack stack,IMythicItem item){
-        ItemStack itemStack = item.toItemStack();
-        stack.setData(itemStack.getData());
-        stack.setItemMeta(itemStack.getItemMeta());
+        boolean useBook = Utils.canUseMythicBook(player, item);
+        menu.getAnimationData().setEnd(false);
+        SuPromise<EnchantRequest> consumers = ThePit.getInstance().getEnchTable().enchantItem(player, profile, mythicItem, useBook);
+        consumers.promise(i -> {
+            if(i.isFail()){
+                player.sendMessage(CC.translate("&cUnable to enchant this item, it seems impossible"));
+            }
+            boolean announcement = i.isAnnouncement();
+            new PitPlayerEnchantEvent(player, mythicItem, mythicItem).callEvent();
+            if (mythicItem.getPrefix() != null) {
+                announcement = true;
+            }
+            if (announcement) {
+                beginAnnounceAsync(player, mythicItem, profile);
+            }
+            end(player, mythicItem);
+            menu.getAnimationData().setEnd(true);
+        });
     }
     private static BaseComponent[] toEmptyHover(IMythicItem mythicItem) {
         net.minecraft.server.v1_8_R3.ItemStack nms = Utils.toNMStackQuick(mythicItem.toItemStack());
@@ -474,370 +320,12 @@ public class EnchantButton extends Button {
         profile.setEnchantingItem(InventoryUtil.serializeItemStack(mythicItem.toItemStack()));
     }
 
-    private boolean levelTier3MythicEnchantLogic(ItemStack item, Player player, IMythicItem mythicItem,int level, List<AbstractEnchantment> rareResults, boolean announcement, List<AbstractEnchantment> results, List<AbstractEnchantment> enchantments, MythicColor color) {
-        int amount = mythicItem.getEnchantments().size();
-        if (amount == 1) { // If this item have only 1 enchantment
-            AbstractEnchantment enchantment = null;
-            if (Utils.canUseMythicBook(player, item)) { //定义不明
-                List<AbstractEnchantment> availableRareEnchants = new ArrayList<>(rareResults);
-                availableRareEnchants.removeAll(enchantments);
-                AbstractEnchantment rareEnchant;
-                if (!availableRareEnchants.isEmpty()) {
-                    rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(availableRareEnchants.toArray());
-                } else {
-                    rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
-                }
-                mythicItem.getEnchantments().put(rareEnchant, 3);
-                announcement = true;
-                PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
-                profile.setEnchantingBook(null);
-                //add logic TODO
-                results.removeAll(enchantments);
-                if (RandomUtil.hasSuccessfullyByChance(NewConfiguration.INSTANCE.getChance(player, color,level))) {
-                    announcement = true;
-                    rareResults.removeAll(enchantments);
-                    enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
-                } else {
-                    enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(results.toArray());
-                }
-                enchantments.add(enchantment);
-                mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b, 1));
-                mythicItem.boostedByBook = true;
-                return announcement;
-            } else {
-                for (int i = 0; i < 2; i++) {
-                    results.removeAll(enchantments);
-                    if (RandomUtil.hasSuccessfullyByChance(NewConfiguration.INSTANCE.getChance(player, color,level))) {
-                        announcement = true;
-                        rareResults.removeAll(enchantments);
-                        enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
-                    } else {
-                        enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(results.toArray());
-                    }
-                    enchantments.add(enchantment);
-                    mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b, 1));
-                }
-                for (AbstractEnchantment abstractEnchantment : enchantments) {
-                    mythicItem.getEnchantments().put(abstractEnchantment, max(mythicItem.getEnchantments().get(abstractEnchantment), getRandomLevel()));
-                }
-                //set level of a new enchant to 1/2 (3 excluded cuz the limit)
-                int totalLevel = 0;
-                for (AbstractEnchantment abstractEnchantment : mythicItem.getEnchantments().keySet()) {
-                    totalLevel += mythicItem.getEnchantments().getInt(abstractEnchantment);
-                }
-                if ((totalLevel == 8 && RandomUtil.hasSuccessfullyByChance(0.9)) || totalLevel == 9) {
-                    if (enchantment != null) {
-                        mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b, RandomUtil.hasSuccessfullyByChance(0.1) ? 2 : 1));
-                    }
-                }
-            }
-        } else if (amount == 2) { //21 -> 311
-            if (Utils.canUseMythicBook(player, item)) {
-                AbstractEnchantment rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
-                Object2IntOpenHashMap<AbstractEnchantment> enchantments1 = mythicItem.getEnchantments();
-                int levelCurrentlyEnchantment = 0;
-                for (Integer value : enchantments1.values()) {
-                    levelCurrentlyEnchantment += value;
-                }
-                final int lce = levelCurrentlyEnchantment;
-                enchantments1.computeInt(rareEnchant, (a,b) -> max(b, lce >= 6 ? 2 : 3));
-                announcement = true;
-                PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
-                profile.setEnchantingBook(null);
-                mythicItem.boostedByBook = true;
-                return announcement;
-            } else {
-                results.removeAll(enchantments);
-                AbstractEnchantment enchantment;
-                if (RandomUtil.hasSuccessfullyByChance(NewConfiguration.INSTANCE.getChance(player, color,level))) {
-                    announcement = true;
-                    rareResults.removeAll(enchantments);
-                    enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
-                } else {
-                    enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(results.toArray());
-                }
-                enchantments.add(enchantment);
-                mythicItem.getEnchantments().put(enchantment, 1);
-                for (AbstractEnchantment abstractEnchantment : enchantments) {
-                    final int currentLevel = max(mythicItem.getEnchantments().getInt(abstractEnchantment), getRandomLevel());
-                    mythicItem.getEnchantments().put(abstractEnchantment, currentLevel);
-                    if (currentLevel == 3 && (abstractEnchantment.getRarity() == EnchantmentRarity.RARE || abstractEnchantment.getRarity() == EnchantmentRarity.RAGE_RARE)) {
-                        announcement = true;
-                    }
-                }
-                int totalLevel = 0;
-                for (AbstractEnchantment abstractEnchantment : mythicItem.getEnchantments().keySet()) {
-                    totalLevel += mythicItem.getEnchantments().getInt(abstractEnchantment);
-                }
-                if ((totalLevel == 8 && RandomUtil.hasSuccessfullyByChance(0.9)) || totalLevel == 9) {
-                    //set level of new enchant to 1/2 (3 excluded cuz the limit)
-                    if (enchantment != null) {
-                        mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b, RandomUtil.hasSuccessfullyByChance(0.1) ? 2 : 1));
-                    }
-                }
-            }
 
-
-        } else if (amount == 3) { // 111 -> 211/311
-            for (AbstractEnchantment abstractEnchantment : enchantments) {
-                final int currentLevel = max(mythicItem.getEnchantments().getInt(abstractEnchantment), getRandomLevel());
-                mythicItem.getEnchantments().put(abstractEnchantment, currentLevel);
-                if (currentLevel == 3 && (abstractEnchantment.getRarity() == EnchantmentRarity.RARE || abstractEnchantment.getRarity() == EnchantmentRarity.RAGE_RARE)) {
-                    announcement = true;
-                }
-            }
-            int totalLevel = 0;
-            for (AbstractEnchantment abstractEnchantment : mythicItem.getEnchantments().keySet()) {
-                totalLevel += mythicItem.getEnchantments().getInt(abstractEnchantment);
-            }
-            if (totalLevel >= 9) {
-                AbstractEnchantment maxLevelEnchant = null;
-                int maxLevel = 0;
-                for (Map.Entry<AbstractEnchantment, Integer> entry : mythicItem.getEnchantments().entrySet()) {
-                    if (entry.getValue() > maxLevel) {
-                        maxLevel = entry.getValue();
-                        maxLevelEnchant = entry.getKey();
-                    }
-                }
-                if (maxLevelEnchant != null && maxLevel > 1) {
-                    mythicItem.getEnchantments().put(maxLevelEnchant, maxLevel - 1);
-                }
-            }
-        }
-        boolean badLuck = true;
-        for (AbstractEnchantment abstractEnchantment : mythicItem.getEnchantments().keySet()) {
-            if (mythicItem.getEnchantments().getInt(abstractEnchantment) >= 3) {
-                badLuck = false;
-                break;
-            }
-        }
-        if (badLuck) {
-            AbstractEnchantment enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(mythicItem.getEnchantments().keySet().toArray());
-            mythicItem.getEnchantments().put(enchantment, 3);
-            if ((enchantment.getRarity() == EnchantmentRarity.RARE || enchantment.getRarity() == EnchantmentRarity.RAGE_RARE)) {
-                announcement = true;
-            }
-        }
-        return announcement;
-    }
-
-    private boolean levelTier2MythicEnchantLogic(ItemStack item, Player player, IMythicItem mythicItem,int level, List<AbstractEnchantment> rareResults, boolean announcement, MythicColor color, List<AbstractEnchantment> enchantments, List<AbstractEnchantment> results) {
-        int amount = mythicItem.getEnchantments().size();
-
-        if (amount <= 1) { // If this item has only 1 enchantment
-
-            boolean useBook = Utils.canUseMythicBook(player, item);
-
-            if (useBook) {
-                List<AbstractEnchantment> availableRareEnchants = new ArrayList<>(rareResults);
-                availableRareEnchants.removeAll(enchantments);
-                AbstractEnchantment rareEnchant;
-                if (!availableRareEnchants.isEmpty()) {
-                    rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(availableRareEnchants.toArray());
-                } else {
-                    rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
-                }
-                mythicItem.getEnchantments().put(rareEnchant, 3);
-                announcement = true;
-                PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
-                profile.setEnchantingBook(null);
-                mythicItem.boostedByBook = true;
-                return true;
-            } else {
-                int singleLevel = 0;
-                AbstractEnchantment enchantment = null;
-                for (Integer i : mythicItem.getEnchantments().values()) {
-                    singleLevel = i;
-                }
-                for (AbstractEnchantment ae : mythicItem.getEnchantments().keySet()) {
-                    enchantment = ae;
-                }
-                if (singleLevel == 1) { //Condition: 1 (Only 1 Lv1 Enchantment)
-                    int choice = random.nextInt(3);
-                    switch (choice) {
-                        case 0: { // 1->3
-                            mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b,3));
-                            if (enchantment.getRarity() == EnchantmentRarity.RARE || enchantment.getRarity() == EnchantmentRarity.RAGE_RARE) {
-                                announcement = true;
-                            }
-                            break;
-                        }
-                        case 1: { // 1->21
-                            mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b,2));
-                            announcement = shouldAnnouncement(player, color, mythicItem,level, enchantments, announcement, results, rareResults);
-                            break;
-                        }
-                        case 2: { // 1->211
-                            mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b,2));
-                            for (int i = 0; i < 2; i++) {
-                                announcement = shouldAnnouncement(player, color, mythicItem,level, enchantments, announcement, results, rareResults);
-                            }
-                        }
-                        default:
-                            break;
-                    }
-                } else if (singleLevel == 2) {
-                    int choice = random.nextInt(2);
-                    switch (choice) {
-                        case 0: { // 2->3
-                            mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b,3));
-                            if (enchantment.getRarity() == EnchantmentRarity.RARE || enchantment.getRarity() == EnchantmentRarity.RAGE_RARE) {
-                                announcement = true;
-                            }
-                            break;
-                        }
-                        case 1: { // 2->21
-                            announcement = shouldAnnouncement(player, color, mythicItem,level, enchantments, announcement, results, rareResults);
-                            break;
-                        }
-                        default:
-                            break;
-                    }
-                } else {
-                    announcement = shouldAnnouncement(player, color, mythicItem,level, enchantments, announcement, results, rareResults);
-                }
-            }
-        } else if (amount == 2) { //11
-            int choice = random.nextInt(2);
-            boolean useBook = Utils.canUseMythicBook(player, item);
-            if (useBook) {
-                choice = 3;
-                AbstractEnchantment rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
-                mythicItem.getEnchantments().computeInt(rareEnchant, (a,b) -> max(b,3));
-                announcement = true;
-                PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
-                profile.setEnchantingBook(null);
-                mythicItem.boostedByBook = true;
-                return true;
-            }
-
-            switch (choice) {
-                case 0: { // 11->21
-                    AbstractEnchantment enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(enchantments.toArray());
-                    mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b,2));
-                    break;
-                }
-                case 1: { // 11->111
-                    results.removeAll(enchantments);
-                    AbstractEnchantment enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(results.toArray());
-                    if (RandomUtil.hasSuccessfullyByChance(NewConfiguration.INSTANCE.getChance(player, color,level))) {
-                        announcement = true;
-                        rareResults.removeAll(enchantments);
-                        enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
-                    }
-                    enchantments.add(enchantment);
-                    mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b,1));
-                    break;
-                }
-                case 3: { // 11->113 (使用附魔书)
-                    List<AbstractEnchantment> availableRareEnchants = new ArrayList<>(rareResults);
-                    availableRareEnchants.removeAll(enchantments);
-                    AbstractEnchantment rareEnchant;
-                    if (!availableRareEnchants.isEmpty()) {
-                        rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(availableRareEnchants.toArray());
-                    } else {
-                        rareEnchant = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
-                    }
-                    mythicItem.getEnchantments().computeInt(rareEnchant, (a,b) -> max(b,3));
-                    announcement = true;
-                    PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
-                    profile.setEnchantingBook(null);
-                    mythicItem.boostedByBook = true;
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-        return announcement;
-    }
     public int max(Integer num1,int num2){
         if(num1 != null){
             return Math.max(num1,num2);
         }
         return num2;
-    }
-
-    private boolean levelTier1MythicEnchantLogic(ItemStack item, Player player, IMythicItem mythicItem,int level, List<AbstractEnchantment> rareResults, boolean announcement, List<AbstractEnchantment> results, List<AbstractEnchantment> enchantments) {
-        //Tier 1 Enchant Start
-        int choice = random.nextInt(4);
-
-        boolean useBook = Utils.canUseMythicBook(player, item);
-        if (useBook) {
-            choice = 5;
-            List<AbstractEnchantment> availableRareEnchants = new ArrayList<>(rareResults);
-            availableRareEnchants.removeAll(enchantments);
-            AbstractEnchantment enchantment;
-            if (!availableRareEnchants.isEmpty()) {
-                enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(availableRareEnchants.toArray());
-            } else {
-                enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
-            }
-
-            mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b,3));
-            announcement = true;
-            PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
-            profile.setEnchantingBook(null);
-            mythicItem.boostedByBook = true;
-            return true;
-        }
-
-        switch (choice) {
-            case 0: { //choice 0: 1 of Lv1 Enchantment
-
-                AbstractEnchantment enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(results.toArray());
-                enchantments.add(enchantment);
-                mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b,1));
-                break;
-            }
-            case 3: { //choice 0: 2 of Lv1 Enchantment
-
-                for (int i = 0; i < 2; i++) {
-                    results.removeAll(enchantments);
-                    AbstractEnchantment enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(results.toArray());
-                    enchantments.add(enchantment);
-                    mythicItem.getEnchantments().computeInt(enchantment, (a,b) -> max(b,1));
-                }
-                break;
-            }
-            case 1: { //choice 0: 1 of Lv2 Enchantment
-
-                AbstractEnchantment enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(results.toArray());
-                enchantments.add(enchantment);
-                mythicItem.getEnchantments().put(enchantment, Math.min(enchantment.getMaxEnchantLevel(), 2));
-                break;
-            }
-            case 2: { //choice 0: 2 of Lv2 Enchantment
-
-                AbstractEnchantment enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(results.toArray());
-                enchantments.add(enchantment);
-                mythicItem.getEnchantments().put(enchantment, Math.min(enchantment.getMaxEnchantLevel(), 2));
-                break;
-            }
-            default:
-                break;
-        }
-        return announcement;
-    }
-
-    private static boolean isBlackList(Player player, AbstractEnchantment abstractEnchantment) {
-        return abstractEnchantment instanceof ILimit;
-    }
-
-
-    private boolean shouldAnnouncement(Player player, MythicColor color, AbstractPitItem mythicItem,int level, List<AbstractEnchantment> enchantments, boolean announcement, List<AbstractEnchantment> results, List<AbstractEnchantment> rareResults) {
-        AbstractEnchantment enchantment;
-        results.removeAll(enchantments);
-        if (RandomUtil.hasSuccessfullyByChance(NewConfiguration.INSTANCE.getChance(player, color,level))) {
-            announcement = true;
-            rareResults.removeAll(enchantments);
-            enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(rareResults.toArray());
-        } else {
-            enchantment = (AbstractEnchantment) RandomUtil.helpMeToChooseOne(results.toArray());
-        }
-        enchantments.add(enchantment);
-        mythicItem.getEnchantments().put(enchantment, 1);
-        return announcement;
     }
 
     @Override
@@ -847,19 +335,6 @@ public class EnchantButton extends Button {
 
     public ItemStack getDefaultDisplayItem() {
         return ((MythicEnchantingTable) FuncsKt.getInstance(ThePit.getInstance().getItemFactor().getItemMap().get("enchant_table_mobile"))).toItemStack();
-    }
-
-    /**
-     * 返回升级至T3为附魔提供的随机等级(1~3) 概率分布6:2:2
-     *
-     * @return int Level
-     */
-    private int getRandomLevel() {
-        if (RandomUtil.hasSuccessfullyByChance(0.6)) {
-            return 1;
-        } else {
-            return random.nextInt(2) + 2;
-        }
     }
 
     /**

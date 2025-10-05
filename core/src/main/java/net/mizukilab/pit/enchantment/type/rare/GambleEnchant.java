@@ -74,7 +74,7 @@ public class GambleEnchant extends AbstractEnchantment implements IAttackEntity,
         }
         if(cooldown.hasExpired()) {
             if (RandomUtil.hasSuccessfullyByChance(0.5)) {
-                cooldowns.put(attacker.getUniqueId(), new Cooldown(500));
+                cooldowns.put(attacker.getUniqueId(), new Cooldown(100));
                 Player targetPlayer = (Player) target;
                 Player gamblePlayer = attacker;
 

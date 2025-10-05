@@ -15,6 +15,7 @@ import net.mizukilab.pit.util.cooldown.Cooldown;
 import nya.Skip;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -79,13 +80,14 @@ public class ComboStunEnchant extends AbstractEnchantment implements Listener, I
 
     @Override
     public void handleAttackEntity(int enchantLevel, Player attacker, Entity target, double damage, AtomicDouble finalDamage, AtomicDouble boostDamage, AtomicBoolean cancel) {
-        Player victim = (Player) target;
-        if (cooldown.getOrDefault(attacker.getUniqueId(), new Cooldown(0)).hasExpired() && PlayerProfile.getPlayerProfileByUuid(attacker.getUniqueId()).getMeleeHit() % 5 == 0) {
-            cooldown.put(attacker.getUniqueId(), new Cooldown(8, TimeUnit.SECONDS));
-            victim.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 8 * enchantLevel, 20));
-            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 8 * enchantLevel, 20));
-            victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 8 * enchantLevel, 20));
-            victim.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 8 * enchantLevel, 20));
+        if (target instanceof LivingEntity victim) {
+            if (cooldown.getOrDefault(attacker.getUniqueId(), new Cooldown(0)).hasExpired() && PlayerProfile.getPlayerProfileByUuid(attacker.getUniqueId()).getMeleeHit() % 5 == 0) {
+                cooldown.put(attacker.getUniqueId(), new Cooldown(8, TimeUnit.SECONDS));
+                victim.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 8 * enchantLevel, 20));
+                victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 8 * enchantLevel, 20));
+                victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 8 * enchantLevel, 20));
+                victim.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 8 * enchantLevel, 20));
+            }
         }
     }
 

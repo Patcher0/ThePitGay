@@ -27,7 +27,7 @@ import java.util.*;
  */
 @Skip
 public class Bounty extends BukkitRunnable {
-
+    long tick = 0;
     private final SWMRHashTable<UUID, AnimationData> animationDataMap = new SWMRHashTable<>();
 
     public void delete(Collection<HologramDisplay> sets) {
@@ -60,6 +60,7 @@ public class Bounty extends BukkitRunnable {
     }
     @Override
     public void run() {
+        tick++;
         tick();
         removeInvalidHolograms();
     }
@@ -128,19 +129,20 @@ public class Bounty extends BukkitRunnable {
                 }
                 return hologram.hologram.isFullyDespawned();
             } else if(hologram.hologram.isSpawned()){
-                for (Player member : hologram.hologram.members()) {
-                    if(shouldRemove(player,member)){
-                        hologram.hologram.hide(member);
+                if(tick % 2 ==0) {
+                    for (Player member : hologram.hologram.members()) {
+                        if (shouldRemove(player, member)) {
+                            hologram.hologram.hide(member);
+                        }
                     }
+                    Location location = player.getLocation().clone();
+                    location.setX(location.getX() + hologram.boostX);
+                    Hologram hologram1 = hologram.getHologram();
+                    Location location1 = hologram1.getLocation();
+                    location.setY(location1.getY() + (0.1 * Math.max(1, NewConfiguration.INSTANCE.getBountyTickInterval())));
+                    location.setZ(location.getZ() + hologram.boostZ);
+                    hologram1.setLocation(location);
                 }
-                Location location = player.getLocation().clone();
-                location.setX(location.getX() + hologram.boostX);
-                Hologram hologram1 = hologram.getHologram();
-                Location location1 = hologram1.getLocation();
-                location.setY(location1.getY() + (0.05 * Math.max(1,NewConfiguration.INSTANCE.getBountyTickInterval())));
-                location.setZ(location.getZ() + hologram.boostZ);
-                hologram1.setLocation(location);
-
                 return false;
             }
             return false;

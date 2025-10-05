@@ -81,6 +81,7 @@ public class AsyncTickHandler extends BukkitRunnable {
             Bukkit.getWorlds().forEach(world -> world.setTime(minecraftTick));
         }
         ((ProfileOperator) instance.getProfileOperator()).tick();
+        instance.getEnchTable().asyncTick();
         while(true) {
             Runnable runnable = taskList.pollFirst();
             if (runnable == null) {
@@ -92,6 +93,7 @@ public class AsyncTickHandler extends BukkitRunnable {
                 e.printStackTrace();
             }
         }
+
     }
     public void onActionBarTick(){
         StringBuilder stringBuilder = new StringBuilder();
@@ -194,7 +196,6 @@ public class AsyncTickHandler extends BukkitRunnable {
                 //AntiAFK
                 if (now - lastActionTimestamp >= 10 * 60 * 1000) {
                     // 意义不明
-                    // player.sendMessage("...", true);
                     operator.pending(i -> {
                         playerProfileByUuid.setLastActionTimestamp(now);
                     });

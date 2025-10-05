@@ -19,6 +19,7 @@ import net.mizukilab.pit.UtilKt;
 import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.data.operator.PackedOperator;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
+import net.mizukilab.pit.events.impl.major.RagePitEvent;
 import net.mizukilab.pit.item.AbstractPitItem;
 import net.mizukilab.pit.item.IMythicItem;
 import net.mizukilab.pit.item.factory.ItemFactory;
@@ -1126,9 +1127,9 @@ public class CombatListener implements Listener {
                 }
             }
         }
-
+        String prefix = "BOT 击杀";
         final int streakNumberShort = killerProfile.addAndGetStreakNumberShort();
-        String prefix;
+
         switch (streakNumberShort) {
             case 2: {
                 ThePit.getInstance().getSoundFactory().playSound("double_streak", killer);
@@ -1153,6 +1154,7 @@ public class CombatListener implements Listener {
             default: {
                 if (streakNumberShort > 5) {
                     prefix = "多杀";
+
                     ThePit.getInstance().getSoundFactory().playSound("streak", killer);
                 } else {
                     killer.playSound(killer.getLocation(), Sound.ORB_PICKUP, 1, 1.9F);
@@ -1180,7 +1182,7 @@ public class CombatListener implements Listener {
     }
 
     private void handleGivePlayerKillReward(Player killer) {
-        if ("rage_pit".equals(ThePit.getInstance().getEventFactory().getActiveEpicEventName())) {
+        if (ThePit.getInstance().getEventFactory().getActiveEpicEvent() instanceof RagePitEvent) {
             int limit = PlayerUtil.getPlayerHealItemLimit(killer);
             if (limit < 0) {
                 limit = 2;

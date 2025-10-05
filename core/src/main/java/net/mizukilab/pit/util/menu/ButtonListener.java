@@ -1,6 +1,7 @@
 package net.mizukilab.pit.util.menu;
 
 import cn.charlotte.pit.ThePit;
+import net.mizukilab.pit.util.exception.InvCloseCancelledException;
 import nya.Skip;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -89,9 +90,12 @@ public class ButtonListener implements Listener {
         Menu openMenu = Menu.currentlyOpenedMenus.get(player.getName());
 
         if (openMenu != null) {
-            openMenu.onClose(player);
-
-            Menu.currentlyOpenedMenus.remove(player.getName());
+            try {
+                openMenu.onClose(player);
+                Menu.currentlyOpenedMenus.remove(player.getName());
+            } catch (InvCloseCancelledException e){
+                event.getPlayer().openInventory(event.getInventory());
+            }
         }
     }
 

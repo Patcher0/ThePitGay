@@ -201,26 +201,6 @@ public class PlayerMoveHandler implements MovementHandler, Listener {
                                     .build()
                     );
                 }
-
-                boolean isInArena = isInArena(to);
-
-                profile.setInArena(isInArena);
-
-                if (!profile.isEditingMode()) {
-                    if (BlockUtil.isBlockNearby(player.getLocation(), 3) && player.getGameMode() == GameMode.ADVENTURE) {
-                        player.setGameMode(GameMode.SURVIVAL);
-                        return;
-                    }
-                    if (profile.isInArena()) {
-                        if (player.getGameMode() == GameMode.ADVENTURE) {
-                            player.setGameMode(GameMode.SURVIVAL);
-                        }
-                    } else {
-                        if (player.getGameMode() == GameMode.SURVIVAL) {
-                            player.setGameMode(GameMode.ADVENTURE);
-                        }
-                    }
-                }
                 if (PlayerUtil.isStaffSpectating(player)) {
                     player.setAllowFlight(true);
                 }

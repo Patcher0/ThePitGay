@@ -3,22 +3,25 @@ package net.mizukilab.pit.data.operator;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import nya.Skip;
 
-@Skip
-public class Promise extends ObjectArraySet<Runnable> {
+import java.util.function.Consumer;
 
+@Skip
+public class SuPromise<E> extends ObjectArraySet<Consumer<E>> {
+    E e;
     boolean done = false;
-    public void ret() {
+    public void ret(E e) {
+        this.e = e;
         synchronized (this) {
             done = true;
             this.notifyAll();
         }
-        this.forEach(Runnable::run);
+        this.forEach(i -> i.accept(e));
     }
 
-    public Promise promise(Runnable run) {
+    public SuPromise promise(Consumer<E> run) {
         synchronized (this) {
             if (done) {
-                run.run();
+                run.accept(e);
                 return this;
             }
         }
@@ -26,7 +29,7 @@ public class Promise extends ObjectArraySet<Runnable> {
         return this;
     }
 
-    public Promise join() {
+    public SuPromise join() {
         try {
             synchronized (this) {
                 if (done) {

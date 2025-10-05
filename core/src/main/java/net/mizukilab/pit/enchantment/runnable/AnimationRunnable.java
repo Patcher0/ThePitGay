@@ -307,6 +307,7 @@ public class AnimationRunnable extends BukkitRunnable {
         private int animationTick = 0;
         private byte color = (byte) 6;
         private boolean startEnchanting = false;
+        private boolean end = true;
         private boolean finished = false;
 
         public void reset() {
@@ -316,6 +317,7 @@ public class AnimationRunnable extends BukkitRunnable {
         }
 
         public AnimationData(Player player) {
+            Thread.dumpStack();
             this.player = player;
         }
 
