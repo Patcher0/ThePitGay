@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.server.v1_8_R3.*;
+import net.mizukilab.pit.Util;
 import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
 import net.mizukilab.pit.enchantment.rarity.EnchantmentRarity;
@@ -427,28 +428,7 @@ public abstract class IMythicItem extends AbstractPitItem {
         }
         enchCheck(item);
     }
-    static boolean enchCheck = Boolean.getBoolean("pitCheck");
-    public void checkVersion(ItemStack item){
-        if(!enchCheck){
-           return;
-        }
-        NBTTagCompound extra = ItemUtil.getExtra(item);
-        if(extra == null){
-            return;
-        }
-        boolean a = extra.getBoolean("b");
-        if(!a){
-            enchCheck(item);
-            extra = ItemUtil.getExtra(item);
-            if(extra != null) {
-                extra.setBoolean("b", true);
-            }
-        }
-    }
     public void enchCheck(ItemStack stack) {
-        if(!enchCheck){
-            return;
-        }
         boolean changed = false;
         int count = 0;
         int rageCount = 0;
@@ -476,8 +456,8 @@ public abstract class IMythicItem extends AbstractPitItem {
         }
         if (changed) {
             ItemStack itemStack = toItemStack();
-            ItemMeta itemMeta = itemStack.getItemMeta();
-            stack.setItemMeta(itemMeta);
+            NBTTagCompound tag = Utils.toNMStackQuick(itemStack).getTag();
+            Utils.toNMStackQuick(stack).setTag((NBTTagCompound) tag.clone());
         }
     }
 

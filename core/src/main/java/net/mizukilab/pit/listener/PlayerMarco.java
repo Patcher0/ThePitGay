@@ -92,14 +92,6 @@ public class PlayerMarco implements Listener {
         return orLoadOperator;
     }
 
-    private static boolean statusCheck(PackedOperator orLoadOperator) {
-        byte code = orLoadOperator.profile().code;
-        if (code == -2) {
-            orLoadOperator.fail(new Exception("Status equals to 2, kicking"));
-            return true;
-        }
-        return false;
-    }
     public boolean isSaving(PackedOperator op){
         if(op.profile() != null){
             return op.profile().code == ProfileOperator.OPCODE_BUSY;
@@ -109,22 +101,24 @@ public class PlayerMarco implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         event.setQuitMessage(null);
-
         ((ProfileOperator) ThePit.getInstance().getProfileOperator())
                 .operatorStrict(event.getPlayer()).ifPresent(profileOper -> {
                     PlayerProfile profile = profileOper.profile();
+                    if(!profile.isLoaded()){
+                        return;
+                    }
                     if(isSaving(profileOper)){
                         return;
                     }
-                    //synchronize
+
                     PlayerInv playerInv = PlayerInv.fromPlayerInventory(event.getPlayer().getInventory());
                     profile.disallow();
                     checkIllegalProfile(profile);
-                    profile.setLogin(false); //我草泥马
-                    //fire at post
+                    profile.setLogin(false);
+
                     profile.setInventoryUnsafe(playerInv).allow();
                     triggerDeath(event, profile);
-                    //handle Death
+
                     profile.setBounty(0);
                 });
     }
@@ -132,9 +126,7 @@ public class PlayerMarco implements Listener {
     private static void triggerDeath(PlayerQuitEvent event, PlayerProfile profile) {
         CombatListener instance = CombatListener.INSTANCE;
         if (instance != null && !profile.getCombatTimer().hasExpired()) {
-            Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
-                instance.handlePlayerDeath(null,event.getPlayer(), null, false);
-            });
+            instance.handlePlayerDeath(null,event.getPlayer(), null, false);
         }
     }
 
@@ -159,7 +151,11 @@ public class PlayerMarco implements Listener {
         if (load.getProfileFormatVersion() == 0) {
             PitProfileUpdater.updateVersion0(load);
         }
-        if (player != null && player.isOnline()) {
+        Collection<PotionEffect> activePotionEffects = player.getActivePotionEffects();
+        activePotionEffects.forEach(i -> {
+            player.removePotionEffect(i.getType());
+        });
+        if (player.isOnline()) {
             load.setLogin(true);
             Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
                 PlayerUtil.postResetPlayer(player);
@@ -189,8 +185,6 @@ public class PlayerMarco implements Listener {
             return;
         }
 
-
-        ProfileLoadRunnable.getInstance().handleJoin(player);
 
         loadData(event);
     }

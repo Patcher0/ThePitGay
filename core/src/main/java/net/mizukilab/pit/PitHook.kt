@@ -117,7 +117,7 @@ object PitHook {
     val gitVersion = "4a3f7b"
 
     @JvmStatic
-    val itemVersion = "golf_uuid"
+    val itemVersion = "wol_uuid"
     fun init() {
         loadConfig()
         loadParker()
@@ -779,7 +779,6 @@ private fun registerListeners() {
         ExpireListener::class.java,
         CombatListener::class.java,
         GameEffectListener::class.java,
-        DataListener::class.java,
         EnderChestListener::class.java,
         ChatListener::class.java,
         PlayerMarco::class.java,

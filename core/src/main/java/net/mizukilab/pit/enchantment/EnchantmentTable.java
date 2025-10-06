@@ -113,12 +113,18 @@ public class EnchantmentTable {
                         var rareRage = enchMap.get(EnchantmentRarity.RAGE_RARE);
                         var rage = enchMap.get(EnchantmentRarity.RAGE);
                         AbstractEnchantment abstractEnchantment = RandomUtil.randEnch(chance, rareRage, rage);
-                        mythicItem.getEnchantments().put(abstractEnchantment, RandomUtil.rand(2, 1));
-                        return abstractEnchantment.getRarity() == EnchantmentRarity.RAGE_RARE;
+                        int level = 1;
+                        if (RandomUtil.nextBool()) {
+                            level = 2;
+                        }
+                        mythicItem.getEnchantments().put(abstractEnchantment, level);
+                        return abstractEnchantment.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE;
                     } else {
                         var normal = enchMap.get(EnchantmentRarity.NORMAL);
                         var rare = enchMap.get(EnchantmentRarity.RARE);
-                        return RandomUtil.randEnchMultipleApplyRN(2,chance,1,2,mythicItem.getEnchantments(),normal,rare,(a, i) -> i.getMaxEnchantLevel() > a).stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
+                        return RandomUtil.randEnchMultipleApplyRNPreferStE(2,0, chance, 1, 2, mythicItem.getEnchantments()
+                                        , normal, rare, 0.7, (a, i) -> i.getMaxEnchantLevel() > a)
+                                .stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                     }
                 },
                 (chance, enchMap, mythicItem) -> {
@@ -139,25 +145,25 @@ public class EnchantmentTable {
         TIER_2(2,
                 (chance, enchMap, mythicItem) -> {
                     if (mythicItem.isDark()) {
-                        Object2IntOpenHashMap<AbstractEnchantment> enchantments1 = mythicItem.getEnchantments();
-                        ObjectArrayList<AbstractEnchantment> rage = enchMap.get(EnchantmentRarity.DARK_RARE);
-                        ObjectArrayList<AbstractEnchantment> normal = enchMap.get(EnchantmentRarity.DARK_NORMAL);
-                        AbstractEnchantment abstractEnchantment = RandomUtil.chooseAndApplyMultipleTypeRN(chance, true, enchantments1, 1, normal, rage);
+                        var enchantments1 = mythicItem.getEnchantments();
+                        var rage = enchMap.get(EnchantmentRarity.DARK_RARE);
+                        var normal = enchMap.get(EnchantmentRarity.DARK_NORMAL);
+                        var abstractEnchantment = RandomUtil.chooseAndApplyMultipleTypeRN(chance, true, enchantments1, 1, normal, rage);
                         return abstractEnchantment.getRarity() == EnchantmentRarity.DARK_RARE;
                     }
-                    Object2IntOpenHashMap<AbstractEnchantment> enchantments1 = mythicItem.getEnchantments();
-                    ObjectArrayList<AbstractEnchantment> rare = enchMap.get(EnchantmentRarity.RARE);
-                    ObjectArrayList<AbstractEnchantment> normal = enchMap.get(EnchantmentRarity.NORMAL);
+                    var enchantments1 = mythicItem.getEnchantments();
+                    var rare = enchMap.get(EnchantmentRarity.RARE);
+                    var normal = enchMap.get(EnchantmentRarity.NORMAL);
                     int count = 0;
                     for (Integer value : enchantments1.values()) {
                         count += value;
                     }
-                    //9
-                    int clampi = Einstein.clampi(8 - count, 1, 3);
-                    int min = Math.min(2,clampi);
                     if(mythicItem.isRage()){
                         chance = 0D;
                     }
+                    //9
+                    int clampi = Einstein.clampi(8 - count, 1, 3);
+                    int min = Math.min(2,clampi);
                     var result = RandomUtil.randEnchMultipleApplyRNPrefer(3,chance, min, clampi, enchantments1,normal,rare,0.5,(a, i) -> i.getMaxEnchantLevel() > a);
                     return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                 },
@@ -176,15 +182,15 @@ public class EnchantmentTable {
         TIER_3(3,
                 (chance, enchMap, mythicItem) -> {
                     if (mythicItem.isDark()) {
-                        Object2IntOpenHashMap<AbstractEnchantment> enchantments1 = mythicItem.getEnchantments();
-                        ObjectArrayList<AbstractEnchantment> rage = enchMap.get(EnchantmentRarity.DARK_RARE);
-                        ObjectArrayList<AbstractEnchantment> normal = enchMap.get(EnchantmentRarity.DARK_NORMAL);
+                        var enchantments1 = mythicItem.getEnchantments();
+                        var rage = enchMap.get(EnchantmentRarity.DARK_RARE);
+                        var normal = enchMap.get(EnchantmentRarity.DARK_NORMAL);
                         AbstractEnchantment abstractEnchantment = RandomUtil.chooseAndApplyMultipleTypeRN(chance, true, enchantments1, 1, normal, rage);
                         return abstractEnchantment.getRarity() == EnchantmentRarity.DARK_RARE;
                     }
-                    Object2IntOpenHashMap<AbstractEnchantment> enchantments1 = mythicItem.getEnchantments();
-                    ObjectArrayList<AbstractEnchantment> rare = enchMap.get(EnchantmentRarity.RARE);
-                    ObjectArrayList<AbstractEnchantment> normal = enchMap.get(EnchantmentRarity.NORMAL);
+                    var enchantments1 = mythicItem.getEnchantments();
+                    var rare = enchMap.get(EnchantmentRarity.RARE);
+                    var normal = enchMap.get(EnchantmentRarity.NORMAL);
                     int count = 0;
                     for (Integer value : enchantments1.values()) {
                         count += value;

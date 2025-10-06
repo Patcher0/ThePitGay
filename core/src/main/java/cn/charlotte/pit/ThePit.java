@@ -281,7 +281,6 @@ public class ThePit extends JavaPlugin implements PluginMessageListener {
         messenger.registerIncomingPluginChannel(this, "BungeeCord", this);
         FixedRewardData.Companion.refreshAll();
         Bukkit.getServer().setWhitelist(whiteList);
-        new ProfileLoadRunnable(this);
     }
 
     private void loadMapSelector() {

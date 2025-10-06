@@ -161,12 +161,13 @@ public class CombatListener implements Listener {
         if (Bukkit.isPrimaryThread()) {
             PlayerMoveHandler.checkMove(event.getTo(), event.getFrom(), event.getPlayer());
         } else {
+            //heyiwei
             Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
                 PlayerMoveHandler.checkMove(event.getTo(), event.getFrom(), event.getPlayer());
             });
         }
     }
-
+    //heyiwei
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     private void onCombat(EntityDamageByEntityEvent event) {
         if (event.getEntity() instanceof Player) {
@@ -260,11 +261,9 @@ public class CombatListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-        ProfileLoadRunnable.getInstance().handleQuit(player);
-        runGCOnMetadatas(player);
+        runGCOnMetadatas(event.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -281,24 +280,21 @@ public class CombatListener implements Listener {
      * @param player
      */
     public void runGCOnMetadatas(Player player) {
-        player.removeMetadata("showing_damage_data", ThePit.getInstance());
-        player.removeMetadata("mirror_latest_active", ThePit.getInstance());
-        //"STAFF_SPECTATOR"
-        //lucky_chestplate
-        //backing
-        //sinking_moonlight
-        player.removeMetadata("lastThroughTheHeart", ThePit.getInstance());
-        player.removeMetadata("STAFF_SPECTATOR", ThePit.getInstance());
-        player.removeMetadata("sinking_moonlight", ThePit.getInstance());
-        player.removeMetadata("assured_strike", ThePit.getInstance());
-        player.removeMetadata("lucky_chestplate", ThePit.getInstance());
-        player.removeMetadata("backing", ThePit.getInstance());
-        player.removeMetadata("combo_venom", ThePit.getInstance());
-        player.removeMetadata("vanished", ThePit.getInstance());
-        player.removeMetadata("leech_hit", ThePit.getInstance());
-        player.removeMetadata("true_damage_immune", ThePit.getInstance());
-        player.removeMetadata("regularity", ThePit.getInstance());
-        player.removeMetadata("mixed_combat_" + player.getUniqueId(), ThePit.getInstance());
+        ThePit instance = ThePit.getInstance();
+        player.removeMetadata("showing_damage_data", instance);
+        player.removeMetadata("mirror_latest_active", instance);
+        player.removeMetadata("lastThroughTheHeart", instance);
+        player.removeMetadata("STAFF_SPECTATOR", instance);
+        player.removeMetadata("sinking_moonlight", instance);
+        player.removeMetadata("assured_strike", instance);
+        player.removeMetadata("lucky_chestplate", instance);
+        player.removeMetadata("backing", instance);
+        player.removeMetadata("combo_venom", instance);
+        player.removeMetadata("vanished", instance);
+        player.removeMetadata("leech_hit", instance);
+        player.removeMetadata("true_damage_immune", instance);
+        player.removeMetadata("regularity", instance);
+        player.removeMetadata("mixed_combat_" + player.getUniqueId(), instance);
 
     }
 

@@ -79,6 +79,16 @@ public class ItemFactory implements IItemFactory {
         if(internalName == null){
             return null;
         }
+        boolean shouldUpdate = false;
+        if(!clientSide) {
+            if (ItemUtil.shouldUpdateItem(stack)) {
+                if (ItemUtil.shouldUpdateUUID()) {
+                    shouldUpdate = true;
+                    ItemUtil.randomUUIDItem(stack);
+                }
+                ItemUtil.signVer(stack);
+            }
+        }
         int hashCodeForUUID = ItemUtil.getHashCodeForUUID0(stack,extra);
         if(hashCodeForUUID == -1){
             return null;
@@ -88,11 +98,10 @@ public class ItemFactory implements IItemFactory {
 
         if (iMythicItem == null || clientSide) { //会导致不掉命bug, 有点厉害
             runnable.run();
-
-            return getIMythicItem0(stack, internalName,clientSide);
+            return getIMythicItem0(shouldUpdate,stack, internalName);
         } else {
             runnable.run();
-            iMythicItem.checkVersion(stack);
+            int i = System.identityHashCode(Utils.toNMStackQuick(stack));
             return iMythicItem;
         }
 
@@ -124,42 +133,21 @@ public class ItemFactory implements IItemFactory {
         return getIMythicItem(stack);
     }
 
-    public IMythicItem getIMythicItem0(ItemStack stack, String internalName,boolean clientSide) {
-        UUID itemUUID = null;
-        if(!clientSide) {
-            if (ItemUtil.shouldUpdateItem(stack)) {
-                if (ItemUtil.shouldUpdateUUID()) {
-                    itemUUID = ItemUtil.randomUUIDItem(stack);
-                }
-
-                ItemUtil.signVer(stack);
-            }
-        }
-
+    public IMythicItem getIMythicItem0(boolean shouldUpdateItem,ItemStack stack, String internalName) {
         IMythicItem mythicItem = Utils.getMythicItem0(stack, internalName);
         if (mythicItem != null) {
             if (mythicItem.uuid != null) {
                 boolean sameAsDefault = mythicItem.uuid.equals(IMythicItem.getDefUUID());
-                if(!clientSide) {
-                    if (sameAsDefault) {
-                        logic(stack, itemUUID, mythicItem);
-                    }
+                if(shouldUpdateItem){
+                    mythicItem.enchCheck(stack);
                 }
                 if(!sameAsDefault){
                     ItemUtil.checkAndUpdateMagic(stack,mythicItem.uuid);
                     theReference.putValue(mythicItem.uuid, mythicItem);
                 }
-            } else {
-                logic(stack, itemUUID, mythicItem);
             }
         }
         return mythicItem;
     }
 
-    private static void logic(ItemStack stack, UUID itemUUID, IMythicItem mythicItem) {
-        if (itemUUID == null) {
-            itemUUID = ItemUtil.randomUUIDItem(stack);
-        }
-        mythicItem.uuid = itemUUID;
-    }
 }

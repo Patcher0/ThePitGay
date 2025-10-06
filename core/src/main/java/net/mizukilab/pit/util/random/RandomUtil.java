@@ -13,7 +13,9 @@ import org.bukkit.World;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 
 /**
@@ -23,19 +25,22 @@ import java.util.function.Predicate;
  */
 public class RandomUtil {
 
-    public static final SecureRandom random;
+    public static final Random random;
 
     static {
-        random = new SecureRandom();
+        random = new Random();
+    }
+    public static Random random(){
+        return ThreadLocalRandom.current();
     }
 
     public static String randomStr() {
         String s = "ABCDEFGHIJKLMNPQRSTUVXYZ1234567890";
         char[] c = s.toCharArray();
         StringBuilder numbers = new StringBuilder();
-
+        Random random1 = random();
         for (int i = 0; i < 2; ++i) {
-            numbers.append(c[random.nextInt(c.length)]);
+            numbers.append(c[random1.nextInt(c.length)]);
         }
         return numbers.toString();
     }
@@ -62,7 +67,7 @@ public class RandomUtil {
         }
 
 
-        return random.nextDouble() < chance;
+        return random().nextDouble() < chance;
     }
     public static int rand(int max){
         return random.nextInt(max);
@@ -75,20 +80,25 @@ public class RandomUtil {
         if(bound < 0){
             return offset;
         }
-        return random.nextInt(bound) + offset;
+        Random random1 = random();
+
+        if(bound == 1){
+            return (random1.nextBoolean() ? 1 : 0) + offset; //bug fix
+        }
+        return random1.nextInt(bound) + offset;
     }
 
     public static <T> T helpMeToChooseOne(T... entry) {
         switchSeed();
-        return entry[random.nextInt(entry.length)];
+        return entry[random().nextInt(entry.length)];
     }
     public static int helpMeToChooseOneInt(int... entry) {
         switchSeed();
-        return entry[random.nextInt(entry.length)];
+        return entry[random().nextInt(entry.length)];
     }
     public static <T> void chooseAndApply(boolean unique,List<T> ench, Object2IntMap<T> t,int level) {
         int size = ench.size();
-        int i1 = random.nextInt(size);
+        int i1 = random().nextInt(size);
         while (true) {
             T t1 = ench.get(i1);
             if (unique && t.containsKey(t1)) {
@@ -113,7 +123,7 @@ public class RandomUtil {
                 return;
             }
         }
-        int i1 = random.nextInt(size);
+        int i1 = random().nextInt(size);
         while (true) {
             T t1 = ench.get(i1);
             if (unique && t.containsKey(t1)) {
@@ -125,28 +135,12 @@ public class RandomUtil {
             break;
         }
     }
-    public static <T> int chooseAndApplyMultipleType(boolean unique, Object2IntMap<T> t,int level,List<T>... ench) {
-        int i = random.nextInt(ench.length);
-        List<T> ench1 = ench[i];
-        int i1 = random.nextInt(ench1.size());
-        while (true) {
-            T t1 = ench1.get(i1);
-
-            if (unique && t.containsKey(t1)) {
-                i1 = (i1 + 1) % ench1.size();
-                continue;
-            }
-            t.put(t1, level);
-            return i;
-        }
-    }
-
     public static <T> T chooseAndApplyMultipleTypeRN(double chance,boolean unique, Object2IntMap<T> t,int level,List<T> normal,List<T> rare) {
         List<T> ench1 = normal;
         if(hasSuccessfullyByChance(chance)) {
             ench1 = rare;
         }
-        int i1 = random.nextInt(ench1.size());
+        int i1 = random().nextInt(ench1.size());
         while (true) {
             T t1 = ench1.get(i1);
 
@@ -163,27 +157,7 @@ public class RandomUtil {
         if(hasSuccessfullyByChance(rageChance)){
             random = rare;
         }
-        return random.get(RandomUtil.random.nextInt(random.size()));
-    }
-    public static <T> List<T> randEnchMultipleApply(int maxL2, List<T> normal, Object2IntMap<T> tM, Function2<Integer,T,Boolean> predicate){
-        maxL2 = rand(maxL2,1);
-        List<T> a = new LinkedList<>();
-        for (int z = 0; z < maxL2; z++) {
-            int index = RandomUtil.random.nextInt(normal.size());
-            T t;
-            while(true) {
-                t = normal.get(index);
-                int anInt = tM.getOrDefault(t,0);
-                if (!predicate.invoke(anInt,t)) {
-                    index = (index + 1) % normal.size();
-                    continue;
-                }
-                break;
-            }
-            a.add(t);
-            tM.compute(t,(i,val) -> val == null ? 1 : val + 1);
-        }
-        return a;
+        return random.get(RandomUtil.random().nextInt(random.size()));
     }
     public static <T> List<T> randEnchMultipleApplyRNPrefer(int maxEnch,double chance,int min,int maxL2,Object2IntMap<T> tM,List<T> normalInput,List<T> rare,double preferChance,Function2<Integer,T,Boolean> predicate) {
         maxL2 = rand(maxL2, min);
@@ -212,7 +186,7 @@ public class RandomUtil {
                 }
                 System.out.println("Ignoring, 333 enchant");
             } else {
-                int index = RandomUtil.random.nextInt(normal.size());
+                int index = RandomUtil.random().nextInt(normal.size());
                 T t;
                 while (true) {
                     t = normal.get(index);
@@ -242,7 +216,7 @@ public class RandomUtil {
                 normal = normalInput;
             }
 
-            if (st < c || tM.size() >= maxEnch || hasSuccessfullyByChance(preferChance)) {
+            if (st < c && (tM.size() >= maxEnch || hasSuccessfullyByChance(preferChance))) {
                 var entries = tM.object2IntEntrySet();
                 var iterator = entries.iterator();
 
@@ -257,7 +231,7 @@ public class RandomUtil {
                 }
                 System.out.println("Ignoring, 333 enchant");
             } else {
-                int index = RandomUtil.random.nextInt(normal.size());
+                int index = RandomUtil.random().nextInt(normal.size());
                 T t;
                 while (true) {
                     t = normal.get(index);
@@ -271,50 +245,6 @@ public class RandomUtil {
                 tM.compute(t, (i, val) -> val == null ? 1 : val + 1);
                 a.add(t);
                 c++;
-            }
-        }
-        return a;
-    }
-    public static <T> List<T> randEnchMultipleApplyRN(int maxEnch,double chance,int min,int maxL2,Object2IntMap<T> tM,List<T> normalInput,List<T> rare,Function2<Integer,T,Boolean> predicate) {
-        maxL2 = rand(maxL2, min);
-        List<T> a = new LinkedList<>();
-        List<T> normal;
-        routine1:
-        for (int z = 0; z < maxL2; z++) {
-            if (hasSuccessfullyByChance(chance)) {
-                normal = rare;
-            } else {
-                normal = normalInput;
-            }
-
-            if (tM.size() >= maxEnch) {
-                var entries = tM.object2IntEntrySet();
-                var iterator = entries.iterator();
-
-                while (iterator.hasNext()) {
-                    Map.Entry<T, Integer> next = iterator.next();
-                    if (!predicate.invoke(next.getValue(), next.getKey())) {
-                        continue;
-                    }
-                    next.setValue(next.getValue() + 1);
-                    a.add(next.getKey());
-                    continue routine1;
-                }
-                System.out.println("Ignoring, 333 enchant");
-            } else {
-                int index = RandomUtil.random.nextInt(normal.size());
-                T t;
-                while (true) {
-                    t = normal.get(index);
-                    int anInt = tM.getOrDefault(t, 0);
-                    if (!predicate.invoke(anInt + 1, t)) {
-                        index = (index + 1) % normal.size();
-                        continue;
-                    }
-                    break;
-                }
-                tM.compute(t, (i, val) -> val == null ? 1 : val + 1);
-                a.add(t);
             }
         }
         return a;
@@ -348,7 +278,7 @@ public class RandomUtil {
                 }
                 System.out.println("Ignoring, 333 enchant");
             } else {
-                int index = RandomUtil.random.nextInt(normal.size());
+                int index = RandomUtil.random().nextInt(normal.size());
                 T t;
                 while (true) {
                     t = normal.get(index);
@@ -366,6 +296,9 @@ public class RandomUtil {
         }
         return a;
     }
+    public static boolean nextBool(){
+        return random.nextBoolean();
+    }
     public static <T> List<T> randEnchMultipleApplyRNMultiple(int maxEnch,double chance,int min,int maxL2,Object2IntMap<T> tM,Function2<Integer,T,Boolean> predicate,List<T>[] rareInputs,List<T>[] normalInputs) {
         maxL2 = rand(maxL2, min);
         List<T> a = new LinkedList<>();
@@ -373,9 +306,9 @@ public class RandomUtil {
         routine1:
         for (int z = 0; z < maxL2; z++) {
             if (hasSuccessfullyByChance(chance)) {
-                normal = rareInputs[random.nextInt(rareInputs.length)];
+                normal = rareInputs[random().nextInt(rareInputs.length)];
             } else {
-                normal = normalInputs[random.nextInt(normalInputs.length)];
+                normal = normalInputs[random().nextInt(normalInputs.length)];
             }
 
             if (tM.size() >= maxEnch) {
@@ -393,7 +326,7 @@ public class RandomUtil {
                 }
                 System.out.println("Ignoring, 333 enchant");
             } else {
-                int index = RandomUtil.random.nextInt(normal.size());
+                int index = RandomUtil.random().nextInt(normal.size());
                 T t;
                 while (true) {
                     t = normal.get(index);
@@ -411,8 +344,8 @@ public class RandomUtil {
         return a;
     }
     public static <T> T randEnchs(List<T>... enchantments){
-        List<T> enchantment = enchantments[random.nextInt(enchantments.length)];
-        return enchantment.get(random.nextInt(enchantment.size()));
+        List<T> enchantment = enchantments[random().nextInt(enchantments.length)];
+        return enchantment.get(random().nextInt(enchantment.size()));
     }
     public static Object helpMeToChooseOne(Set entry) {
         return helpMeToChooseOne(entry.toArray());
@@ -427,8 +360,8 @@ public class RandomUtil {
     }
 
     public static Location generateRandomLocation() {
-        int x = RandomUtil.random.nextInt(180) - 90;
-        int z = RandomUtil.random.nextInt(180) - 90;
+        int x = RandomUtil.random().nextInt(180) - 90;
+        int z = RandomUtil.random().nextInt(180) - 90;
         World world = Bukkit.getWorlds().get(0);
         return world.getHighestBlockAt(x, z).getLocation().clone().add(0, 1, 0);
     }

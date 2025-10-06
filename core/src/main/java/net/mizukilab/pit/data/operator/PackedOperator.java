@@ -72,9 +72,7 @@ public class PackedOperator implements IOperator {
     public void loadAs(UUID uuid, String name) {
         lastBoundPlayer = Bukkit.getPlayer(uuid);
         synchronized (operations) {
-            operations.add(() -> {
-                loadAs0(uuid, name);
-            });
+            operations.add(() -> loadAs0(uuid, name));
         }
         this.heartBeat();
     }
