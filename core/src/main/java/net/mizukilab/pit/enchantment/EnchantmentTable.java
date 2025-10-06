@@ -158,7 +158,7 @@ public class EnchantmentTable {
                     if(mythicItem.isRage()){
                         chance = 0D;
                     }
-                    var result = RandomUtil.randEnchMultipleApplyRNPrefer(3,chance, min, clampi, enchantments1,normal,rare,0.6,(a, i) -> i.getMaxEnchantLevel() > a);
+                    var result = RandomUtil.randEnchMultipleApplyRNPrefer(3,chance, min, clampi, enchantments1,normal,rare,0.5,(a, i) -> i.getMaxEnchantLevel() > a);
                     return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                 },
                 (chance, enchMap, mythicItem) -> TIER_1.useBook.invoke(chance, enchMap, mythicItem),
@@ -190,12 +190,13 @@ public class EnchantmentTable {
                         count += value;
                     }
                     //9
-                    int clampi = Einstein.clampi(8 - count, 1, 3);
-                    int min = Math.min(3,clampi);
+                    int size = enchantments1.size();
+                    int clampi = Einstein.clampi(9 - count, 1, 9);
+                    int min = RandomUtil.rand(clampi,3);
                     if(mythicItem.isRage()){
                         chance = 0D;
                     }
-                    var result = RandomUtil.randEnchMultipleApplyRN(3,chance, min, clampi, enchantments1,normal,rare,(a, i) -> i.getMaxEnchantLevel() > a);
+                    var result = RandomUtil.randEnchMultipleApplyRNStE((size != 2) ? -1 : 1,3,chance, min, clampi, enchantments1,normal,rare,(a, i) -> i.getMaxEnchantLevel() > a);
                     return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                 },
                 (chance, enchMap, mythicItem) -> TIER_1.useBook.invoke(chance, enchMap, mythicItem),

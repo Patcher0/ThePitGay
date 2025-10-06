@@ -429,6 +429,9 @@ public abstract class IMythicItem extends AbstractPitItem {
     }
     static boolean enchCheck = Boolean.getBoolean("pitCheck");
     public void checkVersion(ItemStack item){
+        if(!enchCheck){
+           return;
+        }
         NBTTagCompound extra = ItemUtil.getExtra(item);
         if(extra == null){
             return;
