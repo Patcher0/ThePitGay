@@ -45,6 +45,7 @@ import org.bukkit.inventory.ItemStack
 import java.util.*
 
 object PitInternalImpl : PitInternalHook {
+    @JvmStatic
     var loaded = false
     override fun openMythicWellMenu(player: Player?) {
         MythicWellMenu(player!!).openMenu(player)

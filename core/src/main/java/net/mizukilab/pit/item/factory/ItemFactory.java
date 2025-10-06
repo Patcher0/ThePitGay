@@ -76,22 +76,23 @@ public class ItemFactory implements IItemFactory {
     public IMythicItem getIMythicItem(ItemStack stack, Runnable runnable,boolean clientSide) {
         NBTTagCompound extra = ItemUtil.getExtra(stack);
         String internalName = ItemUtil.getInternalName0(extra);
-        if(internalName == null){
+        if (internalName == null) {
             return null;
         }
         boolean shouldUpdate = false;
-        if(!clientSide) {
-            if (ItemUtil.shouldUpdateItem(stack)) {
-                if (ItemUtil.shouldUpdateUUID()) {
-                    shouldUpdate = true;
-                    ItemUtil.randomUUIDItem(stack);
-                }
-                ItemUtil.signVer(stack);
+        int hashCodeForUUID = ItemUtil.getHashCodeForUUID0(stack, extra);
+        if (hashCodeForUUID == -1) {
+            return null;
+        }
+        boolean b = ItemUtil.shouldUpdateItem(stack);
+        if (hashCodeForUUID == 1 || (b && ItemUtil.shouldUpdateUUID())) {
+            if (!clientSide) {
+                shouldUpdate = true;
+                ItemUtil.randomUUIDItem(stack);
             }
         }
-        int hashCodeForUUID = ItemUtil.getHashCodeForUUID0(stack,extra);
-        if(hashCodeForUUID == -1){
-            return null;
+        if(!clientSide && b){
+            ItemUtil.signVer(stack);
         }
         IMythicItem iMythicItem = getIMythicItem(hashCodeForUUID);
 

@@ -1592,6 +1592,7 @@ public class PlayerProfile {
     public static synchronized final void saveAllSync(boolean silent) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             try {
+
                 PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
                 if (profile.isLoaded()) {
                     profile.setInventory(InventoryUtil.playerInventoryFromPlayer(player));

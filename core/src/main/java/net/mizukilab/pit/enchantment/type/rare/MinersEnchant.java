@@ -54,7 +54,8 @@ public class MinersEnchant extends AbstractEnchantment implements IPlayerKilledE
     @PlayerOnly
     @Override
     public void handlePlayerKilled(int enchantLevel, Player myself, Entity target, AtomicDouble coins, AtomicDouble experience) {
-        if (PlayerProfile.getPlayerProfileByUuid(myself.getUniqueId()).getStreakKills() % 1000.0D == 0.0D) {
+        long streakKills = (long) PlayerProfile.getPlayerProfileByUuid(myself.getUniqueId()).getStreakKills();//sort to long
+        if (streakKills % 1000L == 0L) {
             if (RandomUtil.hasSuccessfullyByChance(0.01D * (enchantLevel + 2) * 10.0D)) {
                 myself.getInventory().addItem(ChunkOfVileItem.toItemStack());
                 myself.sendMessage(CC.translate("&5&l矿工! &7你获得了 &f1x &5暗聚块."));

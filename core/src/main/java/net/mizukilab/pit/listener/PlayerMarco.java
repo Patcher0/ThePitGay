@@ -11,11 +11,13 @@ import cn.charlotte.pit.event.PitProfileLoadedEvent;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import net.minecraft.server.v1_8_R3.*;
+import net.mizukilab.pit.PitHook;
 import net.mizukilab.pit.data.operator.PackedOperator;
 import net.mizukilab.pit.data.operator.ProfileOperator;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
 import net.mizukilab.pit.enchantment.rarity.EnchantmentRarity;
 import net.mizukilab.pit.event.PitPlayerEnchantEvent;
+import net.mizukilab.pit.impl.PitInternalImpl;
 import net.mizukilab.pit.medal.AbstractMedal;
 import net.mizukilab.pit.medal.impl.challenge.LuckyDiamondMedal;
 import net.mizukilab.pit.medal.impl.challenge.TrickleDownMedal;
@@ -172,19 +174,16 @@ public class PlayerMarco implements Listener {
         load.setLastLoginTime(System.currentTimeMillis());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
         ThePit pit = ThePit.getInstance();
         Player player = event.getPlayer();
-
-        PlayerUtil.resetPlayer(player, true);
-        pit.getMapSelector().teleportIntoSpawn(player);
-
-        if (ProfileLoadRunnable.getInstance() == null) {
+        if(!PitInternalImpl.getLoaded()){
             event.getPlayer().kickPlayer("Didn't load completely");
             return;
         }
-
+        PlayerUtil.resetPlayer(player, true);
+        pit.getMapSelector().teleportIntoSpawn(player);
 
         loadData(event);
     }

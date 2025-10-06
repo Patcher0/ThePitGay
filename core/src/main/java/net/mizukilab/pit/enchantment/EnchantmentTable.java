@@ -158,13 +158,55 @@ public class EnchantmentTable {
                     for (Integer value : enchantments1.values()) {
                         count += value;
                     }
-                    if(mythicItem.isRage()){
+                    if (mythicItem.isRage()) {
                         chance = 0D;
                     }
-                    //9
-                    int clampi = Einstein.clampi(8 - count, 1, 3);
-                    int min = Math.min(2,clampi);
-                    var result = RandomUtil.randEnchMultipleApplyRNPrefer(3,chance, min, clampi, enchantments1,normal,rare,0.5,(a, i) -> i.getMaxEnchantLevel() > a);
+                    int ste = 0;
+                    int a1 = 8 - count;
+                    int upBound = Math.min(a1, 2);
+                    /**
+                     * Warning, these enchant logics are obeying rules as follows
+                     * 1. T1 -> 1
+                     * { T2 -> 21 or 11 }
+                     * 2. T1 -> 2
+                     * { T2 -> 3 or 21 }
+                     * 3. T1 -> 11
+                     * { T2 -> 21 }
+                     * 4. T1 -> ANY-ANY-ANY (ADMIN ENCHANT)
+                     * { T2 -> ANY+1-ANY+1-ANY+1 }
+                     */
+                    c1:
+                    {
+                        int size = enchantments1.size();
+                        if (size == 1) {
+                            switch (count) {
+                                case 1 -> {
+                                    if (RandomUtil.nextBool()) {
+                                        a1 = 2;
+                                        ste = 1;
+                                    } else {
+                                        a1 = 1;
+                                        ste = -1;
+                                    }
+                                }
+                                default -> a1 = 1; // case 2 check
+                            }
+                        } else if (size == 2) {
+                            switch (count){
+                                case 2 -> {
+                                    a1 = 1;
+                                    ste = 2;
+                                }
+                                default -> a1 = 1;
+                            }
+                        } else { //111 check;
+                            a1 = 2;
+                            ste = 2;
+                        }
+                    }
+
+                    int clampi = Einstein.clampi(a1, 0, upBound);
+                    var result = RandomUtil.randEnchMultipleApplySofRNPreferStE( 3,ste, chance, clampi, clampi, enchantments1, normal, rare, 0.0, (a, i) -> i.getMaxEnchantLevel() > a);
                     return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                 },
                 (chance, enchMap, mythicItem) -> TIER_1.useBook.invoke(chance, enchMap, mythicItem),
@@ -197,7 +239,7 @@ public class EnchantmentTable {
                     }
                     //9
                     int size = enchantments1.size();
-                    int clampi = Einstein.clampi(9 - count, 1, 9);
+                    int clampi = Einstein.clampi(8 - count, 1, 8);
                     int min = RandomUtil.rand(clampi,3);
                     if(mythicItem.isRage()){
                         chance = 0D;
