@@ -114,16 +114,12 @@ public class EnchantmentTable {
                         var rareRage = enchMap.get(EnchantmentRarity.RAGE_RARE);
                         var rage = enchMap.get(EnchantmentRarity.RAGE);
                         AbstractEnchantment abstractEnchantment = RandomUtil.randEnch(chance, rareRage, rage);
-                        int level = 1;
-                        if (RandomUtil.nextBool()) {
-                            level = 2;
-                        }
+                        int level = RandomUtil.rand(2,1);
                         mythicItem.getEnchantments().put(abstractEnchantment, level);
                         return abstractEnchantment.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE;
                     } else {
                         var normal = enchMap.get(EnchantmentRarity.NORMAL);
                         var rare = enchMap.get(EnchantmentRarity.RARE);
-
                         return RandomUtil.randEnchMultipleApplyRNPreferStEEmp(2, chance, 1, 2, mythicItem.getEnchantments()
                                         , normal, rare, 0.9, (a, i) -> i.getMaxEnchantLevel() > a)
                                 .stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
@@ -131,7 +127,7 @@ public class EnchantmentTable {
                 },
                 (chance, enchMap, mythicItem) -> {
                     if (mythicItem.isRage() || mythicItem.isDark()) {
-                        throw new IllegalEnchantInputException("Can't enchant RD mythicItem with mythBook");
+                        throw new IllegalEnchantInputException("Can't enchant R/D mythicItem with Mythic Book");
                     }
                     var abstractEnchantments = enchMap.get(EnchantmentRarity.RARE);
                     RandomUtil.chooseAndApplyChecked(true, abstractEnchantments, mythicItem.getEnchantments(), 3,3, AbstractEnchantment::getMaxEnchantLevel);
@@ -146,27 +142,24 @@ public class EnchantmentTable {
         }),
         TIER_2(2,
                 (chance, enchMap, mythicItem) -> {
-                    {
-                        if (mythicItem.isDark()) {
-                            var enchantments1 = mythicItem.getEnchantments();
-                            var rage = enchMap.get(EnchantmentRarity.DARK_RARE);
-                            var normal = enchMap.get(EnchantmentRarity.DARK_NORMAL);
-                            var abstractEnchantment = RandomUtil.chooseAndApplyMultipleTypeRN(chance, true, enchantments1, 1, normal, rage);
-                            return abstractEnchantment.getRarity() == EnchantmentRarity.DARK_RARE;
-                        }
-                    }
-                    {
+                    if (mythicItem.isDark()) {
                         var enchantments1 = mythicItem.getEnchantments();
-                        var rare = enchMap.get(EnchantmentRarity.RARE);
-                        var normal = enchMap.get(EnchantmentRarity.NORMAL);
-                        int count = Einstein.sum(enchantments1);
-                        if (mythicItem.isRage()) {
-                            chance = 0D;
-                        }
-                        int newEnchants = 0;
-                        int remain = 8 - count;
-                        int ops = remain;
-                        int upBound = min(ops, 2);
+                        var rage = enchMap.get(EnchantmentRarity.DARK_RARE);
+                        var normal = enchMap.get(EnchantmentRarity.DARK_NORMAL);
+                        var abstractEnchantment = RandomUtil.chooseAndApplyMultipleTypeRN(chance, true, enchantments1, 1, normal, rage);
+                        return abstractEnchantment.getRarity() == EnchantmentRarity.DARK_RARE;
+                    }
+                    var enchantments1 = mythicItem.getEnchantments();
+                    var rare = enchMap.get(EnchantmentRarity.RARE);
+                    var normal = enchMap.get(EnchantmentRarity.NORMAL);
+                    int count = Einstein.sum(enchantments1);
+                    if (mythicItem.isRage()) {
+                        chance = 0D;
+                    }
+                    int newEnchants = 0;
+                    int remain = 8 - count;
+                    int ops = min(2, remain);
+                    int upBound = ops;
                         /*
                           Warning, these enchant logics are obeying rules as follows
                           1. T1 -> 1
@@ -178,34 +171,30 @@ public class EnchantmentTable {
                           4. T1 -> ANY-ANY-ANY (ADMIN ENCHANT)
                           { T2 -> ANY+1-ANY+1-ANY+1 }
                           5. T1 -> 4
-                          { T2 -> 41
+                          { T2 -> 41 }
                          */
-                        logicT2_Main:
-                        {
-                            int enchants = enchantments1.size();
-                            ops = min(2, remain);
-                            if (enchants == 1) {
-                                newEnchants = 1;
-                                if(count >= 2){
-                                    newEnchants = -1;
-                                    ops = min(1,remain);
-                                }
-                            } else if (enchants == 2) {
-                                ops = min(1, remain);
-                                // 11 check
-                                if (count >= 2) {
-                                    newEnchants = RandomUtil.rand(2, 0); //111 12
-                                }
-                            } else { //111 check;
-                                newEnchants = 2;
-                            }
+                    int enchants = enchantments1.size();
+                    if (enchants == 1) {
+                        newEnchants = 1;
+                        if (count == 2) {
+                            newEnchants = -1;
+                            ops = min(1, remain);
+                        } else if(count >= 3){
+                            ops = min(1, remain);
                         }
-
-                        int clampi = Einstein.clampi(ops, 0, upBound);
-                        var result = RandomUtil.randEnchMultipleApplySofRNPreferStE(3, newEnchants, chance, clampi, clampi, enchantments1, normal, rare, 0.5
-                                , (a, i) -> i.getMaxEnchantLevel() > a);
-                        return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
+                    } else if (enchants == 2) {
+                        ops = min(1, remain);
+                        // 11 check
+                        if (count >= 2) {
+                            newEnchants = RandomUtil.rand(2, 0); //111 12
+                        }
+                    } else { //111 check;
+                        newEnchants = 2;
                     }
+                    int clampi = Einstein.clampi(ops, 0, upBound);
+                    var result = RandomUtil.randEnchMultipleApplySofRNPreferStE(3, newEnchants, chance, clampi, clampi, enchantments1, normal, rare, 0.5
+                            , (a, i) -> i.getMaxEnchantLevel() > a);
+                    return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                 },
                 (chance, enchMap, mythicItem) -> TIER_1.useBook.invoke(chance, enchMap, mythicItem),
                 (item) -> {
@@ -238,7 +227,6 @@ public class EnchantmentTable {
                     if(mythicItem.isRage()){
                         chance = 0D;
                     }
-                    //
                     return RandomUtil.randEnchMultipleApplyRNStE((size <= 2) ? 1 : -1,3,chance, min, clampi, enchantments1,normal,rare,(a, i) -> i.getMaxEnchantLevel() > a)
                             .stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                 },

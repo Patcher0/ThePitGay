@@ -253,8 +253,8 @@ public class RandomUtil {
             } else {
                 normal = normalInput;
             }
-
-            if (!tM.isEmpty() && hasSuccessfullyByChance(preferChance)) {
+            boolean b = hasSuccessfullyByChance(preferChance);
+            if (!tM.isEmpty() && b) {
                 var entries = tM.object2IntEntrySet();
                 var iterator = entries.iterator();
 
@@ -267,7 +267,7 @@ public class RandomUtil {
                     a.add(next.getKey());
                     continue routine1;
                 }
-                System.out.println("Ignoring, 333 enchant");
+                System.out.println("Ignoring, max enchant");
             } else {
                 int index = RandomUtil.random().nextInt(normal.size());
                 T t;
