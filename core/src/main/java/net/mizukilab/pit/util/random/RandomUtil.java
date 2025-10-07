@@ -230,6 +230,7 @@ public class RandomUtil {
                     }
                     next.setValue(next.getValue() + 1);
                     a.add(next.getKey());
+                    c++;
                     continue routine1;
                 }
                 System.out.println("Ignoring, 333 enchant");
@@ -288,6 +289,7 @@ public class RandomUtil {
                     }
                     next.setValue(next.getValue() + 1);
                     a.add(next.getKey());
+                    c++;
                     continue routine1;
                 }
                 System.out.println("Ignoring, 333 enchant");
