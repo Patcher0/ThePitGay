@@ -1,6 +1,8 @@
 package net.mizukilab.pit.util;
 
 import cn.charlotte.pit.ThePit;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.experimental.UtilityClass;
 import net.minecraft.server.v1_8_R3.EntityPlayer;
 import org.bukkit.Bukkit;
@@ -20,6 +22,14 @@ public class Einstein {
         } else {
             return Math.min(value, upperBound);
         }
+    }
+    public int sum(Object2IntMap map){
+        int sum = 0;
+        IntIterator intIterator = map.values().intIterator();
+        while(intIterator.hasNext()){
+            sum += intIterator.nextInt();
+        }
+        return sum;
     }
     public int clampi(int value, int lowerBound, int upperBound) {
         if (value < lowerBound) {

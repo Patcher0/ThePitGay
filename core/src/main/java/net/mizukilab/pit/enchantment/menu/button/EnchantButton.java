@@ -362,5 +362,4 @@ public class EnchantButton extends Button {
 
         return false;
     }
-
 }

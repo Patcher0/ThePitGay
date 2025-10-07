@@ -27,7 +27,7 @@ import net.mizukilab.pit.util.functions.Func3;
 import net.mizukilab.pit.util.random.RandomUtil;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
-
+import static java.lang.Math.*;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -146,7 +146,6 @@ public class EnchantmentTable {
         }),
         TIER_2(2,
                 (chance, enchMap, mythicItem) -> {
-                    darkLogic:
                     {
                         if (mythicItem.isDark()) {
                             var enchantments1 = mythicItem.getEnchantments();
@@ -156,64 +155,55 @@ public class EnchantmentTable {
                             return abstractEnchantment.getRarity() == EnchantmentRarity.DARK_RARE;
                         }
                     }
-                    normalLogic:
                     {
                         var enchantments1 = mythicItem.getEnchantments();
                         var rare = enchMap.get(EnchantmentRarity.RARE);
                         var normal = enchMap.get(EnchantmentRarity.NORMAL);
-                        int count = 0;
-                        for (Integer value : enchantments1.values()) {
-                            count += value;
-                        }
+                        int count = Einstein.sum(enchantments1);
                         if (mythicItem.isRage()) {
                             chance = 0D;
                         }
-                        int ste = 0;
-                        int a1 = 8 - count;
-                        int upBound = Math.min(a1, 2);
-                        /**
-                         * Warning, these enchant logics are obeying rules as follows
-                         * 1. T1 -> 1
-                         * { T2 -> 21 or 11 }
-                         * 2. T1 -> 2
-                         * { T2 -> 3 or 21 }
-                         * 3. T1 -> 11
-                         * { T2 -> 21 or 111 }
-                         * 4. T1 -> ANY-ANY-ANY (ADMIN ENCHANT)
-                         * { T2 -> ANY+1-ANY+1-ANY+1 }
+                        int newEnchants = 0;
+                        int remain = 8 - count;
+                        int ops = remain;
+                        int upBound = min(ops, 2);
+                        /*
+                          Warning, these enchant logics are obeying rules as follows
+                          1. T1 -> 1
+                          { T2 -> 21 or 3 }
+                          2. T1 -> 2
+                          { T2 -> 3 or 21 }
+                          3. T1 -> 11
+                          { T2 -> 21 or 111 }
+                          4. T1 -> ANY-ANY-ANY (ADMIN ENCHANT)
+                          { T2 -> ANY+1-ANY+1-ANY+1 }
+                          5. T1 -> 4
+                          { T2 -> 41
                          */
-                        c2:
+                        logicT2_Main:
                         {
-                            int size = enchantments1.size();
-                            if (size == 1) {
-                                switch (count) {
-                                    case 1 -> {
-                                        if (RandomUtil.nextBool()) {
-                                            a1 = 2;
-                                            ste = 1;
-                                        } else {
-                                            a1 = 1;
-                                            ste = -1;
-                                        }
-                                    }
-                                    default -> a1 = 1; // case 2 check
+                            int enchants = enchantments1.size();
+                            ops = min(2, remain);
+                            if (enchants == 1) {
+                                newEnchants = 1;
+                                if(count >= 2){
+                                    newEnchants = -1;
+                                    ops = min(1,remain);
                                 }
-                            } else if (size == 2) {
-                                switch (count) {
-                                    case 2 -> {
-                                        a1 = 1;
-                                        ste = RandomUtil.rand(2, 0);
-                                    }
-                                    default -> a1 = 1;
+                            } else if (enchants == 2) {
+                                ops = min(1, remain);
+                                // 11 check
+                                if (count >= 2) {
+                                    newEnchants = RandomUtil.rand(2, 0); //111 12
                                 }
                             } else { //111 check;
-                                a1 = 2;
-                                ste = 2;
+                                newEnchants = 2;
                             }
                         }
 
-                        int clampi = Einstein.clampi(a1, 0, upBound);
-                        var result = RandomUtil.randEnchMultipleApplySofRNPreferStE(3, ste, chance, clampi, clampi, enchantments1, normal, rare, 0.5, (a, i) -> i.getMaxEnchantLevel() > a);
+                        int clampi = Einstein.clampi(ops, 0, upBound);
+                        var result = RandomUtil.randEnchMultipleApplySofRNPreferStE(3, newEnchants, chance, clampi, clampi, enchantments1, normal, rare, 0.5
+                                , (a, i) -> i.getMaxEnchantLevel() > a);
                         return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                     }
                 },
@@ -235,25 +225,22 @@ public class EnchantmentTable {
                         var enchantments1 = mythicItem.getEnchantments();
                         var rage = enchMap.get(EnchantmentRarity.DARK_RARE);
                         var normal = enchMap.get(EnchantmentRarity.DARK_NORMAL);
-                        AbstractEnchantment abstractEnchantment = RandomUtil.chooseAndApplyMultipleTypeRN(chance, true, enchantments1, 1, normal, rage);
-                        return abstractEnchantment.getRarity() == EnchantmentRarity.DARK_RARE;
+                        return RandomUtil.chooseAndApplyMultipleTypeRN(chance, true, enchantments1, 1, normal, rage).getRarity() == EnchantmentRarity.DARK_RARE;
                     }
                     var enchantments1 = mythicItem.getEnchantments();
                     var rare = enchMap.get(EnchantmentRarity.RARE);
                     var normal = enchMap.get(EnchantmentRarity.NORMAL);
-                    int count = 0;
-                    for (Integer value : enchantments1.values()) {
-                        count += value;
-                    }
-                    //9
+                    int count = Einstein.sum(enchantments1);
+                    //8最大属性
                     int size = enchantments1.size();
                     int clampi = Einstein.clampi(8 - count, 1, 8);
                     int min = RandomUtil.rand(clampi,Math.min(3,8 - count));
                     if(mythicItem.isRage()){
                         chance = 0D;
                     }
-                    var result = RandomUtil.randEnchMultipleApplyRNStE((size != 2) ? -1 : 1,3,chance, min, clampi, enchantments1,normal,rare,(a, i) -> i.getMaxEnchantLevel() > a);
-                    return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
+                    //
+                    return RandomUtil.randEnchMultipleApplyRNStE((size <= 2) ? 1 : -1,3,chance, min, clampi, enchantments1,normal,rare,(a, i) -> i.getMaxEnchantLevel() > a)
+                            .stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                 },
                 (chance, enchMap, mythicItem) -> TIER_1.useBook.invoke(chance, enchMap, mythicItem),
                 (item) -> {
@@ -311,7 +298,6 @@ public class EnchantmentTable {
                 completed = true;
             } catch (IllegalEnchantInputException e) {
                 enq.fail();
-                e.printStackTrace();
             } catch (Throwable t) {
                 t.printStackTrace();
             } finally {
