@@ -241,8 +241,8 @@ public class PublicUtil {
     }
 
     public static void register(Class<?> clazz, Object instance, List<IPlayerDamaged> playerDamageds, List<IAttackEntity> attackEntities, List<IItemDamage> iItemDamages, List<IPlayerBeKilledByEntity> playerBeKilledByEntities, List<IPlayerKilledEntity> playerKilledEntities, List<IPlayerRespawn> playerRespawns, List<IPlayerShootEntity> playerShootEntities) {
-        if (instance instanceof Listener && instance.getClass().isAnnotationPresent(AutoRegister.class)) {
-            Bukkit.getPluginManager().registerEvents((Listener) instance, ThePit.getInstance());
+        if (instance instanceof Listener listen) {
+            Bukkit.getPluginManager().registerEvents(listen, ThePit.getInstance());
         }
 
         if (IPlayerDamaged.class.isAssignableFrom(clazz)) {

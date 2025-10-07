@@ -2,6 +2,7 @@ package net.mizukilab.pit.enchantment;
 
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
+import cn.charlotte.pit.data.sub.EnchantmentRecord;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -122,8 +123,9 @@ public class EnchantmentTable {
                     } else {
                         var normal = enchMap.get(EnchantmentRarity.NORMAL);
                         var rare = enchMap.get(EnchantmentRarity.RARE);
-                        return RandomUtil.randEnchMultipleApplyRNPreferStE(2,0, chance, 1, 2, mythicItem.getEnchantments()
-                                        , normal, rare, 0.7, (a, i) -> i.getMaxEnchantLevel() > a)
+
+                        return RandomUtil.randEnchMultipleApplyRNPreferStEEmp(2, chance, 1, 2, mythicItem.getEnchantments()
+                                        , normal, rare, 0.9, (a, i) -> i.getMaxEnchantLevel() > a)
                                 .stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                     }
                 },
@@ -171,7 +173,7 @@ public class EnchantmentTable {
                      * 2. T1 -> 2
                      * { T2 -> 3 or 21 }
                      * 3. T1 -> 11
-                     * { T2 -> 21 }
+                     * { T2 -> 21 or 111 }
                      * 4. T1 -> ANY-ANY-ANY (ADMIN ENCHANT)
                      * { T2 -> ANY+1-ANY+1-ANY+1 }
                      */
@@ -195,7 +197,7 @@ public class EnchantmentTable {
                             switch (count){
                                 case 2 -> {
                                     a1 = 1;
-                                    ste = 2;
+                                    ste = RandomUtil.rand(2,0);
                                 }
                                 default -> a1 = 1;
                             }
@@ -206,7 +208,7 @@ public class EnchantmentTable {
                     }
 
                     int clampi = Einstein.clampi(a1, 0, upBound);
-                    var result = RandomUtil.randEnchMultipleApplySofRNPreferStE( 3,ste, chance, clampi, clampi, enchantments1, normal, rare, 0.0, (a, i) -> i.getMaxEnchantLevel() > a);
+                    var result = RandomUtil.randEnchMultipleApplySofRNPreferStE( 3,ste, chance, clampi, clampi, enchantments1, normal, rare, 0.5, (a, i) -> i.getMaxEnchantLevel() > a);
                     return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                 },
                 (chance, enchMap, mythicItem) -> TIER_1.useBook.invoke(chance, enchMap, mythicItem),
@@ -240,7 +242,7 @@ public class EnchantmentTable {
                     //9
                     int size = enchantments1.size();
                     int clampi = Einstein.clampi(8 - count, 1, 8);
-                    int min = RandomUtil.rand(clampi,3);
+                    int min = RandomUtil.rand(clampi,Math.min(3,8 - count));
                     if(mythicItem.isRage()){
                         chance = 0D;
                     }
@@ -315,6 +317,7 @@ public class EnchantmentTable {
                 } else {
                     item.setLive(item.getMaxLive());
                 }
+                item.getEnchantmentRecords().add(new EnchantmentRecord("EnchantmentTable","bo" + useBook,System.currentTimeMillis()));
                 if (completed) {
                     enq.complete(item, true, announce);
                 }

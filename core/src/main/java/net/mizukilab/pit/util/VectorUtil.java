@@ -92,7 +92,13 @@ public class VectorUtil {
 
         return new Location(world, x + backwardX, y - backwardY, z + backwardZ, MathHelper.g(yaw + 180F), -30);
     }
-
+    public static void knock(Player vic, float y, float buffer){
+        float yaw = (vic.getLocation().getYaw() + 180);
+        vic.setVelocity(new Vector(
+                -MathHelper.sin(yaw * 3.1415927F / 180.0F) * (float) buffer,
+                y,
+                MathHelper.cos(yaw * 3.1415927F / 180.0F) * (float) buffer));
+    }
     public static Vector getPushVector(Location from, Location to, double velocity) {
         Vector test = to.clone().subtract(from).toVector();
         double elevation = test.getY();

@@ -22,6 +22,9 @@ public class ItemUtil {
     public static String getUUID(ItemStack item) {
         return getItemStringData(item, "uuid");
     }
+    public static String getUUID(NBTTagCompound extra) {
+        return getItemStringData0(extra, "uuid");
+    }
 
     public static int getHashCodeForUUID(ItemStack item) {
         NBTTagCompound extra = getExtra(item);
@@ -38,9 +41,9 @@ public class ItemUtil {
         long up = getLong(extra, "up");
         long down = getLong(extra, "do");
         if(up == 0 || down == 0) {
-            UUID uuidObj = getUUIDObj(item);
+            UUID uuidObj = getUUIDObj(extra);
             if (uuidObj != null) {
-                setUUIDObj(extra, uuidObj);
+                updateMagic(extra, uuidObj);
                 return uuidObj.hashCode();
             } else {
                 return -1;
@@ -48,7 +51,11 @@ public class ItemUtil {
         }
         return PublicUtil.hashTwoLong(up, down);
     }
-
+    public static UUID getUUIDObj(NBTTagCompound stack) {
+        String uuid = getUUID(stack);
+        if (uuid == null) return null;
+        return UUID.fromString(uuid);
+    }
     public static UUID getUUIDObj(ItemStack stack) {
         String uuid = getUUID(stack);
         if (uuid == null) return null;
