@@ -112,16 +112,16 @@ public class PlayerMarco implements Listener {
                     if(isSaving(profileOper)){
                         return;
                     }
+                    if(profile.isLogin()) {
+                        PlayerInv playerInv = PlayerInv.fromPlayerInventory(event.getPlayer().getInventory());
+                        profile.disallow();
+                        checkIllegalProfile(profile);
+                        profile.setLogin(false);
 
-                    PlayerInv playerInv = PlayerInv.fromPlayerInventory(event.getPlayer().getInventory());
-                    profile.disallow();
-                    checkIllegalProfile(profile);
-                    profile.setLogin(false);
-
-                    profile.setInventoryUnsafe(playerInv).allow();
-                    triggerDeath(event, profile);
-
-                    profile.setBounty(0);
+                        profile.setInventoryUnsafe(playerInv).allow();
+                        triggerDeath(event, profile);
+                        profile.setBounty(0);
+                    }
                 });
     }
 
@@ -158,10 +158,12 @@ public class PlayerMarco implements Listener {
             player.removePotionEffect(i.getType());
         });
         if (player.isOnline()) {
-            load.setLogin(true);
             Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
                 PlayerUtil.postResetPlayer(player);
                 new PitProfileLoadedEvent(load,op).callEvent();
+                if(player.isOnline()) { //twice check && Async check;
+                    load.setLogin(true);
+                }
             });
             FixedRewardData.Companion.sendMail(load, player);
         }

@@ -117,7 +117,7 @@ object PitHook {
     val gitVersion = "4a3f7b"
 
     @JvmStatic
-    val itemVersion = "wol_uuid"
+    val itemVersion = "moss_uuid"
     fun init() {
         loadConfig()
         loadParker()
@@ -160,12 +160,18 @@ object PitHook {
         PlayerPointsAPI.init()
         ThePit.getInstance().enchTable = EnchantmentTable(ThePit.getInstance().enchantmentFactor)
         println("Done")
-        Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), {
+        if(!delayReloadEnchTable){
             ThePit.getInstance().enchTable.reload();
+        }
+        Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), {
+            if(delayReloadEnchTable) {
+                ThePit.getInstance().enchTable.reload();
+            }
             loaded = true
         }, 100L)
 
     }
+    var delayReloadEnchTable = Boolean.getBoolean("delayReloadEnchTable")
 
 
 
