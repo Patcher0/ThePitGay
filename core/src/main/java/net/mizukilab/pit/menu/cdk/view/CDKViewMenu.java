@@ -3,6 +3,8 @@ package net.mizukilab.pit.menu.cdk.view;
 import cn.charlotte.pit.data.CDKData;
 import cn.charlotte.pit.data.PlayerMailData;
 import cn.charlotte.pit.data.PlayerProfile;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.mizukilab.pit.menu.cdk.view.button.CDKButton;
 import net.mizukilab.pit.util.item.ItemBuilder;
 import net.mizukilab.pit.util.menu.Button;
@@ -12,10 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author: EmptyIrony
@@ -28,16 +27,16 @@ public class CDKViewMenu extends Menu {
 
     @Override
     public String getTitle(Player player) {
-        Map<String, CDKData> dataMap = new HashMap<>(CDKData.getCachedCDK());
-        this.total = dataMap.size() / 45;
+        int size = CDKData.getCachedCDK().size();
+        this.total = size / 45;
 
         return "CDK View (" + current + "/" + total + " Page)";
     }
 
     @Override
     public Map<Integer, Button> getButtons(Player player) {
-        Map<String, CDKData> dataMap = new HashMap<>(CDKData.getCachedCDK());
-        List<CDKData> dataList = new ArrayList<>(dataMap.values());
+        Map<String, CDKData> dataMap = new Object2ObjectOpenHashMap<>(CDKData.getCachedCDK());
+        List<CDKData> dataList = new ObjectArrayList<>(dataMap.values());
         Map<Integer, Button> map = new HashMap<>();
         final int size = dataList.size();
         for (int i = 0; i < 45; i++) {
