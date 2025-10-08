@@ -79,11 +79,12 @@ public class ItemFactory implements IItemFactory {
         if (internalName == null) {
             return null;
         }
-        boolean shouldUpdate = false;
-        int hashCodeForUUID = ItemUtil.getHashCodeForUUID0(stack, extra);
-        if (hashCodeForUUID == -1) {
+        if(!Utils.needToCheck(internalName)) {
             return null;
         }
+        boolean shouldUpdate = false;
+
+        int hashCodeForUUID = ItemUtil.getHashCodeForUUID0(stack, extra);
         boolean b = ItemUtil.shouldUpdateItem(stack);
         if (hashCodeForUUID == 1 || (b && ItemUtil.shouldUpdateUUID())) {
             if (!clientSide) {

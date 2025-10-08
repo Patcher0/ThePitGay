@@ -44,12 +44,9 @@ public class JerryEnchant2 extends AbstractEnchantment implements ITickTask, Mov
         this.angle = NBSDecoder.parse(ThePit.getInstance().getClass().getClassLoader().getResourceAsStream("Eromanga.nbs"));
         this.demon = NBSDecoder.parse(ThePit.getInstance().getClass().getClassLoader().getResourceAsStream("Demons.nbs"));
 
-
         new BukkitRunnable() {
             @Override
             public void run() {
-
-
                 Set<Map.Entry<UUID, PositionSongPlayer>> entries = new HashSet<>(playerMap.entrySet());
                 for (Map.Entry<UUID, PositionSongPlayer> entry : entries) {
                     Player player = Bukkit.getPlayer(entry.getKey());
@@ -65,11 +62,6 @@ public class JerryEnchant2 extends AbstractEnchantment implements ITickTask, Mov
                 }
             }
         }.runTaskTimer(ThePit.getInstance(), 20, 20);
-
-        try {
-            iSpigot.INSTANCE.addMovementHandler(this);
-        } catch (Exception ignore) {
-        }
     }
 
     @Override

@@ -18,6 +18,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import spg.lgdev.handler.MovementHandler;
+import spg.lgdev.iSpigot;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
@@ -241,10 +243,12 @@ public class PublicUtil {
     }
 
     public static void register(Class<?> clazz, Object instance, List<IPlayerDamaged> playerDamageds, List<IAttackEntity> attackEntities, List<IItemDamage> iItemDamages, List<IPlayerBeKilledByEntity> playerBeKilledByEntities, List<IPlayerKilledEntity> playerKilledEntities, List<IPlayerRespawn> playerRespawns, List<IPlayerShootEntity> playerShootEntities) {
-        if (instance instanceof Listener && instance.getClass().isAnnotationPresent(AutoRegister.class)) {
-            Bukkit.getPluginManager().registerEvents((Listener) instance, ThePit.getInstance());
+        if (instance instanceof Listener listen) {
+            Bukkit.getPluginManager().registerEvents(listen, ThePit.getInstance());
         }
-
+        if (MovementHandler.class.isAssignableFrom(clazz)){
+            iSpigot.INSTANCE.addMovementHandler((MovementHandler) instance);
+        }
         if (IPlayerDamaged.class.isAssignableFrom(clazz)) {
             playerDamageds.add((IPlayerDamaged) instance);
         }

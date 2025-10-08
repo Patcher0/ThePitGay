@@ -2,6 +2,7 @@ package spg.lgdev;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.mizukilab.pit.util.exception.CancelOp;
 import nya.Skip;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -25,7 +26,7 @@ public class iSpigot implements Listener {
         INSTANCE = this;
     }
 
-    private static void handleMove(Location from2, Location eventTo, Player player, List<MovementHandler> movementHandlers, PlayerMoveEvent event) {
+    private void handleMove(Location from2, Location eventTo, Player player, List<MovementHandler> movementHandlers, PlayerMoveEvent event) {
         boolean shouldUpdateRot = from2.getPitch() != eventTo.getPitch() || from2.getYaw() != eventTo.getYaw();
         boolean shouldUpdatePos = from2.getX() != eventTo.getX() || from2.getY() != eventTo.getY() || from2.getZ() != eventTo.getZ();
         float walkSpeed = event.getPlayer().getWalkSpeed();
@@ -48,17 +49,23 @@ public class iSpigot implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
-        handleMove(event.getFrom(), event.getTo(), event.getPlayer(), movementHandlers, event);
+        try {
+            handleMove(event.getFrom(), event.getTo(), event.getPlayer(), movementHandlers, event);
+        } catch (CancelOp e) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
     public void onMove(PlayerTeleportEvent event) {
-        handleMove(event.getFrom(), event.getTo(), event.getPlayer(), movementHandlers, event);
+        try {
+            handleMove(event.getFrom(), event.getTo(), event.getPlayer(), movementHandlers, event);
+        } catch (CancelOp e){
+            event.setCancelled(true);
+        }
     }
 
     public void addMovementHandler(MovementHandler var1) {
         this.movementHandlers.add(var1);
     }
-
-
 }

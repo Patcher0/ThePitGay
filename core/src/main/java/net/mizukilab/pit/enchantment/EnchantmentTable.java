@@ -2,6 +2,7 @@ package net.mizukilab.pit.enchantment;
 
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
+import cn.charlotte.pit.data.sub.EnchantmentRecord;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -9,6 +10,8 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.log4j.Log4j2;
 import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.data.operator.SuPromise;
 import net.mizukilab.pit.enchantment.info.EnchantRequest;
@@ -26,7 +29,7 @@ import net.mizukilab.pit.util.functions.Func3;
 import net.mizukilab.pit.util.random.RandomUtil;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
-
+import static java.lang.Math.*;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -99,12 +102,13 @@ public class EnchantmentTable {
         this.enchantQueues.add(enchantRequest);
         return runnables;
     }
-
+    @Log4j2
     @Getter
     @AllArgsConstructor
     enum Tier {
         TIER_1(1,
                 (chance, enchMap, mythicItem) -> {
+                    log.info("{} 开始附魔", "T1 附魔 > " + mythicItem.uuid + " | " + mythicItem.getItemDisplayName());
                     if (mythicItem.isDark()) { // 黑裤 必出Somber
                         var enchByClass = ThePit.getInstance().getEnchantmentFactor().getEnchByClass(SomberEnchant.class);
                         mythicItem.getEnchantments().put(enchByClass, 1);
@@ -113,24 +117,23 @@ public class EnchantmentTable {
                         var rareRage = enchMap.get(EnchantmentRarity.RAGE_RARE);
                         var rage = enchMap.get(EnchantmentRarity.RAGE);
                         AbstractEnchantment abstractEnchantment = RandomUtil.randEnch(chance, rareRage, rage);
-                        int level = 1;
-                        if (RandomUtil.nextBool()) {
-                            level = 2;
-                        }
+                        int level = RandomUtil.rand(2,1);
                         mythicItem.getEnchantments().put(abstractEnchantment, level);
                         return abstractEnchantment.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE;
                     } else {
                         var normal = enchMap.get(EnchantmentRarity.NORMAL);
                         var rare = enchMap.get(EnchantmentRarity.RARE);
-                        return RandomUtil.randEnchMultipleApplyRNPreferStE(2,0, chance, 1, 2, mythicItem.getEnchantments()
-                                        , normal, rare, 0.7, (a, i) -> i.getMaxEnchantLevel() > a)
+                        return RandomUtil.randEnchMultipleApplyRNPreferStEEmp(2, chance, 1, 2, mythicItem.getEnchantments()
+                                        , normal, rare, 0.9, (a, i) -> i.getMaxEnchantLevel() > a)
                                 .stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                     }
                 },
                 (chance, enchMap, mythicItem) -> {
                     if (mythicItem.isRage() || mythicItem.isDark()) {
-                        throw new IllegalEnchantInputException("Can't enchant RD mythicItem with mythBook");
+                        throw new IllegalEnchantInputException("Can't enchant R/D mythicItem with Mythic Book");
                     }
+
+                    log.info("{} 开始附魔", "附魔书 附魔 > " + mythicItem.uuid + " | " + mythicItem.getItemDisplayName());
                     var abstractEnchantments = enchMap.get(EnchantmentRarity.RARE);
                     RandomUtil.chooseAndApplyChecked(true, abstractEnchantments, mythicItem.getEnchantments(), 3,3, AbstractEnchantment::getMaxEnchantLevel);
                     return true;
@@ -144,6 +147,8 @@ public class EnchantmentTable {
         }),
         TIER_2(2,
                 (chance, enchMap, mythicItem) -> {
+
+                    log.info("{} 开始附魔", "T2 附魔 > " + mythicItem.uuid + " | " + mythicItem.getItemDisplayName());
                     if (mythicItem.isDark()) {
                         var enchantments1 = mythicItem.getEnchantments();
                         var rage = enchMap.get(EnchantmentRarity.DARK_RARE);
@@ -154,59 +159,52 @@ public class EnchantmentTable {
                     var enchantments1 = mythicItem.getEnchantments();
                     var rare = enchMap.get(EnchantmentRarity.RARE);
                     var normal = enchMap.get(EnchantmentRarity.NORMAL);
-                    int count = 0;
-                    for (Integer value : enchantments1.values()) {
-                        count += value;
-                    }
+                    int count = Einstein.sum(enchantments1);
                     if (mythicItem.isRage()) {
                         chance = 0D;
                     }
-                    int ste = 0;
-                    int a1 = 8 - count;
-                    int upBound = Math.min(a1, 2);
-                    /**
-                     * Warning, these enchant logics are obeying rules as follows
-                     * 1. T1 -> 1
-                     * { T2 -> 21 or 11 }
-                     * 2. T1 -> 2
-                     * { T2 -> 3 or 21 }
-                     * 3. T1 -> 11
-                     * { T2 -> 21 }
-                     * 4. T1 -> ANY-ANY-ANY (ADMIN ENCHANT)
-                     * { T2 -> ANY+1-ANY+1-ANY+1 }
-                     */
-                    c1:
-                    {
-                        int size = enchantments1.size();
-                        if (size == 1) {
-                            switch (count) {
-                                case 1 -> {
-                                    if (RandomUtil.nextBool()) {
-                                        a1 = 2;
-                                        ste = 1;
-                                    } else {
-                                        a1 = 1;
-                                        ste = -1;
-                                    }
-                                }
-                                default -> a1 = 1; // case 2 check
-                            }
-                        } else if (size == 2) {
-                            switch (count){
-                                case 2 -> {
-                                    a1 = 1;
-                                    ste = 2;
-                                }
-                                default -> a1 = 1;
-                            }
-                        } else { //111 check;
-                            a1 = 2;
-                            ste = 2;
+                    int newEnchants = 0;
+                    int remain = 8 - count;
+                    int ops = min(2, remain);
+                    int upBound = ops;
+                        /*
+                          Warning, these enchant logics are obeying rules as follows
+                          1. T1 -> 1
+                          { T2 -> 21 or 3 }
+                          2. T1 -> 2
+                          { T2 -> 3 or 21 }
+                          3. T1 -> 11
+                          { T2 -> 21 or 111 }
+                          4. T1 -> ANY-ANY-ANY (ADMIN ENCHANT)
+                          { T2 -> ANY+1-ANY+1-ANY+1 }
+                          5. T1 -> 4
+                          { T2 -> 41 }
+                         */
+                    int enchants = enchantments1.size();
+                    if (enchants == 1) {
+                        newEnchants = 1;
+                        if (count >= 3) { // == 2, 直接升一级
+                            newEnchants = -1;
+                            ops = min(1, remain);
+                        } else if(count == 2){
+                            newEnchants =  0;
+                            ops = min(1, remain);
                         }
+                    } else if (enchants == 2) {
+                        ops = min(1, remain);
+                        // 11 check
+                        if (count >= 6) {
+                            newEnchants = -RandomUtil.rand(2, 0);
+                        } else if (count >= 2) {
+                            newEnchants = RandomUtil.rand(2, 0); //111 12
+                        }
+                    } else { //111 check;
+                        newEnchants = 2;
                     }
+                    int clampi = Einstein.clampi(ops, 0, upBound);
 
-                    int clampi = Einstein.clampi(a1, 0, upBound);
-                    var result = RandomUtil.randEnchMultipleApplySofRNPreferStE( 3,ste, chance, clampi, clampi, enchantments1, normal, rare, 0.0, (a, i) -> i.getMaxEnchantLevel() > a);
+                    var result = RandomUtil.randEnchMultipleApplySofRNPreferStE(3, newEnchants, chance, clampi, clampi, enchantments1, normal, rare, 0.5
+                            , (a, i) -> i.getMaxEnchantLevel() > a);
                     return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                 },
                 (chance, enchMap, mythicItem) -> TIER_1.useBook.invoke(chance, enchMap, mythicItem),
@@ -223,29 +221,26 @@ public class EnchantmentTable {
                 }),
         TIER_3(3,
                 (chance, enchMap, mythicItem) -> {
+                    log.info("{} 开始附魔", "T3 附魔 > " + mythicItem.uuid + " | " + mythicItem.getItemDisplayName());
                     if (mythicItem.isDark()) {
                         var enchantments1 = mythicItem.getEnchantments();
                         var rage = enchMap.get(EnchantmentRarity.DARK_RARE);
                         var normal = enchMap.get(EnchantmentRarity.DARK_NORMAL);
-                        AbstractEnchantment abstractEnchantment = RandomUtil.chooseAndApplyMultipleTypeRN(chance, true, enchantments1, 1, normal, rage);
-                        return abstractEnchantment.getRarity() == EnchantmentRarity.DARK_RARE;
+                        return RandomUtil.chooseAndApplyMultipleTypeRN(chance, true, enchantments1, 1, normal, rage).getRarity() == EnchantmentRarity.DARK_RARE;
                     }
                     var enchantments1 = mythicItem.getEnchantments();
                     var rare = enchMap.get(EnchantmentRarity.RARE);
                     var normal = enchMap.get(EnchantmentRarity.NORMAL);
-                    int count = 0;
-                    for (Integer value : enchantments1.values()) {
-                        count += value;
-                    }
-                    //9
+                    int count = Einstein.sum(enchantments1);
+                    //8最大属性
                     int size = enchantments1.size();
                     int clampi = Einstein.clampi(8 - count, 1, 8);
-                    int min = RandomUtil.rand(clampi,3);
+                    int min = RandomUtil.rand(clampi,Math.min(3,8 - count));
                     if(mythicItem.isRage()){
                         chance = 0D;
                     }
-                    var result = RandomUtil.randEnchMultipleApplyRNStE((size != 2) ? -1 : 1,3,chance, min, clampi, enchantments1,normal,rare,(a, i) -> i.getMaxEnchantLevel() > a);
-                    return result.stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
+                    return RandomUtil.randEnchMultipleApplySofRNPreferStE(3,(size <= 2) ? -6 : clampi + 1,chance, min, clampi, enchantments1,normal,rare,0.5,(a, i) -> i.getMaxEnchantLevel() > a)
+                            .stream().anyMatch(i -> i.getRarity().getParentType() == EnchantmentRarity.RarityType.RARE);
                 },
                 (chance, enchMap, mythicItem) -> TIER_1.useBook.invoke(chance, enchMap, mythicItem),
                 (item) -> {
@@ -283,9 +278,11 @@ public class EnchantmentTable {
             String enchantingBook = profile.getEnchantingBook();
             var level = getEnchantMap(enchTable, item);
             if (level == null) {
+                log.info("玩家 {} 附魔该物品时失败 {} - {}, 原因: 未找到合适的附魔池表", enq.getPlayer().getName(), enq.getMythic().getUuid(), enq.getMythic().getItemDisplayName());
                 enq.fail();
                 return;
             }
+            log.info("玩家 {} 开始附魔 {} - {}", enq.getPlayer().getName(), enq.getMythic().getUuid(), enq.getMythic().getItemDisplayName());
             boolean completed = false;
             boolean announce = false;
 
@@ -302,10 +299,10 @@ public class EnchantmentTable {
 
                 completed = true;
             } catch (IllegalEnchantInputException e) {
+                log.info("玩家 {} 附魔该物品时失败 {} - {}, 原因: {}", enq.getPlayer().getName(), enq.getMythic().getUuid(), enq.getMythic().getItemDisplayName(), e.getMessage());
                 enq.fail();
-                e.printStackTrace();
             } catch (Throwable t) {
-                t.printStackTrace();
+                log.info("玩家 {} 附魔该物品时失败 {} - {}, 原因: {}", enq.getPlayer().getName(), enq.getMythic().getUuid(), enq.getMythic().getItemDisplayName(), t);
             } finally {
                 int lastMaxLive = item.maxLive;
 
@@ -315,6 +312,7 @@ public class EnchantmentTable {
                 } else {
                     item.setLive(item.getMaxLive());
                 }
+                item.getEnchantmentRecords().add(new EnchantmentRecord(enq.getPlayer().getName(),String.format("EnchantmentTable UseBook %s Tier %s Live %s",enq.isUseBook(),item.tier,item.live),System.currentTimeMillis()));
                 if (completed) {
                     enq.complete(item, true, announce);
                 }

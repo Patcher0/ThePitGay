@@ -222,12 +222,18 @@ public class Utils {
         packedOperator.loadAs(playerProfile);
         return packedOperator;
     }
-
+    public static boolean needToCheck(String internalName){
+        return switch (internalName) {
+            case "mythic_sword", "armageddon_boots", "angel_chestplate", "kings_helmet", "lucky_chestplate",
+                 "mythic_leggings", "jewel_sword", "mythic_bow", "magic_fishing_rod" -> true;
+            default -> false;
+        };
+    }
     public static IMythicItem getMythicItem0(ItemStack item, String internalName) {
-        IMythicItem mythicItem = null;
         if (internalName == null) { //提前skip, 不需要name。
             return null;
         }
+        IMythicItem mythicItem = null;
         switch (internalName) {
             case "mythic_sword" -> mythicItem = new MythicSwordItem();
             case "mythic_bow" -> mythicItem = new MythicBowItem();

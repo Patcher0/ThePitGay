@@ -57,11 +57,7 @@ public class JerryEnchant5 extends AbstractEnchantment implements ITickTask, Mov
             }
         }.runTaskTimerAsynchronously(ThePit.getInstance(), 20, 20);
 
-        try {
-            iSpigot.INSTANCE.addMovementHandler(this);
-        } catch (NoClassDefFoundError ignore) {
 
-        }
     }
 
     @Override

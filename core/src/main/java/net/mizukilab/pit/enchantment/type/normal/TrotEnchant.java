@@ -37,7 +37,7 @@ public class TrotEnchant extends AbstractEnchantment implements MovementHandler,
     @SneakyThrows
     public TrotEnchant() {
         try {
-            iSpigot.INSTANCE.addMovementHandler(this);
+            
         } catch (NoClassDefFoundError ignore) {
         }
     }

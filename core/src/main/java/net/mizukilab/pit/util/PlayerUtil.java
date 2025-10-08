@@ -10,6 +10,8 @@ import cn.charlotte.pit.perk.AbstractPerk;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.server.v1_8_R3.*;
 import net.mizukilab.pit.UtilKt;
+import net.mizukilab.pit.event.CanImmuneEvent;
+import net.mizukilab.pit.event.TrueDamageByEntityEvent;
 import net.mizukilab.pit.item.AbstractPitItem;
 import net.mizukilab.pit.util.chat.CC;
 import net.mizukilab.pit.util.item.ItemUtil;
@@ -175,8 +177,13 @@ public class PlayerUtil {
      * @param canImmune  此伤害能否被免疫 / 降低
      * @return 此伤害是否被免疫
      */
-    public static boolean damage(Player victim, DamageType damageType, Double damage, boolean canImmune) {
+    public static boolean damage(Player victim, DamageType damageType, double damage, boolean canImmune) {
         boolean immune = false;
+        if(canImmune){
+            CanImmuneEvent canImmuneEvent = new CanImmuneEvent(victim);
+            canImmuneEvent.callEvent();
+            immune = canImmuneEvent.isCanImmune();
+        }
         if (victim.getInventory().getLeggings() != null && victim.getInventory().getLeggings().getType() != Material.AIR) {
             immune = canImmune && ThePit.getApi().getItemEnchantLevel(victim.getInventory().getLeggings(), "Mirror") >= 1;
         }
@@ -220,9 +227,9 @@ public class PlayerUtil {
         boolean immune = damage(victim, damageType, damage, canImmune);
         if (immune) {
             //Mirror附魔反弹伤害
-            if (damageType == DamageType.TRUE && victim.getInventory().getLeggings() != null && victim.getInventory().getLeggings().getType() != Material.AIR) {
-                int level = ThePit.getApi().getItemEnchantLevel(victim.getInventory().getLeggings(), "Mirror");
-                if (level >= 2) damage(attacker, damageType, damage * (0.25 * level - 0.25), false);
+            if (damageType == DamageType.TRUE) {
+                TrueDamageByEntityEvent trueDamageByEntityEvent = new TrueDamageByEntityEvent(attacker, victim, canImmune,damage);
+                trueDamageByEntityEvent.callEvent();
             }
         }
         PublicUtil.processActionBarWithSetting(attacker, victim, (int) damage, damage);

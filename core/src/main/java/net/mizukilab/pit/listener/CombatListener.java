@@ -41,6 +41,7 @@ import net.mizukilab.pit.util.chat.CC;
 import net.mizukilab.pit.util.chat.ChatComponentBuilder;
 import net.mizukilab.pit.util.chat.MessageType;
 import net.mizukilab.pit.util.cooldown.Cooldown;
+import net.mizukilab.pit.util.exception.CancelOp;
 import net.mizukilab.pit.util.inventory.InventoryUtil;
 import net.mizukilab.pit.util.item.ItemBuilder;
 import net.mizukilab.pit.util.item.ItemUtil;
@@ -152,21 +153,6 @@ public class CombatListener implements Listener {
         }
     }
 
-    @EventHandler
-    public void onTp(PlayerTeleportEvent event) {
-        if (PlayerMoveHandler.getCantMoveList().contains(event.getPlayer())) {
-            event.setCancelled(true);
-            return;
-        }
-        if (Bukkit.isPrimaryThread()) {
-            PlayerMoveHandler.checkMove(event.getTo(), event.getFrom(), event.getPlayer());
-        } else {
-            //heyiwei
-            Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
-                PlayerMoveHandler.checkMove(event.getTo(), event.getFrom(), event.getPlayer());
-            });
-        }
-    }
     //heyiwei
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     private void onCombat(EntityDamageByEntityEvent event) {

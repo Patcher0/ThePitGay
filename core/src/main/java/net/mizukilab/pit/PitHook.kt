@@ -522,7 +522,6 @@ private fun loadEnchants() {
         EliminatePowerEnchant::class.java,
         SpywareEnchant::class.java,
     )
-
     /*        classes += HappyNewYearEnchant::class.java
             classes += WitheredAndPiercingThroughTheHeart::class.ja
 */
@@ -539,20 +538,11 @@ private fun loadEnchants() {
 
     //  classes += Limit24520Ench::class.java
     //  classes += LimitXZQ1Ench::class.java
-    if (ThePit.getInstance().globalConfig.token == "SmallMY") {
-        classes += VollewyA::class.java
-        classes += Volley_B::class.java
-        classes -= VolleyEnchant::class.java
-    }
-    music.apply {
-        add(JerryEnchant())
-        add(JerryEnchant2())
-        add(JerryEnchant3())
-        add(JerryEnchant4())
-        add(JerryEnchant5())
-        add(JerryEnchant6())
-        add(JerryEnchant7())
-    }
+//    if (ThePit.getInstance().globalConfig.token == "SmallMY") {
+//        classes += VollewyA::class.java
+//        classes += Volley_B::class.java
+//        classes -= VolleyEnchant::class.java
+//    }
     enchantmentFactor.init(classes)
     EnchantedConstructor.apply {
         Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), {

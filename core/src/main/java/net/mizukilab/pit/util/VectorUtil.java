@@ -2,6 +2,7 @@ package net.mizukilab.pit.util;
 
 
 import net.minecraft.server.v1_8_R3.MathHelper;
+import net.mizukilab.pit.util.random.RandomUtil;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -20,31 +21,32 @@ import java.util.stream.IntStream;
  */
 public class VectorUtil {
 
-    private static final Random random = new Random();
-
-    public static Item itemDrop(Player player, ItemStack itemStack) {
-        return itemDrop(player, itemStack, 0.0, 0.4);
-    }
+    private static final Random random = RandomUtil.random;
 
     public static Item itemDrop(Player player, ItemStack itemStack, double bulletSpread, double radius) {
         Location location = player.getLocation().add(0.0D, 1.5D, 0.0D);
         Item item = player.getWorld().dropItem(location, itemStack);
-        float yaw = (float) Math.toRadians(-player.getLocation().getYaw() - 90.0F);
-        float pitch = (float) Math.toRadians(-player.getLocation().getPitch());
+        float yaw = (float) Math.toRadians(-location.getYaw() - 90.0F);
+        float pitch = (float) Math.toRadians(-location.getPitch());
         double x;
         double y;
         double z;
+        float cos = MathHelper.cos(pitch);
+        float sin = MathHelper.sin(pitch);
+        float sin1 = MathHelper.sin(yaw);
+        float cos1 = MathHelper.cos(yaw);
         if (bulletSpread > 0.0D) {
             double[] spread = new double[]{1.0D, 1.0D, 1.0D};
-
-            IntStream.range(0, 3).forEach((t) -> spread[t] = (random.nextDouble() - random.nextDouble()) * bulletSpread * 0.1D);
-            x = MathHelper.cos(pitch) * MathHelper.cos(yaw) + spread[0];
-            y = MathHelper.sin(pitch) + spread[1];
-            z = -MathHelper.sin(yaw) * MathHelper.cos(pitch) + spread[2];
+            for (int i =0; i < spread.length; ++i) {
+                spread[i] = (random.nextDouble() - random.nextDouble()) * bulletSpread * 0.1D;
+            }
+            x = cos * cos1 + spread[0];
+            y = sin + spread[1];
+            z = -sin1 * cos + spread[2];
         } else {
-            x = MathHelper.cos(pitch) * MathHelper.cos(yaw);
-            y = MathHelper.sin(pitch);
-            z = -MathHelper.sin(yaw) * MathHelper.cos(pitch);
+            x = cos * cos1;
+            y = sin;
+            z = -sin1 * cos;
         }
 
         Vector dirVel = new Vector(x, y, z);
@@ -92,7 +94,13 @@ public class VectorUtil {
 
         return new Location(world, x + backwardX, y - backwardY, z + backwardZ, MathHelper.g(yaw + 180F), -30);
     }
-
+    public static void knock(Player vic, float y, float buffer){
+        float yaw = (vic.getLocation().getYaw() + 180);
+        vic.setVelocity(new Vector(
+                -MathHelper.sin(yaw * 3.1415927F / 180.0F) * (float) buffer,
+                y,
+                MathHelper.cos(yaw * 3.1415927F / 180.0F) * (float) buffer));
+    }
     public static Vector getPushVector(Location from, Location to, double velocity) {
         Vector test = to.clone().subtract(from).toVector();
         double elevation = test.getY();

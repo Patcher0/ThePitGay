@@ -39,7 +39,7 @@ public class DoubleJumpEnchant extends AbstractEnchantment implements Listener, 
     @SneakyThrows
     public DoubleJumpEnchant() {
         try {
-            iSpigot.INSTANCE.addMovementHandler(this);
+            
         } catch (NoClassDefFoundError ignore) {
         }
     }
