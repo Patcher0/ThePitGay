@@ -26,8 +26,8 @@ public class VectorUtil {
     public static Item itemDrop(Player player, ItemStack itemStack, double bulletSpread, double radius) {
         Location location = player.getLocation().add(0.0D, 1.5D, 0.0D);
         Item item = player.getWorld().dropItem(location, itemStack);
-        float yaw = (float) Math.toRadians(-player.getLocation().getYaw() - 90.0F);
-        float pitch = (float) Math.toRadians(-player.getLocation().getPitch());
+        float yaw = (float) Math.toRadians(-location.getYaw() - 90.0F);
+        float pitch = (float) Math.toRadians(-location.getPitch());
         double x;
         double y;
         double z;
