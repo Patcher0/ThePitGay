@@ -64,7 +64,7 @@ public class DJBundlePVZ extends AbstractEnchantment implements ITickTask, Movem
         }.runTaskTimer(ThePit.getInstance(), 20, 20);
 
         try {
-            iSpigot.INSTANCE.addMovementHandler(this);
+            
         } catch (NoClassDefFoundError ignore) {
         }
     }

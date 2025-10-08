@@ -1,6 +1,5 @@
 package net.mizukilab.pit.enchantment.menu;
 
-import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
 import io.irina.backports.utils.SWMRHashTable;
 import lombok.Getter;
@@ -17,7 +16,7 @@ import net.mizukilab.pit.item.type.mythic.MythicSwordItem;
 import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.Utils;
 import net.mizukilab.pit.util.chat.CC;
-import net.mizukilab.pit.util.exception.InvCloseCancelledException;
+import net.mizukilab.pit.util.exception.CancelOp;
 import net.mizukilab.pit.util.inventory.InventoryUtil;
 import net.mizukilab.pit.util.item.ItemBuilder;
 import net.mizukilab.pit.util.item.ItemUtil;
@@ -25,7 +24,6 @@ import net.mizukilab.pit.util.menu.Button;
 import net.mizukilab.pit.util.menu.Menu;
 import net.mizukilab.pit.util.menu.buttons.DisplayButton;
 import net.mizukilab.pit.util.random.RandomUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -418,7 +416,7 @@ public class MythicWellMenu extends Menu {
             if (animationData.isStartEnchanting() && !animationData.isFinished()) {
                 player.sendMessage(CC.translate("&c附魔进行中，无法关闭界面！"));
                 player.playSound(player.getLocation(), Sound.VILLAGER_NO, 1, 1.2F);
-                throw InvCloseCancelledException.INST;
+                throw CancelOp.INST;
             }
         }
 

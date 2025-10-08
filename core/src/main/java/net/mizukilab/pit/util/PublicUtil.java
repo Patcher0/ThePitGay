@@ -18,6 +18,8 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import spg.lgdev.handler.MovementHandler;
+import spg.lgdev.iSpigot;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
@@ -244,7 +246,9 @@ public class PublicUtil {
         if (instance instanceof Listener listen) {
             Bukkit.getPluginManager().registerEvents(listen, ThePit.getInstance());
         }
-
+        if (MovementHandler.class.isAssignableFrom(clazz)){
+            iSpigot.INSTANCE.addMovementHandler((MovementHandler) instance);
+        }
         if (IPlayerDamaged.class.isAssignableFrom(clazz)) {
             playerDamageds.add((IPlayerDamaged) instance);
         }

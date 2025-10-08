@@ -73,7 +73,7 @@ public class JerryEnchant7 extends AbstractEnchantment implements ITickTask, Mov
 
     private void registerMovementHandler() {
         try {
-            iSpigot.INSTANCE.addMovementHandler(this);
+            
         } catch (NoClassDefFoundError ignore) {
         }
     }

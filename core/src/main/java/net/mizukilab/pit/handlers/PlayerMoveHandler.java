@@ -4,15 +4,16 @@ import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
 import cn.charlotte.pit.data.operator.IOperator;
 import cn.hutool.core.collection.ConcurrentHashSet;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import net.minecraft.server.v1_8_R3.EnumParticle;
 import net.minecraft.server.v1_8_R3.PacketPlayInFlying;
 import net.minecraft.server.v1_8_R3.PacketPlayOutWorldParticles;
 import net.mizukilab.pit.config.PitWorldConfig;
-import net.mizukilab.pit.util.BlockUtil;
-import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.aabb.AABB;
 import net.mizukilab.pit.util.chat.ActionBarUtil;
 import net.mizukilab.pit.util.chat.CC;
+import net.mizukilab.pit.util.exception.CancelOp;
 import org.bukkit.*;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.ArmorStand;
@@ -22,8 +23,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
@@ -41,39 +40,17 @@ import java.util.WeakHashMap;
  */
 public class PlayerMoveHandler implements MovementHandler, Listener {
 
-    private static final Set<Player> cantMoveList = new ConcurrentHashSet<>();
-    private static final Map<Player, FlightData> flyingPlayers = new WeakHashMap<>();
-    private static final Map<Player, Long> slimeCooldowns = new WeakHashMap<>();
+    private static final Set<Player> CANT_MOVE_LIST = new ConcurrentHashSet<>();
+    private static final Map<Player, FlightData> FLYING_PLAYERS = new WeakHashMap<>();
+    private static final Map<Player, Long> SLIME_COOLDOWNS = new WeakHashMap<>();
     private static final long SLIME_COOLDOWN_MS = 3000; // 3秒冷却时间
-
+    @RequiredArgsConstructor
+    @Data
     private static class FlightData {
         private final ArmorStand armorStand;
         private final Vector direction;
         private final BukkitTask task;
-        private final long startTime;
-
-        public FlightData(ArmorStand armorStand, Vector direction, BukkitTask task) {
-            this.armorStand = armorStand;
-            this.direction = direction;
-            this.task = task;
-            this.startTime = System.currentTimeMillis();
-        }
-
-        public ArmorStand getArmorStand() {
-            return armorStand;
-        }
-
-        public Vector getDirection() {
-            return direction;
-        }
-
-        public BukkitTask getTask() {
-            return task;
-        }
-
-        public long getStartTime() {
-            return startTime;
-        }
+        private final long startTime = System.currentTimeMillis();
     }
 
     public PlayerMoveHandler() {
@@ -81,7 +58,7 @@ public class PlayerMoveHandler implements MovementHandler, Listener {
     }
 
     public static Set<Player> getCantMoveList() {
-        return PlayerMoveHandler.cantMoveList;
+        return PlayerMoveHandler.CANT_MOVE_LIST;
     }
 
     public static void checkMove(Location to, Location from, Player player) {
@@ -89,13 +66,9 @@ public class PlayerMoveHandler implements MovementHandler, Listener {
 
         //when X/Z Loc change
         if (to.getBlockX() != from.getBlockX() || to.getBlockZ() != from.getBlockZ()) {
-            if (!profile.isLoaded() && ProfileLoadRunnable.getInstance() != null && ProfileLoadRunnable.getInstance().getCooldownMap() != null && ProfileLoadRunnable.getInstance().getCooldownMap().containsKey(player.getUniqueId())) {
+            if (!profile.isLoaded()) {
                 ActionBarUtil.sendActionBar1(player, "system", "&c正在加载您的游戏数据,如长时间等待请尝试重新进入...", 2);
-
-                player.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 9999999, 1, false), true);
-                player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 9999999, -100, false), true);
-                player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 9999999, -100, false), true);
-                return;
+                CancelOp.op();
             }
         }
         if(profile != PlayerProfile.NONE_PROFILE) {
@@ -103,106 +76,26 @@ public class PlayerMoveHandler implements MovementHandler, Listener {
             if (to.getBlockX() != from.getBlockX() ||
                     to.getBlockY() != from.getBlockY() ||
                     to.getBlockZ() != from.getBlockZ()) {
-
-                if (profile.isScreenShare()) {
-                    BookUtil.openPlayer(player,
-                            BookUtil.writtenBook()
-                                    .title(CC.translate("&c$screenShareRequest"))
-                                    .author("KleeLoveLife")
-                                    .pages(
-                                            new BookUtil.PageBuilder()
-                                                    .add(
-                                                            BookUtil.TextBuilder
-                                                                    .of(CC.translate("&4&l您因疑似作弊而被冻结!"))
-                                                                    .build()
-                                                    )
-                                                    .newLine()
-                                                    .newLine()
-                                                    .add(
-                                                            BookUtil.TextBuilder
-                                                                    .of(CC.translate("&0请在 3 分钟 内添加以下QQ:"))
-                                                                    .build()
-                                                    )
-                                                    .newLine()
-                                                    .add(
-                                                            BookUtil.TextBuilder
-                                                                    .of(CC.translate("&0QQ: " + profile.getScreenShareQQ()))
-                                                                    .build()
-                                                    )
-                                                    .newLine()
-                                                    .newLine()
-                                                    .add(
-                                                            BookUtil.TextBuilder
-                                                                    .of(CC.translate("&0如关闭客户端/超时未添加"))
-                                                                    .build()
-                                                    )
-                                                    .newLine()
-                                                    .add(
-                                                            BookUtil.TextBuilder
-                                                                    .of(CC.translate("&0等拒绝查端的行为,"))
-                                                                    .build()
-                                                    )
-                                                    .newLine()
-                                                    .add(
-                                                            BookUtil.TextBuilder
-                                                                    .of(CC.translate("&0账号会被封禁 30 天!"))
-                                                                    .build()
-                                                    )
-                                                    .newLine()
-                                                    .newLine()
-                                                    .add(
-                                                            BookUtil.TextBuilder
-                                                                    .of(CC.translate("&0如遇到问题,可在公屏向管理员求助."))
-                                                                    .build()
-                                                    )
-                                                    .build()
-                                    )
-                                    .build()
-                    );
-                }
                 if (profile.getWipedData() != null && !profile.getWipedData().isKnow()) {
                     BookUtil.openPlayer(player,
                             BookUtil.writtenBook()
                                     .title(CC.translate("&c$wipeNotification #" + player.getName()))
-                                    .author("KleeLoveLife")
-                                    .pages(
+                                    .author("KleeLoveLife").pages(
                                             new BookUtil.PageBuilder()
-                                                    .add(
-                                                            BookUtil.TextBuilder
-                                                                    .of(CC.translate("&0您因" + profile.getWipedData().getReason()))
-                                                                    .build()
-                                                    )
+                                                    .add(BookUtil.TextBuilder.of(CC.translate("&0您因" + profile.getWipedData().getReason())).build())
+                                                    .newLine().add(CC.translate("&0我们已清除您的存档"))
+                                                    .newLine().add(CC.translate("&0希望您在未来的游戏中"))
+                                                    .newLine().add(CC.translate("&0遵守我们的规则，谢谢"))
+                                                    .newLine().add(CC.translate("&0如有疑问，请在论坛中申诉"))
                                                     .newLine()
-                                                    .add(
-                                                            CC.translate("&0我们已清除您的存档")
-                                                    )
-                                                    .newLine()
-                                                    .add(
-                                                            CC.translate("&0希望您在未来的游戏中")
-                                                    )
-                                                    .newLine()
-                                                    .add(
-                                                            CC.translate("&0遵守我们的规则，谢谢")
-                                                    ).newLine()
-                                                    .add(
-                                                            CC.translate("&0如有疑问，请在论坛中申诉")
-                                                    )
-                                                    .newLine()
-                                                    .newLine()
-                                                    .add(
-                                                            BookUtil.TextBuilder
-                                                                    .of(CC.translate("&a我已知晓"))
+                                                    .newLine().add(BookUtil.TextBuilder.of(CC.translate("&a我已知晓"))
                                                                     .onHover(BookUtil.HoverAction.showText(CC.translate("&f点击不再提示")))
                                                                     .onClick(BookUtil.ClickAction.runCommand("/iKnowIGotWiped"))
-                                                                    .build()
-                                                    )
+                                                                    .build())
                                                     .build()
                                     )
                                     .build()
                     );
-                }
-                if (PlayerUtil.isStaffSpectating(player)) {
-                    player.setAllowFlight(true);
                 }
             }
             if (player.isOnGround()) {
@@ -227,20 +120,20 @@ public class PlayerMoveHandler implements MovementHandler, Listener {
 
     public static void launchPlayer(Player player, Location to, float initialYaw, float initialPitch) {
         if (to.clone().add(0, -1, 0).getBlock().getType() == Material.SLIME_BLOCK) {
-            if (flyingPlayers.containsKey(player)) {
+            if (FLYING_PLAYERS.containsKey(player)) {
                 return;
             }
             long currentTime = System.currentTimeMillis();
-            Long lastUse = slimeCooldowns.get(player);
+            Long lastUse = SLIME_COOLDOWNS.get(player);
             if (lastUse != null && (currentTime - lastUse) < SLIME_COOLDOWN_MS) {
                 long remainingTime = SLIME_COOLDOWN_MS - (currentTime - lastUse);
                 double remainingSeconds = remainingTime / 1000.0;
                 ActionBarUtil.sendActionBar1(player, "slime_cooldown",
-                        String.format("&c弹射冷却中... %.1f秒", remainingSeconds), 1);
+                        String.format("&c弹射冷却中... %.1f秒 ", remainingSeconds), 20);
                 return;
             }
 
-            slimeCooldowns.put(player, currentTime);
+            SLIME_COOLDOWNS.put(player, currentTime);
             Location spawnLoc = player.getLocation().clone();
             ArmorStand armorStand = player.getWorld().spawn(spawnLoc, ArmorStand.class);
             armorStand.setVisible(false);
@@ -279,10 +172,6 @@ public class PlayerMoveHandler implements MovementHandler, Listener {
                 @Override
                 public void run() {
                     ticks++;
-   /*                 if (!armorStand.isValid() || armorStand.getPassenger() != player) {
-                        endFlight(player);
-                        return;
-                    }*/
                     if (armorStand.getPassenger() != player) {
                         try {
                             armorStand.setPassenger(player);
@@ -355,12 +244,12 @@ public class PlayerMoveHandler implements MovementHandler, Listener {
                     }
                 }
             }.runTaskTimer(ThePit.getInstance(), 1L, 1L);
-            flyingPlayers.put(player, new FlightData(armorStand, direction, flightTask));
+            FLYING_PLAYERS.put(player, new FlightData(armorStand, direction, flightTask));
         }
     }
 
     private static void endFlight(Player player) {
-        FlightData flightData = flyingPlayers.remove(player);
+        FlightData flightData = FLYING_PLAYERS.remove(player);
         if (flightData != null) {
             try {
                 if (flightData.getTask() != null) {
@@ -421,11 +310,11 @@ public class PlayerMoveHandler implements MovementHandler, Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        if (flyingPlayers.containsKey(player)) {
+        if (FLYING_PLAYERS.containsKey(player)) {
             endFlight(player);
         }
-        slimeCooldowns.remove(player);
-        cantMoveList.remove(player);
+        SLIME_COOLDOWNS.remove(player);
+        CANT_MOVE_LIST.remove(player);
     }
 
     @EventHandler
@@ -433,8 +322,8 @@ public class PlayerMoveHandler implements MovementHandler, Listener {
         if (event.getEntity() instanceof Player && event.getDismounted() instanceof ArmorStand) {
             Player player = (Player) event.getEntity();
             ArmorStand armorStand = (ArmorStand) event.getDismounted();
-            if (flyingPlayers.containsKey(player)) {
-                FlightData flightData = flyingPlayers.remove(player);
+            if (FLYING_PLAYERS.containsKey(player)) {
+                FlightData flightData = FLYING_PLAYERS.remove(player);
                 flightData.getTask().cancel();
                 armorStand.remove();
             }
@@ -443,25 +332,12 @@ public class PlayerMoveHandler implements MovementHandler, Listener {
     @EventHandler
     public void onArmorStandInteract(PlayerInteractEntityEvent event) {
         if (event.getRightClicked() instanceof ArmorStand) {
-            if (flyingPlayers.containsKey(event.getPlayer())) {
+            if (FLYING_PLAYERS.containsKey(event.getPlayer())) {
                 event.setCancelled(true);
             }
         }
     }
 
-    @EventHandler
-    public void onMove(PlayerMoveEvent event) {
-        if (cantMoveList.contains(event.getPlayer())) {
-            final Location to = event.getTo();
-            final Location from = event.getFrom();
-
-            if (to.getBlockX() != from.getBlockX() ||
-                    to.getBlockY() != from.getBlockY() ||
-                    to.getBlockZ() != from.getBlockZ()) {
-                event.setCancelled(true);
-            }
-        }
-    }
 
     @Override
     public void handleUpdateLocation(Player player, Location location, Location location1, PacketPlayInFlying packetPlayInFlying) {
