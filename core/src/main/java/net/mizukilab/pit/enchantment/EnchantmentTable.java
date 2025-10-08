@@ -312,7 +312,7 @@ public class EnchantmentTable {
                 } else {
                     item.setLive(item.getMaxLive());
                 }
-                item.getEnchantmentRecords().add(new EnchantmentRecord(enq.getPlayer().getName(),String.format("EnchantmentTable UseBook %s Tier %s Live %s",useBook,item.tier,item.live),System.currentTimeMillis()));
+                item.getEnchantmentRecords().add(new EnchantmentRecord(enq.getPlayer().getName(),String.format("EnchantmentTable UseBook %s Tier %s Live %s",enq.isUseBook(),item.tier,item.live),System.currentTimeMillis()));
                 if (completed) {
                     enq.complete(item, true, announce);
                 }
