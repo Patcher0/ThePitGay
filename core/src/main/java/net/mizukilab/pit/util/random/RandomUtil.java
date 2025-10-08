@@ -25,10 +25,10 @@ import java.util.function.Predicate;
  */
 public class RandomUtil {
 
-    public static final Random random;
+    public static final SecureRandom random;
 
     static {
-        random = new Random();
+        random = new SecureRandom();
     }
     public static Random random(){
         return ThreadLocalRandom.current();
@@ -291,6 +291,13 @@ public class RandomUtil {
         maxL2 = rand(maxL2, min);
         List<T> result = new LinkedList<>();
         List<T> normal;
+        int state = levelUps;
+        boolean frontPriority = true;
+        if (levelUps != -1 && levelUps < 0) {
+            levelUps = Math.abs(levelUps);
+            frontPriority = false;
+        }
+
         int levelUpCount = 0;
         routine1:
         for (int z = 0; z < maxL2; z++) {
@@ -299,11 +306,16 @@ public class RandomUtil {
             } else {
                 normal = normalInput;
             }
+            if(tM.size() >= maxEnch && !frontPriority) {
+                frontPriority = true;
+                levelUpCount = 0;
+                state = 1;
+            }
 
-            if (((tM.size() >= maxEnch || levelUps > levelUpCount) || hasSuccessfullyByChance(preferChance)) && levelUps != -1) {
+            if (((tM.size() >= maxEnch || levelUps > levelUpCount) || (state != 0 && hasSuccessfullyByChance(preferChance))) && frontPriority && levelUps != -1) {
+
                 var entries = tM.object2IntEntrySet();
                 var iterator = entries.iterator();
-
                 while (iterator.hasNext()) {
                     Map.Entry<T, Integer> next = iterator.next();
                     if (!predicate.invoke(next.getValue(), next.getKey())) {
@@ -314,10 +326,10 @@ public class RandomUtil {
                     levelUpCount++;
                     continue routine1;
                 }
-                System.out.println("Ignoring, 333 enchant");
-            } else {
+            } else if(tM.size() < maxEnch) { // we need check it twice because of these conditions are chaos
                 int index = RandomUtil.random().nextInt(normal.size());
                 T t;
+
                 while (true) {
                     t = normal.get(index);
                     int anInt = tM.getOrDefault(t, 0);
