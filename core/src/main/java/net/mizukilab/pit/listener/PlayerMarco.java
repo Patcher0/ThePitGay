@@ -11,7 +11,6 @@ import cn.charlotte.pit.event.PitProfileLoadedEvent;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import net.minecraft.server.v1_8_R3.*;
-import net.mizukilab.pit.PitHook;
 import net.mizukilab.pit.data.operator.PackedOperator;
 import net.mizukilab.pit.data.operator.ProfileOperator;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
@@ -23,11 +22,7 @@ import net.mizukilab.pit.medal.impl.challenge.LuckyDiamondMedal;
 import net.mizukilab.pit.medal.impl.challenge.TrickleDownMedal;
 import net.mizukilab.pit.menu.item.cactus.CactusMenu;
 import net.mizukilab.pit.parm.AutoRegister;
-import net.mizukilab.pit.handlers.ProfileLoadRunnable;
-import net.mizukilab.pit.util.PitProfileUpdater;
-import net.mizukilab.pit.util.PlayerUtil;
-import net.mizukilab.pit.util.Utils;
-import net.mizukilab.pit.util.VectorUtil;
+import net.mizukilab.pit.util.*;
 import net.mizukilab.pit.util.chat.CC;
 import net.mizukilab.pit.util.cooldown.Cooldown;
 import net.mizukilab.pit.util.inventory.InventoryUtil;
@@ -163,6 +158,8 @@ public class PlayerMarco implements Listener {
                 new PitProfileLoadedEvent(load,op).callEvent();
                 if(player.isOnline()) { //twice check && Async check;
                     load.setLogin(true);
+                    ThePit.getInstance().getMapSelector().teleportIntoSpawn(player);
+                    player.setGameMode(GameMode.SURVIVAL);
                 }
             });
             FixedRewardData.Companion.sendMail(load, player);
@@ -178,14 +175,13 @@ public class PlayerMarco implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
-        ThePit pit = ThePit.getInstance();
         Player player = event.getPlayer();
         if(!PitInternalImpl.getLoaded()){
             event.getPlayer().kickPlayer("Didn't load completely");
             return;
         }
+        event.getPlayer().setGameMode(GameMode.SPECTATOR);
         PlayerUtil.resetPlayer(player, true);
-        pit.getMapSelector().teleportIntoSpawn(player);
 
         loadData(event);
     }
@@ -250,16 +246,17 @@ public class PlayerMarco implements Listener {
                 player.kickPlayer("You are currently suspended on this Pit server.");
             }
         } else {
-            this.welcomePlayer(player);
+            this.welcomePlayer(player,profile);
         }
     }
-    private final Map<UUID, Long> goldenAppleCooldown = new HashMap<>();
+    private final Map<UUID, Long> goldenHeadCooldown = new HashMap<>();
 
     private final Map<UUID, Cooldown> firstAidEggCooldown = new HashMap<>();
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        firstAidEggCooldown.remove(event.getPlayer().getUniqueId());
-        goldenAppleCooldown.remove(event.getPlayer().getUniqueId());
+        UUID uniqueId = event.getPlayer().getUniqueId();
+        firstAidEggCooldown.remove(uniqueId);
+        goldenHeadCooldown.remove(uniqueId);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -409,12 +406,12 @@ public class PlayerMarco implements Listener {
         }
         if (player.getGameMode() != GameMode.CREATIVE && item.getType() == Material.SKULL_ITEM && item.getDurability() == 3 && (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && "golden_head".equals(ItemUtil.getInternalName(item))) {
             e.setCancelled(true);
-            if (System.currentTimeMillis() - goldenAppleCooldown.getOrDefault(player.getUniqueId(), 0L) <= 1000L) {
+            if (System.currentTimeMillis() - goldenHeadCooldown.getOrDefault(player.getUniqueId(), 0L) <= 1000L) {
                 e.setUseItemInHand(Event.Result.DENY);
                 return;
             }
             player.playSound(player.getLocation(), Sound.EAT, 1F, 1F);
-            goldenAppleCooldown.put(player.getUniqueId(), System.currentTimeMillis());
+            goldenHeadCooldown.put(player.getUniqueId(), System.currentTimeMillis());
             PlayerUtil.takeOneItemInHand(player);
             player.removePotionEffect(PotionEffectType.SPEED);
             player.removePotionEffect(PotionEffectType.REGENERATION);
@@ -428,12 +425,12 @@ public class PlayerMarco implements Listener {
         } else if (item.getType() == Material.BAKED_POTATO) {
             if ("angry_potato".equals(ItemUtil.getInternalName(item))) {
                 e.setCancelled(true);
-                if (System.currentTimeMillis() - goldenAppleCooldown.getOrDefault(player.getUniqueId(), 0L) <= 1000L) {
+                if (System.currentTimeMillis() - goldenHeadCooldown.getOrDefault(player.getUniqueId(), 0L) <= 1000L) {
                     e.setUseItemInHand(Event.Result.DENY);
                     return;
                 }
                 player.playSound(player.getLocation(), Sound.EAT, 1F, 1F);
-                goldenAppleCooldown.put(player.getUniqueId(), System.currentTimeMillis());
+                goldenHeadCooldown.put(player.getUniqueId(), System.currentTimeMillis());
                 PlayerUtil.takeOneItemInHand(player);
                 player.removePotionEffect(PotionEffectType.REGENERATION);
                 player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 80, 1), true);
@@ -442,12 +439,12 @@ public class PlayerMarco implements Listener {
         } else if (item.getType() == Material.MAGMA_CREAM) {
             if ("broken_soul".equals(ItemUtil.getInternalName(item))) {
                 e.setCancelled(true);
-                if (System.currentTimeMillis() - goldenAppleCooldown.getOrDefault(player.getUniqueId(), 0L) <= 1000L) {
+                if (System.currentTimeMillis() - goldenHeadCooldown.getOrDefault(player.getUniqueId(), 0L) <= 1000L) {
                     e.setUseItemInHand(Event.Result.DENY);
                     return;
                 }
                 player.playSound(player.getLocation(), Sound.EAT, 1F, 1F);
-                goldenAppleCooldown.put(player.getUniqueId(), System.currentTimeMillis());
+                goldenHeadCooldown.put(player.getUniqueId(), System.currentTimeMillis());
                 PlayerUtil.takeOneItemInHand(player);
                 PlayerUtil.heal(player, 8);
                 player.removePotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
@@ -471,12 +468,12 @@ public class PlayerMarco implements Listener {
         } else if (item.getType() == Material.MUSHROOM_SOUP) {
             if ("perk_tasty_soup_kill".equals(ItemUtil.getInternalName(item))) {
                 e.setCancelled(true);
-                if (System.currentTimeMillis() - goldenAppleCooldown.getOrDefault(player.getUniqueId(), 0L) <= 1000L) {
+                if (System.currentTimeMillis() - goldenHeadCooldown.getOrDefault(player.getUniqueId(), 0L) <= 1000L) {
                     e.setUseItemInHand(Event.Result.DENY);
                     return;
                 }
                 player.playSound(player.getLocation(), Sound.EAT, 1F, 1F);
-                goldenAppleCooldown.put(player.getUniqueId(), System.currentTimeMillis());
+                goldenHeadCooldown.put(player.getUniqueId(), System.currentTimeMillis());
                 PlayerUtil.takeOneItemInHand(player);
                 PlayerUtil.heal(player, 2);
                 player.removePotionEffect(PotionEffectType.SPEED);
@@ -485,12 +482,12 @@ public class PlayerMarco implements Listener {
             }
             if ("perk_tasty_soup_assist".equals(ItemUtil.getInternalName(item))) {
                 e.setCancelled(true);
-                if (System.currentTimeMillis() - goldenAppleCooldown.getOrDefault(player.getUniqueId(), 0L) <= 1000L) {
+                if (System.currentTimeMillis() - goldenHeadCooldown.getOrDefault(player.getUniqueId(), 0L) <= 1000L) {
                     e.setUseItemInHand(Event.Result.DENY);
                     return;
                 }
                 player.playSound(player.getLocation(), Sound.EAT, 1F, 1F);
-                goldenAppleCooldown.put(player.getUniqueId(), System.currentTimeMillis());
+                goldenHeadCooldown.put(player.getUniqueId(), System.currentTimeMillis());
                 PlayerUtil.takeOneItemInHand(player);
                 player.removePotionEffect(PotionEffectType.REGENERATION);
                 player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 20 * 5, 1), true);
@@ -501,7 +498,7 @@ public class PlayerMarco implements Listener {
         } else if (item.getType() == Material.CACTUS) {
             if ("cactus".equals(ItemUtil.getInternalName(item))) {
                 e.setCancelled(true);
-                if (System.currentTimeMillis() - goldenAppleCooldown.getOrDefault(player.getUniqueId(), 0L) <= 1000L) {
+                if (System.currentTimeMillis() - goldenHeadCooldown.getOrDefault(player.getUniqueId(), 0L) <= 1000L) {
                     e.setUseItemInHand(Event.Result.DENY);
                     return;
                 }
@@ -522,14 +519,16 @@ public class PlayerMarco implements Listener {
     public void onPlayerEat(PlayerItemConsumeEvent event) {
         Player player = event.getPlayer();
 
+        UUID uniqueId = player.getUniqueId();
         if (event.getItem() != null && event.getItem().getType() == Material.GOLDEN_APPLE) {
-            (((CraftPlayer) event.getPlayer()).getHandle()).setAbsorptionHearts(8.0F);
+            var playerHandle = (((CraftPlayer) event.getPlayer()).getHandle());
+            playerHandle.setAbsorptionHearts(Math.max(playerHandle.getAbsorptionHearts(),8.0F));
             PlayerUtil.takeOneItemInHand(player);
             player.playSound(player.getLocation(), Sound.EAT, 1F, 1F);
             player.removePotionEffect(PotionEffectType.REGENERATION);
             player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 1), true);
             if (PlayerUtil.isPlayerUnlockedPerk(player, "yummy_perk")) {
-                PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
+                PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(uniqueId);
                 profile.setCoins(profile.getCoins() + 3);
             }
 
@@ -537,7 +536,7 @@ public class PlayerMarco implements Listener {
         }
 
         if (event.getItem() != null && "perk_olympus".equals(ItemUtil.getInternalName(event.getItem()))) {
-            PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
+            PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(uniqueId);
             PlayerUtil.takeOneItemInHand(player);
             player.playSound(player.getLocation(), Sound.EAT, 1F, 1F);
             player.removePotionEffect(PotionEffectType.REGENERATION);
@@ -568,11 +567,13 @@ public class PlayerMarco implements Listener {
             event.setCancelled(true);
             return;
         }
-        if (ItemUtil.isDefaultItem(event.getItemDrop().getItemStack())) {
-            event.getItemDrop().remove();
+        org.bukkit.entity.Item itemDrop = event.getItemDrop();
+        ItemStack itemStack = itemDrop.getItemStack();
+        if (ItemUtil.isDefaultItem(itemStack)) {
+            itemDrop.remove();
         }
 
-        if (!ItemUtil.canDrop(event.getItemDrop().getItemStack())) {
+        if (!ItemUtil.canDrop(itemStack)) {
             event.setCancelled(true);
             event.getPlayer().updateInventory();
         }
@@ -589,9 +590,7 @@ public class PlayerMarco implements Listener {
         }
     }
 
-    private void welcomePlayer(Player player) {
-        PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
-
+    private void welcomePlayer(Player player, PlayerProfile profile) {
         if (profile.isNicked()) {
             player.sendMessage(CC.translate("&2&l匿名模式! &7你现在对外显示的游戏名为: " + profile.getFormattedNameWithRoman()));
         }

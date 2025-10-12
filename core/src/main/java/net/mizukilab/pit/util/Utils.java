@@ -276,6 +276,8 @@ public class Utils {
     }
     private static boolean canUseGemSeries(boolean rare, IMythicItem mythicItem) {
         Object2IntMap.FastEntrySet<AbstractEnchantment> entries = mythicItem.getEnchantments().object2IntEntrySet();
+        int maxLevel = 8;
+        int countedLevel = 0;
         for (Object2IntMap.Entry<AbstractEnchantment> entry : entries) {
             int level = entry.getIntValue();
             AbstractEnchantment key = entry.getKey();

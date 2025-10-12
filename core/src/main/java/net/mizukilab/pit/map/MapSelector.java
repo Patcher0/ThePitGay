@@ -10,6 +10,7 @@ import net.mizukilab.pit.config.ConfigManager;
 import net.mizukilab.pit.config.PitWorldConfig;
 import net.mizukilab.pit.util.chat.CC;
 import net.mizukilab.pit.util.cooldown.Cooldown;
+import net.mizukilab.pit.util.random.RandomUtil;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -77,8 +78,7 @@ public class MapSelector {
             entity.sendMessage("未设置出生点");
             return;
         }
-        Location location = spawnLocations
-                .get(ThreadLocalRandom.current().nextInt(spawnLocations.size()));
+        Location location = RandomUtil.helpMeToChooseOne(spawnLocations);
         entity.teleport(location);
         if(entity instanceof Player){
             ((Player) entity).setBedSpawnLocation(location);

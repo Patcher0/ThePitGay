@@ -399,7 +399,7 @@ public class RandomUtil {
     public static Object helpMeToChooseOne(Set entry) {
         return helpMeToChooseOne(entry.toArray());
     }
-    public static Object helpMeToChooseOne(List entry) {
+    public static <T> T helpMeToChooseOne(List<T> entry) {
         return entry.get(random().nextInt(entry.size()));
     }
 

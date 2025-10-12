@@ -51,6 +51,7 @@ import net.mizukilab.pit.util.level.LevelUtil
 import net.mizukilab.pit.util.rank.RankUtil
 import net.mizukilab.pit.util.time.TimeUtil
 import org.bukkit.Bukkit
+import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.Sound
@@ -94,7 +95,10 @@ class PitCommands {
         val convertedDate: LocalDate = codeToDate(ThePit.getInstance().serverId)
         player.sendMessage(CC.translate("&e最后运行日期: &a${convertedDate.format(DateTimeFormatter.ISO_LOCAL_DATE)}"));
     }
-
+    @Execute(name = "witherboss520")
+    fun witherBoss520(@Context player: Player){
+        player.sendMessage(ChatColor.stripColor("c"))
+    }
     @Execute(name = "bar")
     fun getBar(@Context player: Player) {
         val profile = PlayerProfile.getPlayerProfileByUuid(player.uniqueId)

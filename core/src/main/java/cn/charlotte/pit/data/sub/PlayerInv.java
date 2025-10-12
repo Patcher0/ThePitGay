@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import net.mizukilab.pit.util.inventory.InventoryUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 /**
  * @Author: EmptyIrony
@@ -38,8 +39,9 @@ public class PlayerInv {
     }
 
     public void applyItemToPlayer(Player player) {
-        player.getInventory().setArmorContents(armorContents);
-        player.getInventory().setContents(contents);
+        PlayerInventory inventory = player.getInventory();
+        inventory.setArmorContents(armorContents);
+        inventory.setContents(contents);
         player.setItemOnCursor(null);
     }
 
