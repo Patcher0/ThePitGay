@@ -184,11 +184,15 @@ public class ProfileOperator implements IProfilerOperator {
             }
             UUID uniqueId = operator.getUniqueId();
             Player player = Bukkit.getPlayer(uniqueId);
-            operator.tick();
+
             if (player == null || !player.isOnline()) {
-                if(operator.throwable != null){
+                if (!operator.isLoaded()) {
                     return true;
                 }
+                if (operator.throwable != null) {
+                    return true;
+                }
+                operator.tick();
                 if (operator.profile.code == OPCODE_BUSY) {
                     return false;
                 }
@@ -209,6 +213,7 @@ public class ProfileOperator implements IProfilerOperator {
 
                 return lastFireExit;
             } else {
+                operator.tick();
                 if (operator.fireExit) {
                     operator.fireExit = false;
                 } else {
@@ -237,17 +242,13 @@ public class ProfileOperator implements IProfilerOperator {
     public void doSaveProfiles() {
         operators.forEachValue(operator -> {
             Player lastBoundPlayer = operator.lastBoundPlayer;
-            operator.pendingUntilLoadedPromise(i -> {
+            operator.pendingIfLoaded(i -> {
                 if (lastBoundPlayer != null && lastBoundPlayer.isOnline() && !(operator.quitFlag || operator.fireExit)) {
                     PlayerProfile playerProfile = i.disallowUnsafe();
                     playerProfile.save(lastBoundPlayer);
                 }
-            }).promise(() -> {
-                operator.profile().allow();
             });
-
         });
-        randomGC();
 
     }
 
@@ -276,32 +277,6 @@ public class ProfileOperator implements IProfilerOperator {
     @Override
     public void forEach(Consumer<IOperator> function) {
         this.operators.values().forEach(function);
-    }
-
-    public void randomGC() {
-        if (Bukkit.getOnlinePlayers().size() <= 2) {
-            return;
-        }
-        Collection<PackedOperator> values = operators.values();
-        if (values.size() < 2) {
-            return;
-        }
-        int randomNum = ThreadLocalRandom.current().nextInt(values.size() - 2) + 1;
-
-        Iterator<PackedOperator> iterator = values.iterator();
-        PackedOperator operator = null;
-        for (int i = 0; i < randomNum; i++) {
-            operator = iterator.next();
-        }
-        if (operator != null) {
-            Player lastBoundPlayer = operator.lastBoundPlayer;
-            PackedOperator finalOperator = operator;
-            operator.pendingUntilLoaded(i -> {
-                if (lastBoundPlayer != null && lastBoundPlayer.isOnline() && !(finalOperator.quitFlag || finalOperator.fireExit)) {
-                    PlayerProfile.gcBackups(i.gcBackupIterators(), i, false);
-                }
-            });
-        }
     }
 
     public void wipe() {

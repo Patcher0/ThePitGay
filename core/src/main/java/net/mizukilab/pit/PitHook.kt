@@ -246,7 +246,7 @@ object PitHook {
 
     private fun loadRunnable() {
 
-
+        ThePit.getInstance().animator = AnimationHandler()
         //AnnouncementRunnable.runTaskTimerAsynchronously(ThePit.getInstance(), 0, 40 * 60)
         TickHandler().runTaskTimer(ThePit.getInstance(), 1, 1)
         var asyncTickHandler = AsyncTickHandler()

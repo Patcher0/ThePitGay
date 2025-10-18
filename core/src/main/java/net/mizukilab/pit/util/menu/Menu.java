@@ -11,18 +11,21 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class Menu {
 
-    public static final Map<String, Menu> currentlyOpenedMenus = new ConcurrentHashMap<>();
+    public static final Map<UUID, Menu> currentlyOpenedMenus = new ConcurrentHashMap<>();
     private Map<Integer, Button> buttons = new HashMap<>();
     private boolean autoUpdate = false;
     private boolean updateAfterClick = true;
     private boolean closedByMenu = false;
     private boolean placeholder = false;
     private Button placeholderButton = Button.placeholder(Material.STAINED_GLASS_PANE, (byte) 15, " ");
-
+    public static Menu find(Player player) {
+        return currentlyOpenedMenus.get(player.getUniqueId());
+    }
     private ItemStack createItemStack(Player player, Button button) {
         ItemStack item = button.getButtonItem(player);
 
@@ -45,7 +48,7 @@ public abstract class Menu {
         try {
             this.buttons = this.getButtons(player);
 
-            Menu previousMenu = Menu.currentlyOpenedMenus.get(player.getName());
+            Menu previousMenu = Menu.currentlyOpenedMenus.get(player.getUniqueId());
             Inventory inventory = null;
             int size = this.getSize() == -1 ? this.size(this.buttons) : this.getSize();
             boolean update = false;
@@ -76,7 +79,7 @@ public abstract class Menu {
             }
             inventory.setContents(new ItemStack[inventory.getSize()]);
 
-            currentlyOpenedMenus.put(player.getName(), this);
+            currentlyOpenedMenus.put(player.getUniqueId(), this);
 
             for (Map.Entry<Integer, Button> buttonEntry : this.buttons.entrySet()) {
                 inventory.setItem(buttonEntry.getKey(), createItemStack(player, buttonEntry.getValue()));

@@ -12,6 +12,7 @@ import net.mizukilab.pit.util.PublicUtil;
 import net.mizukilab.pit.util.Utils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.SneakyThrows;
+import net.mizukilab.pit.util.menu.Menu;
 import nya.Skip;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -40,7 +41,6 @@ public class TickHandler extends BukkitRunnable {
     final Map<AbstractPerk, ITickTask> ticksPerk = ThePit.getInstance().getPerkFactory().getTickTasks();
 
     private int tick = 0;
-
     @SneakyThrows
     @Override
     public void run() {
@@ -56,6 +56,9 @@ public class TickHandler extends BukkitRunnable {
         }
         ThePit.getInstance().getMapSelector().tick();
         ((Parker)ThePit.getInstance().getParker()).tick();
+        if(tick % 20 == 0) {
+            tickMenus();
+        }
         incTickTime();
     }
     private void incTickTime(){
@@ -83,7 +86,17 @@ public class TickHandler extends BukkitRunnable {
             }
         }
     }
+    private void tickMenus(){
+        Menu.currentlyOpenedMenus.forEach((key, value) -> {
+            final Player player = Bukkit.getPlayer(key);
 
+            if (player != null) {
+                if (value.isAutoUpdate()) {
+                    value.openMenu(player);
+                }
+            }
+        });
+    }
     @NotNull
     private PlayerInventory tickLeggings(Player player, PlayerProfile profile,long tick) {
         //裤子

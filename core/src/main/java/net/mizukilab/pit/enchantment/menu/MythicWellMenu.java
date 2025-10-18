@@ -1,12 +1,13 @@
 package net.mizukilab.pit.enchantment.menu;
 
+import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
 import io.irina.backports.utils.SWMRHashTable;
 import lombok.Getter;
 import lombok.Setter;
 import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.enchantment.menu.button.*;
-import net.mizukilab.pit.enchantment.runnable.AnimationRunnable;
+import net.mizukilab.pit.handlers.AnimationHandler;
 import net.mizukilab.pit.item.IMythicItem;
 import net.mizukilab.pit.item.MythicColor;
 import net.mizukilab.pit.item.type.mythic.MagicFishingRod;
@@ -49,7 +50,7 @@ public class MythicWellMenu extends Menu {
     private final int INPUT_SLOT = 20;
     private final int CLICK_SLOT = 25;
     private final MythicWellMenu instance;
-    private AnimationRunnable.AnimationData animationData;
+    private AnimationHandler.AnimationData animationData;
 
     static ItemStack[] stacks = null;
 
@@ -66,13 +67,12 @@ public class MythicWellMenu extends Menu {
         stacks = stacksList.toArray(new ItemStack[0]);
     }
 
-    public static AnimationRunnable ANIMATOR = new AnimationRunnable();
 
     public MythicWellMenu(Player player) {
         this.instance = this;
-        this.animationData = ANIMATOR.getAnimations().computeIfAbsent(player.getUniqueId(), i -> new AnimationRunnable.AnimationData(player));
-
-        ANIMATOR.sendStart(player);
+        AnimationHandler animator = ThePit.getInstance().getAnimator();
+        this.animationData = animator.holdOrGetAnimation(player);
+        animator.sendStart(player);
     }
 
     @Override

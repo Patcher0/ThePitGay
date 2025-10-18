@@ -52,7 +52,6 @@ import net.mizukilab.pit.util.dependencies.Dependency;
 import net.mizukilab.pit.util.dependencies.DependencyManager;
 import net.mizukilab.pit.util.dependencies.loaders.LoaderType;
 import net.mizukilab.pit.util.dependencies.loaders.ReflectionClassLoader;
-import net.mizukilab.pit.util.menu.MenuUpdateTask;
 import net.mizukilab.pit.util.nametag.NametagHandler;
 import net.mizukilab.pit.util.rank.RankUtil;
 import net.mizukilab.pit.util.sign.SignGui;
@@ -106,6 +105,9 @@ public class ThePit extends JavaPlugin implements PluginMessageListener {
     @Setter
     @Getter
     private EnchantmentFactor enchantmentFactor;
+    @Getter
+    @Setter
+    private AnimationHandler animator;
     @Getter
     private NpcFactory npcFactory;
     @Getter
@@ -246,7 +248,6 @@ public class ThePit extends JavaPlugin implements PluginMessageListener {
 
         this.loadListener();
         this.loadItemFactor();
-        this.loadMenu();
         this.loadNpc();
         this.loadGame();
         this.loadMedals();
@@ -392,9 +393,6 @@ public class ThePit extends JavaPlugin implements PluginMessageListener {
         this.hologramFactory.init();
     }
 
-    private void loadMenu() {
-        this.getServer().getScheduler().runTaskTimer(this, new MenuUpdateTask(), 20L, 20L);
-    }
 
     public void loadEnchantment() {
         this.enchantmentFactor = new EnchantmentFactor();
@@ -421,7 +419,7 @@ public class ThePit extends JavaPlugin implements PluginMessageListener {
     }
 
     private void loadGame() {
-        new ClearRunnable()
+        new GlobalSweeper()
                 .runTaskTimer(ThePit.getInstance(), 20, 20);
 
         new TradeMonitorRunnable()

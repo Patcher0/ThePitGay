@@ -49,7 +49,6 @@ public class RangedStreamLineList<T> extends ConcurrentLinkedDeque<T> {
 
     @Override
     public boolean add(T t) {
-
         ATOMIC.incrementAndGet();
         this.offerFirst(t);
         return true;
@@ -57,23 +56,25 @@ public class RangedStreamLineList<T> extends ConcurrentLinkedDeque<T> {
 
     @Override
     public T pollFirst() {
-
-        ATOMIC.incrementAndGet();
+        ATOMIC.decrementAndGet();
         return super.pollFirst();
     }
 
     @Override
     public T pollLast() {
-        ATOMIC.incrementAndGet();
+        ATOMIC.decrementAndGet();
         return super.pollLast();
     }
+    public void onRecycle(T t){
 
+    }
     public void recycle() {
         //stage 1
         while (peekLast() != null) {
             int acquire = ATOMIC.getAcquire();
             if (!(acquire > maxElement || predicate.test(peekLast()))) break;
-            pollLast();
+            T t = pollLast();
+            onRecycle(t);
         }
     }
 

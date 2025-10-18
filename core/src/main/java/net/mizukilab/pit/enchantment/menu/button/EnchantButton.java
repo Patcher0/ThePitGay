@@ -2,30 +2,21 @@ package net.mizukilab.pit.enchantment.menu.button;
 
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
-import cn.charlotte.pit.data.sub.EnchantmentRecord;
 import cn.charlotte.pit.event.StartEnchantLogicEvent;
 import cn.charlotte.pit.events.genesis.GenesisTeam;
 import cn.hutool.core.lang.func.Consumer3;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import lombok.Setter;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
-import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.data.operator.SuPromise;
-import net.mizukilab.pit.enchantment.AbstractEnchantment;
 import net.mizukilab.pit.enchantment.info.EnchantRequest;
 import net.mizukilab.pit.enchantment.menu.MythicWellMenu;
-import net.mizukilab.pit.enchantment.rarity.EnchantmentRarity;
-import net.mizukilab.pit.enchantment.runnable.AnimationRunnable;
-import net.mizukilab.pit.enchantment.type.limit.ILimit;
+import net.mizukilab.pit.handlers.AnimationHandler;
 import net.mizukilab.pit.event.PitPlayerEnchantEvent;
 import net.mizukilab.pit.item.AbstractPitItem;
 import net.mizukilab.pit.item.IMythicItem;
 import net.mizukilab.pit.item.MythicColor;
-import net.mizukilab.pit.item.factory.ItemFactory;
 import net.mizukilab.pit.item.type.MythicEnchantingTable;
 import net.mizukilab.pit.menu.shop.button.AbstractShopButton;
 import net.mizukilab.pit.util.FuncsKt;
@@ -40,7 +31,6 @@ import net.mizukilab.pit.util.inventory.InventoryUtil;
 import net.mizukilab.pit.util.item.ItemBuilder;
 import net.mizukilab.pit.util.item.ItemUtil;
 import net.mizukilab.pit.util.menu.Button;
-import net.mizukilab.pit.util.random.RandomUtil;
 import nya.Skip;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -49,15 +39,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.jetbrains.annotations.NotNull;
 
-import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @Author: EmptyIrony
@@ -241,7 +226,7 @@ public class EnchantButton extends Button {
      * @param player
      * @param mythicItem
      */
-    private void doEnchant(ItemStack item, Player player, PlayerProfile profile, IMythicItem mythicItem, AnimationRunnable.AnimationData data) {
+    private void doEnchant(ItemStack item, Player player, PlayerProfile profile, IMythicItem mythicItem, AnimationHandler.AnimationData data) {
 
         StartEnchantLogicEvent startEnchantLogicEvent = new StartEnchantLogicEvent(player);
         startEnchantLogicEvent.callEvent();

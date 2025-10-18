@@ -402,52 +402,40 @@ class PitCommands {
             return
         }
 
+        val location = ThePit.getInstance().pitConfig
+            .spawnLocations[random.nextInt(ThePit.getInstance().pitConfig.spawnLocations.size)]
 
-        //player.sendMessage(CC.translate("&c&l即将传送,请保持脱战状态并不要移动位置..."));
-        player.setMetadata("backing", FixedMetadataValue(ThePit.getInstance(), true))
+        player.teleport(location)
 
-        Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), {
-            if (player.isOnline) {
-                if (player.hasMetadata("backing")) {
-                    val location = ThePit.getInstance().pitConfig
-                        .spawnLocations[random.nextInt(ThePit.getInstance().pitConfig.spawnLocations.size)]
-
-                    player.removeMetadata("backing", ThePit.getInstance())
-
-                    player.teleport(location)
-
-                    for (item in player.inventory) {
-                        if (ItemUtil.isRemovedOnJoin(item)) {
-                            player.inventory.remove(item)
-                        }
-                    }
-
-                    if (ItemUtil.isRemovedOnJoin(player.inventory.helmet)) {
-                        player.inventory.helmet = ItemStack(Material.AIR)
-                    }
-
-                    if (ItemUtil.isRemovedOnJoin(player.inventory.chestplate)) {
-                        player.inventory.chestplate = ItemStack(Material.AIR)
-                    }
-
-                    if (ItemUtil.isRemovedOnJoin(player.inventory.leggings)) {
-                        player.inventory.leggings = ItemStack(Material.AIR)
-                    }
-
-                    if (ItemUtil.isRemovedOnJoin(player.inventory.boots)) {
-                        player.inventory.boots = ItemStack(Material.AIR)
-                    }
-
-                    val profile = PlayerProfile.getPlayerProfileByUuid(player.uniqueId)
-                    profile.streakKills = 0.0
-                    profile.isInArena = false
-
-                    PitPlayerSpawnEvent(player).callEvent()
-
-                    PlayerUtil.resetPlayer(player, true, false)
-                }
+        for (item in player.inventory) {
+            if (ItemUtil.isRemovedOnJoin(item)) {
+                player.inventory.remove(item)
             }
-        }, 1)
+        }
+
+        if (ItemUtil.isRemovedOnJoin(player.inventory.helmet)) {
+            player.inventory.helmet = ItemStack(Material.AIR)
+        }
+
+        if (ItemUtil.isRemovedOnJoin(player.inventory.chestplate)) {
+            player.inventory.chestplate = ItemStack(Material.AIR)
+        }
+
+        if (ItemUtil.isRemovedOnJoin(player.inventory.leggings)) {
+            player.inventory.leggings = ItemStack(Material.AIR)
+        }
+
+        if (ItemUtil.isRemovedOnJoin(player.inventory.boots)) {
+            player.inventory.boots = ItemStack(Material.AIR)
+        }
+
+        val profile = PlayerProfile.getPlayerProfileByUuid(player.uniqueId)
+        profile.streakKills = 0.0
+        profile.isInArena = false
+
+        PitPlayerSpawnEvent(player).callEvent()
+
+        PlayerUtil.resetPlayer(player, true, false)
     }
 
     @Execute(name = "iKnowIGotWiped")

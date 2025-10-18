@@ -21,7 +21,7 @@ import net.minecraft.server.v1_8_R3.MathHelper;
 import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.item.type.mythic.MythicLeggingsItem;
 import net.mizukilab.pit.medal.impl.challenge.RagePitTopMedal;
-import net.mizukilab.pit.handlers.ClearRunnable;
+import net.mizukilab.pit.handlers.GlobalSweeper;
 import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.Utils;
 import net.mizukilab.pit.util.chat.CC;
@@ -129,7 +129,7 @@ public class RagePitEvent extends AbstractEvent implements IEpicEvent, Listener 
             }
 
 
-            ClearRunnable.getClearRunnable().getPlacedBlock().removeIf((loc, blockData) -> {
+            GlobalSweeper.get().getPlacedBlock().removeIf((loc, blockData) -> {
                 loc.getBlock().setType(Material.AIR);
                 return true;
             });

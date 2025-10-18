@@ -9,7 +9,7 @@ import net.jitse.npclib.nms.v1_8_R3.NPC_v1_8_R3;
 import net.mizukilab.pit.medal.impl.challenge.ObsidianBreakMedal;
 import net.mizukilab.pit.npc.AbstractPitNPC;
 import net.mizukilab.pit.parm.AutoRegister;
-import net.mizukilab.pit.handlers.ClearRunnable;
+import net.mizukilab.pit.handlers.GlobalSweeper;
 import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.Utils;
 import net.mizukilab.pit.util.chat.CC;
@@ -177,7 +177,7 @@ public class ProtectListener implements Listener {
             }
 
              */
-            ClearRunnable.getClearRunnable().placeBlock(event.getBlock().getLocation(), new Cooldown(existTime, TimeUnit.SECONDS));
+            GlobalSweeper.get().placeBlock(event.getBlock().getLocation(), new Cooldown(existTime, TimeUnit.SECONDS));
         }
     }
 
@@ -241,7 +241,7 @@ public class ProtectListener implements Listener {
             data.setTimer(new Cooldown(30, TimeUnit.SECONDS));
             data.setEntity(event.getEntity());
 
-            ClearRunnable.getClearRunnable()
+            GlobalSweeper.get()
                     .getEntityData()
                     .add(data);
         }
@@ -325,7 +325,7 @@ public class ProtectListener implements Listener {
         }
         Block block = event.getBlock();
 
-        PlacedBlockData placedBlockData = ClearRunnable.getClearRunnable()
+        PlacedBlockData placedBlockData = GlobalSweeper.get()
                 .getPlacedBlock().get(block.getLocation());
         if (placedBlockData == null) {
             if (!profile.isEditingMode()) {
@@ -348,7 +348,7 @@ public class ProtectListener implements Listener {
             }
         }
 
-        ClearRunnable.getClearRunnable().getPlacedBlock().remove(block.getLocation());
+        GlobalSweeper.get().getPlacedBlock().remove(block.getLocation());
         event.setCancelled(true);
         block.setType(Material.AIR);
     }

@@ -1,11 +1,10 @@
-package net.mizukilab.pit.enchantment.runnable;
+package net.mizukilab.pit.handlers;
 
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.config.PitWorldConfig;
 import net.mizukilab.pit.enchantment.menu.MythicWellMenu;
@@ -33,12 +32,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Getter
 @Skip
-public class AnimationRunnable extends BukkitRunnable {
+public class AnimationHandler implements Runnable {
 
     private final Map<UUID, AnimationData> animations = new ConcurrentHashMap<>();
-    private final List<Location> animationLocations;
-
-    public AnimationRunnable() {
+    private final Location[] animationLocations;
+    public AnimationData holdOrGetAnimation(Player player){
+        return animations.computeIfAbsent(player.getUniqueId(),i -> new AnimationHandler.AnimationData(player));
+    }
+    public AnimationHandler() {
         final PitWorldConfig pitWorldConfig = ThePit.getInstance().getPitConfig();
         final Location loc = pitWorldConfig.getEnchantLocation();
         final Location center;
@@ -47,7 +48,7 @@ public class AnimationRunnable extends BukkitRunnable {
         } else {
             center = loc.clone().add(0.0, -1.0, 0.0);
         }
-        this.animationLocations = Arrays.asList(
+        this.animationLocations = new Location[]{
                 center.clone().add(-1, 0, 0),   // 19: 左中
                 center.clone().add(-1, 0, -1),  // 10: 左上
                 center.clone().add(0, 0, -1),   // 11: 中上
@@ -56,11 +57,7 @@ public class AnimationRunnable extends BukkitRunnable {
                 center.clone().add(1, 0, 1),    // 30: 右下
                 center.clone().add(0, 0, 1),    // 29: 中下
                 center.clone().add(-1, 0, 1)    // 28: 左下
-        );
-
-
-        this.runTaskTimerAsynchronously(ThePit.getInstance(), 1, 1);
-
+        };
     }
 
     @Override
@@ -69,26 +66,24 @@ public class AnimationRunnable extends BukkitRunnable {
             final Object2ObjectOpenHashMap<UUID, AnimationData> removeMap = new Object2ObjectOpenHashMap<>(animations);
             if (!NewConfiguration.INSTANCE.getRapidEnchanting()) {
                 removeMap.forEach((uuid, animationData) -> {
-                    // 如果玩家不在线，直接移除
-                    if (!animationData.getPlayer().isOnline()) {
+                    Player player = animationData.getPlayer();
+                    if (!player.isOnline()) {
                         animations.remove(uuid);
                         return;
                     }
-
-                    // 如果正在附魔中，不要移除动画数据，即使GUI暂时不是MythicWellMenu
                     if (animationData.isStartEnchanting() && !animationData.isFinished()) {
                         return;
                     }
 
-                    // 只有在非附魔状态下且不在MythicWellMenu中时才移除
-                    if (!(Menu.currentlyOpenedMenus.get(animationData.getPlayer().getName()) instanceof MythicWellMenu)) {
+                    if (!(Menu.find(player) instanceof MythicWellMenu)) {
                         animations.remove(uuid);
                     }
                 });
             } else {
                 removeMap.forEach((uuid, animationData) -> {
-                    if (!animationData.getPlayer().isOnline() ||
-                            !(Menu.currentlyOpenedMenus.get(animationData.getPlayer().getName()) instanceof MythicWellMenu)) {
+                    Player player = animationData.getPlayer();
+                    if (!player.isOnline() ||
+                            !(Menu.find(player) instanceof MythicWellMenu)) {
                         animations.remove(uuid);
                     }
                 });
@@ -96,10 +91,11 @@ public class AnimationRunnable extends BukkitRunnable {
 
             for (AnimationData data : animations.values()) {
                 data.animationGlobalTick++;
-                Menu menu = Menu.currentlyOpenedMenus.get(data.getPlayer().getName());
+                Player player1 = data.getPlayer();
+                Menu menu = Menu.find(player1);
 
                 if (data.isFinished()) {
-                    Player player = data.getPlayer();
+                    Player player = player1;
                     PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
                     String mythicColor = ItemUtil.getItemStringData(InventoryUtil.deserializeItemStack(profile.getEnchantingItem()), "mythic_color");
                     MythicColor foundColor = null;
@@ -120,7 +116,7 @@ public class AnimationRunnable extends BukkitRunnable {
                 }
 
                 if (data.isStartEnchanting()) {
-                    Player player = data.getPlayer();
+                    Player player = player1;
                     PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
                     String mythic_color = ItemUtil.getItemStringData(InventoryUtil.deserializeItemStack(profile.getEnchantingItem()), "mythic_color");
                     MythicColor foundColor = null;
@@ -143,15 +139,15 @@ public class AnimationRunnable extends BukkitRunnable {
                     int realTick = (data.animationTick / 4) % 8;
 
                     if (menu instanceof MythicWellMenu) {
-                        menu.openMenu(data.getPlayer());
+                        menu.openMenu(player1);
                     }
 
                     if (data.animationTick > 0) {
                         int prevIndex = (realTick - 1 + 8) % 8;
-                        data.player.sendBlockChange(animationLocations.get(prevIndex), Material.STAINED_GLASS, (byte) 0);
+                        data.player.sendBlockChange(animationLocations[prevIndex], Material.STAINED_GLASS, (byte) 0);
                     }
 
-                    Location location = animationLocations.get(realTick);
+                    Location location = animationLocations[realTick];
                     data.player.sendBlockChange(location, Material.STAINED_GLASS, data.color);
                 }
                 data.animationTick++;
@@ -174,10 +170,8 @@ public class AnimationRunnable extends BukkitRunnable {
             }
         } else if (tick <= 35) {
             int rotationIndex = ((tick - 12) / 3) % 8;
-            for (Location location : animationLocations) {
-                player.sendBlockChange(location, Material.STAINED_GLASS, (byte) 0);
-            }
-            player.sendBlockChange(animationLocations.get(rotationIndex), Material.STAINED_GLASS, foundColor.getColorByte());
+            sendStart(player);
+            player.sendBlockChange(animationLocations[rotationIndex], Material.STAINED_GLASS, foundColor.getColorByte());
 
             if ((tick - 12) % 3 == 0) {
                 float pitch = 0.5F + ((tick - 12) / 3) * 0.15F;
@@ -188,7 +182,7 @@ public class AnimationRunnable extends BukkitRunnable {
             int burstIndex = ((tick - 36) / 3) % 8;
 
             for (int i = 0; i <= burstIndex; i++) {
-                player.sendBlockChange(animationLocations.get(i), Material.STAINED_GLASS, foundColor.getColorByte());
+                player.sendBlockChange(animationLocations[i], Material.STAINED_GLASS, foundColor.getColorByte());
             }
 
             if ((tick - 36) % 3 == 0) {
@@ -225,7 +219,7 @@ public class AnimationRunnable extends BukkitRunnable {
 
                 Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
                     if (player.isOnline()) {
-                        Menu currentMenu = Menu.currentlyOpenedMenus.get(player.getName());
+                        Menu currentMenu =  Menu.find(player);
                         if (currentMenu instanceof MythicWellMenu) {
                             currentMenu.openMenu(player);
                         }
@@ -237,7 +231,7 @@ public class AnimationRunnable extends BukkitRunnable {
         }
         Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
             if (player.isOnline()) {
-                Menu currentMenu = Menu.currentlyOpenedMenus.get(player.getName());
+                Menu currentMenu = Menu.find(player);
                 if (currentMenu instanceof MythicWellMenu) {
                     currentMenu.openMenu(player);
                 }

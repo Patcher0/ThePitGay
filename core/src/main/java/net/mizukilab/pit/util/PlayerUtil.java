@@ -388,22 +388,6 @@ public class PlayerUtil {
         return Math.min(20, defense);
     }
 
-    public static Player getStaffSpectating(Player player) {
-        return player.hasMetadata("STAFF_SPECTATOR") ? (Player) player.getMetadata("STAFF_SPECTATOR").get(0).value() : null;
-    }
-
-    public static void clearStaffSpectateTarget(Player player) {
-        if (isStaffSpectating(player)) {
-            player.removeMetadata("STAFF_SPECTATOR", ThePit.getInstance());
-        }
-    }
-
-    public static void setStaffSpectateTarget(Player player, Player target) {
-        if (isStaffSpectating(player)) {
-            player.setMetadata("STAFF_SPECTATOR", new FixedMetadataValue(ThePit.getInstance(), target));
-        }
-    }
-
     public static boolean isStaff(Player player) {
         return player.hasPermission(getStaffPermission()) || player.hasPermission("thepit.admin");
     }

@@ -28,20 +28,17 @@ import net.mizukilab.pit.item.type.mythic.MythicBowItem;
 import net.mizukilab.pit.item.type.mythic.MythicLeggingsItem;
 import net.mizukilab.pit.item.type.mythic.MythicSwordItem;
 import net.mizukilab.pit.map.kingsquests.item.Cherry;
-import net.mizukilab.pit.handlers.PlayerMoveHandler;
 import net.mizukilab.pit.parm.AutoRegister;
 import net.mizukilab.pit.parm.listener.IPlayerAssist;
 import net.mizukilab.pit.parm.listener.IPlayerBeKilledByEntity;
 import net.mizukilab.pit.parm.listener.IPlayerKilledEntity;
 import net.mizukilab.pit.parm.listener.IPlayerRespawn;
-import net.mizukilab.pit.handlers.ProfileLoadRunnable;
 import net.mizukilab.pit.util.*;
 import net.mizukilab.pit.util.chat.ActionBarUtil;
 import net.mizukilab.pit.util.chat.CC;
 import net.mizukilab.pit.util.chat.ChatComponentBuilder;
 import net.mizukilab.pit.util.chat.MessageType;
 import net.mizukilab.pit.util.cooldown.Cooldown;
-import net.mizukilab.pit.util.exception.CancelOp;
 import net.mizukilab.pit.util.inventory.InventoryUtil;
 import net.mizukilab.pit.util.item.ItemBuilder;
 import net.mizukilab.pit.util.item.ItemUtil;
@@ -59,7 +56,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.metadata.MetadataValue;
@@ -247,30 +243,15 @@ public class CombatListener implements Listener {
         }
     }
 
+    /**
+     * Garbage clean
+     * @param event
+     */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
-        runGCOnMetadatas(event.getPlayer());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onKilled(PlayerDeathEvent event) {
-        event.getEntity().setNoDamageTicks(40);
-        event.setDeathMessage(null);
-        handlePlayerDeath(event, event.getEntity(), event.getEntity().getKiller(), true);
-        event.getEntity().setNoDamageTicks(0);
-    }
-
-    /**
-     * Should be garbage collected params
-     *
-     * @param player
-     */
-    public void runGCOnMetadatas(Player player) {
+        Player player = event.getPlayer();
         ThePit instance = ThePit.getInstance();
-        player.removeMetadata("showing_damage_data", instance);
-        player.removeMetadata("mirror_latest_active", instance);
         player.removeMetadata("lastThroughTheHeart", instance);
-        player.removeMetadata("STAFF_SPECTATOR", instance);
         player.removeMetadata("sinking_moonlight", instance);
         player.removeMetadata("assured_strike", instance);
         player.removeMetadata("lucky_chestplate", instance);
@@ -281,7 +262,14 @@ public class CombatListener implements Listener {
         player.removeMetadata("true_damage_immune", instance);
         player.removeMetadata("regularity", instance);
         player.removeMetadata("mixed_combat_" + player.getUniqueId(), instance);
+    }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onKilled(PlayerDeathEvent event) {
+        event.getEntity().setNoDamageTicks(40);
+        event.setDeathMessage(null);
+        handlePlayerDeath(event, event.getEntity(), event.getEntity().getKiller(), true);
+        event.getEntity().setNoDamageTicks(0);
     }
 
     private void postDamage(@NotNull EntityDamageByEntityEvent event, Player player, Player damager, PlayerProfile playerProfile, PlayerProfile damagerProfile, double damage, boolean isShoot) {
@@ -324,15 +312,8 @@ public class CombatListener implements Listener {
             damagerProfile.setMeleeTotalDamage((long) (damagerProfile.getMeleeTotalDamage() + damage));
         }
         damagerProfile.setTotalDamage((long) (damagerProfile.getTotalDamage() + damage));
-        processActionBarWithSettingProvided(player, damager, (int) damage, Math.min(player.getHealth(), event.getFinalDamage()), damagerProfile);
-
-        if (playerProfile.isLoaded()) {
-            if (player.hasMetadata("backing")) {
-                player.sendMessage(CC.translate("&c回城被取消."));
-                player.removeMetadata("backing", ThePit.getInstance());
-            }
-        }
-
+        double finalDamage = event.getFinalDamage();
+        processActionBarWithSettingProvided(player, damager, (int) damage, Math.min(player.getHealth(), finalDamage), damagerProfile);
 
         //handle kill recap - start
         String damagerName = damagerProfile.getFormattedName();
@@ -342,7 +323,7 @@ public class CombatListener implements Listener {
             damagerData.setDisplayName(playerName);
             damagerData.setAttack(true);
             damagerData.setMelee(!isShoot);
-            damagerData.setAfterHealth(Math.max(player.getHealth() - event.getFinalDamage(), 0));
+            damagerData.setAfterHealth(Math.max(player.getHealth() - finalDamage, 0));
             damagerData.setUsedItem(damager.getItemInHand());
             damagerData.setTimer(new Cooldown(10, TimeUnit.SECONDS));
 
@@ -355,10 +336,10 @@ public class CombatListener implements Listener {
             playerData.setDisplayName(damagerName);
             playerData.setAttack(false);
             playerData.setMelee(!isShoot);
-            playerData.setAfterHealth(Math.max(player.getHealth() - event.getFinalDamage(), 0));
+            playerData.setAfterHealth(Math.max(player.getHealth() - finalDamage, 0));
             playerData.setUsedItem(damager.getItemInHand());
             playerData.setTimer(new Cooldown(10, TimeUnit.SECONDS));
-            playerData.setDamage(event.getFinalDamage());
+            playerData.setDamage(finalDamage);
             playerProfile.getKillRecap().getDamageLogs()
                     .add(playerData);
         }

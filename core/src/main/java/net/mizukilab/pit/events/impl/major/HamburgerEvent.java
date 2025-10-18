@@ -25,7 +25,7 @@ import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.item.type.mythic.MythicLeggingsItem;
 import net.mizukilab.pit.medal.impl.challenge.PizzaEventMedal;
-import net.mizukilab.pit.handlers.ClearRunnable;
+import net.mizukilab.pit.handlers.GlobalSweeper;
 import net.mizukilab.pit.util.NameUtils;
 import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.Utils;
@@ -194,7 +194,7 @@ public class HamburgerEvent extends AbstractEvent implements IEpicEvent, Listene
                 player.sendMessage(CC.translate("&c为了保证您的安全，我们已将您传送回出生点"));
             }
 
-            ClearRunnable.getClearRunnable().getPlacedBlock().removeIf((i, blockData) -> {
+            GlobalSweeper.get().getPlacedBlock().removeIf((i, blockData) -> {
                 if (blockData.getLocation().distance(location) <= 5) {
                     blockData.getLocation().getBlock().setType(Material.AIR);
                     return true;
@@ -290,7 +290,7 @@ public class HamburgerEvent extends AbstractEvent implements IEpicEvent, Listene
             event.setCancelled(true);
         }
         if (event.getBlockPlaced().getLocation().distance(location) < 8) {
-            ClearRunnable.getClearRunnable().placeBlock(event.getBlock().getLocation(), new Cooldown(8, TimeUnit.SECONDS));
+            GlobalSweeper.get().placeBlock(event.getBlock().getLocation(), new Cooldown(8, TimeUnit.SECONDS));
         }
     }
 

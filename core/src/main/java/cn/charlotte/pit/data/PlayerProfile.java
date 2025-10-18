@@ -102,11 +102,6 @@ public class PlayerProfile {
     public IOperator toOperator() {
         return ThePit.getInstance().getProfileOperator().getIOperator(getPlayerUuid());
     }
-    // public static Map<UUID, BukkitRunnable> LOADING_MAP = new SWMRHashTable<>(); // do it static
-
-    // public static final Map<UUID, BukkitRunnable> SAVING_MAP = new SWMRHashTable<>(); // do it static
-
-    //private final static Map<UUID, PlayerProfile> cacheProfile = new SWMRHashTable<>();
 
     public int prestige;
     public List<String> claimedMail;
@@ -150,10 +145,10 @@ public class PlayerProfile {
     private int bounty;
     private int actionBounty;
     private double respawnTime;
-    private volatile PlayerInv inventory; //原子写入
-    private volatile PlayerEnderChest enderChest;
+    private PlayerInv inventory;
+    private PlayerEnderChest enderChest;
     private int enderChestRow;
-    private volatile PlayerWarehouse warehouse;
+    private PlayerWarehouse warehouse;
 
     //每次都遍历查询，效率低下
     //所以专用Map降低大O复杂度

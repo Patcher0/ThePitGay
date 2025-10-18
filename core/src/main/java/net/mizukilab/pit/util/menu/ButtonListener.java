@@ -20,7 +20,7 @@ public class ButtonListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onButtonPress(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
-        Menu openMenu = Menu.currentlyOpenedMenus.get(player.getName());
+        Menu openMenu = Menu.find(player);
 
         if (openMenu != null) {
             if (event.getClickedInventory() instanceof PlayerInventory) {
@@ -53,8 +53,8 @@ public class ButtonListener implements Listener {
 
                 button.clicked(player, event.getSlot(), event.getClick(), event.getHotbarButton(), event.getCurrentItem());
 
-                if (Menu.currentlyOpenedMenus.containsKey(player.getName())) {
-                    Menu newMenu = Menu.currentlyOpenedMenus.get(player.getName());
+                if (Menu.currentlyOpenedMenus.containsKey(player.getUniqueId())) {
+                    Menu newMenu = Menu.currentlyOpenedMenus.get(player.getUniqueId());
 
                     if (newMenu == openMenu) {
                         boolean buttonUpdate = button.shouldUpdate(player, event.getSlot(), event.getClick());
@@ -87,12 +87,12 @@ public class ButtonListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onInventoryClose(InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
-        Menu openMenu = Menu.currentlyOpenedMenus.get(player.getName());
+        Menu openMenu = Menu.currentlyOpenedMenus.get(player.getUniqueId());
 
         if (openMenu != null) {
             try {
                 openMenu.onClose(player);
-                Menu.currentlyOpenedMenus.remove(player.getName());
+                Menu.currentlyOpenedMenus.remove(player.getUniqueId());
             } catch (CancelOp e){
                 event.getPlayer().openInventory(event.getInventory());
             }

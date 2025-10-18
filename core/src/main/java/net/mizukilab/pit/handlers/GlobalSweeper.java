@@ -3,14 +3,13 @@ package net.mizukilab.pit.handlers;
 import cn.charlotte.pit.data.sub.DroppedEntityData;
 import cn.charlotte.pit.data.sub.PlacedBlockData;
 import io.irina.backports.utils.SWMRHashTable;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.Getter;
+import net.mizukilab.pit.util.RangedStreamLineList;
 import net.mizukilab.pit.util.cooldown.Cooldown;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -18,16 +17,21 @@ import java.util.concurrent.TimeUnit;
  * @Date: 2021/1/1 22:12
  */
 @Getter
-public class ClearRunnable extends BukkitRunnable {
+public class GlobalSweeper extends BukkitRunnable {
 
-    private static ClearRunnable clearRunnable;
+    private static GlobalSweeper INSTANCE;
     public final SWMRHashTable<Location, PlacedBlockData> placedBlock;
-    private final List<DroppedEntityData> entityData;
+    private final RangedStreamLineList<DroppedEntityData> entityData;
 
-    public ClearRunnable() {
-        clearRunnable = this;
+    public GlobalSweeper() {
+        INSTANCE = this;
         this.placedBlock = new SWMRHashTable<>();
-        this.entityData = new ObjectArrayList<>();
+        this.entityData = new RangedStreamLineList<>(0,i -> i.getTimer().hasExpired()) {
+            @Override
+            public void onRecycle(DroppedEntityData droppedEntityData) {
+                droppedEntityData.getEntity().remove();
+            }
+        };
     }
 
     @Override
@@ -36,14 +40,6 @@ public class ClearRunnable extends BukkitRunnable {
             if (a.getCooldown().hasExpired()) {
                 Location location = a.getLocation();
                 location.getBlock().setType(Material.AIR);
-                return true;
-            }
-            return false;
-        });
-
-        entityData.removeIf(i -> {
-            if (i.getTimer().hasExpired()) {
-                i.getEntity().remove();
                 return true;
             }
             return false;
@@ -58,7 +54,7 @@ public class ClearRunnable extends BukkitRunnable {
         this.placedBlock.put(location, new PlacedBlockData(location, cooldown));
     }
 
-    public static ClearRunnable getClearRunnable() {
-        return clearRunnable;
+    public static GlobalSweeper get() {
+        return INSTANCE;
     }
 }

@@ -17,6 +17,7 @@ import java.util.Iterator;
 public class NightVisionRunnable extends BukkitRunnable {
 
     Iterator<? extends Player> iterator = null;
+
     PotionEffect cachedPotionEffect = PotionEffectType.NIGHT_VISION.createEffect(114154, 2);
 
     @Override
