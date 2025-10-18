@@ -3,7 +3,7 @@ package net.mizukilab.pit.menu.perk.normal.buy;
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.perk.AbstractPerk;
 import cn.charlotte.pit.perk.PerkType;
-import net.mizukilab.pit.menu.perk.UnKnowButton;
+import net.mizukilab.pit.menu.perk.UnknowButton;
 import net.mizukilab.pit.menu.perk.normal.buy.button.BackToPerkChooseButton;
 import net.mizukilab.pit.menu.perk.normal.buy.button.PerkBuyButton;
 import net.mizukilab.pit.menu.perk.normal.buy.button.ResetButton;
@@ -63,7 +63,7 @@ public class PerkBuyMenu extends Menu {
 
         for (int i : perkSlot) {
             if (!button.containsKey(i)) {
-                button.put(i, new UnKnowButton());
+                button.put(i, new UnknowButton());
             }
         }
 

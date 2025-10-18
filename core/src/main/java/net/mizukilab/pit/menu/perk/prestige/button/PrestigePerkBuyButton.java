@@ -5,7 +5,7 @@ import cn.charlotte.pit.data.sub.PerkData;
 import cn.charlotte.pit.event.PitPlayerUnlockPerkEvent;
 import cn.charlotte.pit.event.PitPlayerUpgradePerkEvent;
 import cn.charlotte.pit.perk.AbstractPerk;
-import net.mizukilab.pit.menu.perk.UnKnowButton;
+import net.mizukilab.pit.menu.perk.UnknowButton;
 import net.mizukilab.pit.menu.perk.prestige.PrestigePerkBuyMenu;
 import net.mizukilab.pit.util.chat.CC;
 import net.mizukilab.pit.util.chat.RomanUtil;
@@ -37,7 +37,7 @@ public class PrestigePerkBuyButton extends Button {
 
         if (profile.getPrestige() < perk.requirePrestige()) {
             //精通等级不足
-            return new UnKnowButton().getButtonItem(player);
+            return new UnknowButton().getButtonItem(player);
         }
 
         List<String> lore = new ArrayList<>();

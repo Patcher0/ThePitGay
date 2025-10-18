@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
  * @Author: EmptyIrony
  * @Date: 2021/1/1 22:36
  */
-public class UnKnowButton extends Button {
+public class UnknowButton extends Button {
 
     @Override
     public ItemStack getButtonItem(Player player) {

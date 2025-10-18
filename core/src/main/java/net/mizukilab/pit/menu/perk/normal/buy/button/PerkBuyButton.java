@@ -5,7 +5,7 @@ import cn.charlotte.pit.data.PlayerProfile;
 import cn.charlotte.pit.data.sub.PerkData;
 import cn.charlotte.pit.perk.AbstractPerk;
 import cn.charlotte.pit.perk.PerkType;
-import net.mizukilab.pit.menu.perk.UnKnowButton;
+import net.mizukilab.pit.menu.perk.UnknowButton;
 import net.mizukilab.pit.util.PlayerUtil;
 import net.mizukilab.pit.util.chat.CC;
 import net.mizukilab.pit.util.item.ItemBuilder;
@@ -97,7 +97,7 @@ public class PerkBuyButton extends Button {
         }
 
         if ((perk.getPerkType() == PerkType.PERK && profile.getLevel() < perk.requireLevel() && !PlayerUtil.isPlayerUnlockedPerk(player, "the_way_perk")) || (perk.requirePrestige() > 0 && profile.getPrestige() < perk.requirePrestige())) {
-            return new UnKnowButton().getButtonItem(player);
+            return new UnknowButton().getButtonItem(player);
         }
 
 
