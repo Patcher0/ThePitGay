@@ -158,7 +158,6 @@ public class PlayerMarco implements Listener {
                 new PitProfileLoadedEvent(load,op).callEvent();
                 if(player.isOnline()) { //twice check && Async check;
                     load.setLogin(true);
-                    ThePit.getInstance().getMapSelector().teleportIntoSpawn(player);
                     player.setGameMode(GameMode.SURVIVAL);
                 }
             });
@@ -184,6 +183,13 @@ public class PlayerMarco implements Listener {
         PlayerUtil.resetPlayer(player, true);
 
         loadData(event);
+    }
+    @EventHandler
+    public void onInitSpawn(PlayerInitialSpawnEvent spawn){
+        Location randomLocation = ThePit.getInstance().getMapSelector().getRandomLocation();
+        if(randomLocation != null) {
+            spawn.setSpawnLocation(randomLocation);
+        }
     }
 
 

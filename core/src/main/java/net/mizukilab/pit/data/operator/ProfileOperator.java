@@ -186,13 +186,10 @@ public class ProfileOperator implements IProfilerOperator {
             Player player = Bukkit.getPlayer(uniqueId);
 
             if (player == null || !player.isOnline()) {
-                if (!operator.isLoaded()) {
-                    return true;
-                }
+                operator.tick();
                 if (operator.throwable != null) {
                     return true;
                 }
-                operator.tick();
                 if (operator.profile.code == OPCODE_BUSY) {
                     return false;
                 }

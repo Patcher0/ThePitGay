@@ -71,17 +71,24 @@ public class MapSelector {
         config.synchronizeLegacy();
         reset();
     }
-    public void teleportIntoSpawn(Entity entity) {
+    public Location getRandomLocation(){
         List<Location> spawnLocations = config.getSelectedWorldConfig()
                 .getSpawnLocations();
         if(spawnLocations.isEmpty()){
+            System.out.println("Spawn locations are unset");
+            return null;
+        }
+        return RandomUtil.helpMeToChooseOne(spawnLocations);
+    }
+    public void teleportIntoSpawn(Entity entity) {
+        Location randomLocation = getRandomLocation();
+        if(randomLocation == null){
             entity.sendMessage("未设置出生点");
             return;
         }
-        Location location = RandomUtil.helpMeToChooseOne(spawnLocations);
-        entity.teleport(location);
+        entity.teleport(randomLocation);
         if(entity instanceof Player){
-            ((Player) entity).setBedSpawnLocation(location);
+            ((Player) entity).setBedSpawnLocation(randomLocation);
         }
     }
     public void reTeleportEntities() {

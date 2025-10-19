@@ -421,7 +421,7 @@ public class MythicWellMenu extends Menu {
         }
 
         // 正常关闭逻辑
-        ANIMATOR.sendReset(player);
+        ThePit.getInstance().getAnimator().sendReset(player);
         this.animationData.setFinished(true);
     }
 }
