@@ -143,8 +143,9 @@ public class PlayerMarco implements Listener {
 
     public void whenLoaded(PackedOperator op,PlayerProfile load, Player player) {
         updateLoginTime(load);
-        load.setPlayerName(player.getName());
-        load.setLowerName(player.getName().toLowerCase());
+        String name = player.getName();
+        load.setPlayerName(name);
+        load.setLowerName(name.toLowerCase());
         if (load.getProfileFormatVersion() == 0) {
             PitProfileUpdater.updateVersion0(load);
         }

@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
@@ -24,7 +25,14 @@ import java.util.Objects;
 @JsonSerialize(using = EnderChestSerializer.class)
 @JsonDeserialize(using = EnderChestDeserializer.class)
 public class PlayerEnderChest {
-
+    /**
+     * Last inventory
+     */
+    @Nullable
+    private Inventory lastInventory;
+    /**
+     * Current inventory
+     */
     private Inventory inventory;
 
     public PlayerEnderChest() {
@@ -34,21 +42,19 @@ public class PlayerEnderChest {
     public static PlayerEnderChest deserialization(String string) {
         PlayerEnderChest enderChest = new PlayerEnderChest();
         enderChest.getInventory().setContents(InventoryUtil.stringToItems(string));
-
         return enderChest;
     }
 
     public void openEnderChest(Player player) {
         player.closeInventory();
-
         PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
         int row = profile.getEnderChestRow();
         int limit = row * 9;
-
-        for (int i = limit; i < this.inventory.getContents().length; i++) {
+        ItemStack[] contents = this.inventory.getContents();
+        for (int i = limit; i < contents.length; i++) {
             inventory.setItem(i, new ItemBuilder(Material.STAINED_GLASS_PANE).name("&c未解锁的槽位").durability(14).lore("", "&7前面的区域, 以后再来探索吧!").internalName("not_unlock_slot").build());
         }
-        for (int i = 27; i < this.inventory.getContents().length; i++) {
+        for (int i = 27; i < contents.length; i++) {
             if (i >= limit) {
                 break;
             }
@@ -60,8 +66,16 @@ public class PlayerEnderChest {
                 }
             }
         }
-
         player.openInventory(inventory);
+    }
+    public void rollback() {
+        if (lastInventory != null) {
+            inventory.setContents(lastInventory.getContents());
+        }
+    }
+    public void snapshot(){
+        lastInventory = Bukkit.createInventory(null,54,"末影箱");
+        lastInventory.setContents(inventory.getContents());
     }
 
     public String serialize() {

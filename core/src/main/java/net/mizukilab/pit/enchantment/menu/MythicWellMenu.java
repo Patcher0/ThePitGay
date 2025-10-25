@@ -264,15 +264,13 @@ public class MythicWellMenu extends Menu {
 
     @Override
     public void onClickEvent(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) {
+        if (!(event.getWhoClicked() instanceof Player player)) {
             return;
         }
 
         if (animationData.isStartEnchanting() && !animationData.isFinished()) {
             return;
         }
-
-        Player player = (Player) event.getWhoClicked();
 
         if (event.getClickedInventory() instanceof PlayerInventory) {
             event.setCancelled(true);

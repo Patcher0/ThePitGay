@@ -2,6 +2,7 @@ package net.mizukilab.pit.menu.viewer.button;
 
 import cn.charlotte.pit.data.PlayerProfile;
 import cn.charlotte.pit.data.sub.PlayerEnderChest;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.mizukilab.pit.util.item.ItemBuilder;
 import net.mizukilab.pit.util.menu.Button;
 import net.mizukilab.pit.util.menu.Menu;
@@ -35,13 +36,14 @@ public class EnderChestViewerMenu extends Menu {
     @Override
     public Map<Integer, Button> getButtons(Player player) {
         Inventory enderChest = profile.getEnderChest().getInventory();
-        Map<Integer, Button> button = new HashMap<>();
+        Int2ObjectOpenHashMap<Button> button = new Int2ObjectOpenHashMap<>();
+        ItemStack[] contents = enderChest.getContents();
         for (int i = 0; i < profile.getEnderChestRow() * 9; i++) {
-            int finalI = i;
+            final int finalI = i;
             button.put(i, new Button() {
                 @Override
                 public ItemStack getButtonItem(Player player) {
-                    return enderChest.getContents()[finalI] == null ? new ItemBuilder(Material.AIR).build() : enderChest.getContents()[finalI];
+                    return contents[finalI] == null ? new ItemBuilder(Material.AIR).build() : contents[finalI];
                 }
 
                 @Override

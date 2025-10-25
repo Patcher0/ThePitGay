@@ -1,6 +1,7 @@
 package net.mizukilab.pit.listener;
 
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
+import net.mizukilab.pit.util.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
@@ -50,7 +51,8 @@ public class ExpireListener implements Listener {
         }
 
         // 转换为NMS物品
-        net.minecraft.server.v1_8_R3.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
+        // 草泥马的是不是脑残?
+        net.minecraft.server.v1_8_R3.ItemStack nmsItem = Utils.toNMStackQuick(item);
         if (nmsItem == null || !nmsItem.hasTag()) {
             return 0;
         }
@@ -77,8 +79,7 @@ public class ExpireListener implements Listener {
             long expireTime = getExpireTime(item);
             if (expireTime > 0 && System.currentTimeMillis() > expireTime) {
                 inv.setItem(slot, null); // 移除物品
-                if (inv.getHolder() instanceof Player) {
-                    Player player = (Player) inv.getHolder();
+                if (inv.getHolder() instanceof Player player) {
                     player.sendMessage(ChatColor.RED + "你的一件物品已过期并被移除!");
                 }
             }

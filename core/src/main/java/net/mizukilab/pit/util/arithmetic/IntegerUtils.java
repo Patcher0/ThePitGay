@@ -172,7 +172,7 @@ public final class IntegerUtils {
         x ^= x >>> 53;
         return x;
     }
-
+    static final int zero = '0';
     public static int fastParse(String string) {
         return fastParse0(string,0,string.length());
     }
@@ -180,7 +180,7 @@ public final class IntegerUtils {
         int result = 0;
         for (int i = start; i < end; i++) {
             char c = string.charAt(i);
-            result = result * 10 + (c - '0');
+            result = result * 10 + (c - zero);
         }
         return result;
     }

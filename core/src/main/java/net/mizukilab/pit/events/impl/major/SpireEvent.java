@@ -50,6 +50,7 @@ import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.InputStream;
@@ -132,6 +133,10 @@ public class SpireEvent extends AbstractEvent implements IEpicEvent, Listener, I
                     .get(RandomUtil.random.nextInt(ThePit.getInstance().getPitConfig().getSpawnLocations().size()));
             player.teleport(location);
             player.playSound(player.getLocation(), Sound.ENDERDRAGON_GROWL, 1, 0.5F);
+            PlayerProfile playerProfileByUuid = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
+            if(playerProfileByUuid.isLoaded()){
+                playerProfileByUuid.getEnderChest().snapshot();
+            }
         }
 
         FaweAPI.getTaskManager().async(() -> {
@@ -209,6 +214,7 @@ public class SpireEvent extends AbstractEvent implements IEpicEvent, Listener, I
             final PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
             profile.setInventory(PlayerInv.fromPlayerInventory(player.getInventory()));
             profile.setTempInvUsing(true);
+            profile.getEnderChest().snapshot();
 
             PlayerUtil.resetPlayer(player, true, true);
             this.giveInvSets(player);
@@ -228,6 +234,7 @@ public class SpireEvent extends AbstractEvent implements IEpicEvent, Listener, I
         if (profile.isLoaded()) {
             profile.getInventory()
                     .applyItemToPlayer(event.getPlayer());
+            profile.getEnderChest().rollback();
             profile.setTempInvUsing(false);
         }
     }
@@ -236,36 +243,43 @@ public class SpireEvent extends AbstractEvent implements IEpicEvent, Listener, I
         final PlayerSpireData data = this.dataMap.get(player.getUniqueId());
         final int floor = data.floor;
 
+        PlayerInventory inventory = player.getInventory();
         if (floor == 0) {
             final SpireSword sword = new SpireSword(Material.WOOD_SWORD);
-            player.getInventory().addItem(sword.toItemStack());
+            inventory.addItem(sword.toItemStack());
         } else if (floor == 1 || floor == 2) {
-            player.getInventory().addItem(SpireArmor.toItemStack(Material.WOOD_SWORD));
-            player.getInventory().setChestplate(SpireArmor.toItemStack(Material.LEATHER_CHESTPLATE));
+            inventory.addItem(SpireArmor.toItemStack(Material.WOOD_SWORD));
+            inventory.setChestplate(SpireArmor.toItemStack(Material.LEATHER_CHESTPLATE));
 
-            player.getInventory().setLeggings(SpireArmor.toItemStack(Material.CHAINMAIL_LEGGINGS));
+            inventory.setLeggings(SpireArmor.toItemStack(Material.CHAINMAIL_LEGGINGS));
         } else if (floor == 3 || floor == 4 || floor == 5) {
-            player.getInventory().addItem(SpireArmor.toItemStack(Material.IRON_SWORD));
+            inventory.addItem(SpireArmor.toItemStack(Material.IRON_SWORD));
 
-            player.getInventory().setChestplate(SpireArmor.toItemStack(Material.IRON_CHESTPLATE));
-            player.getInventory().setLeggings(SpireArmor.toItemStack(Material.CHAINMAIL_LEGGINGS));
-            player.getInventory().setBoots(SpireArmor.toItemStack(Material.IRON_BOOTS));
+            inventory.setChestplate(SpireArmor.toItemStack(Material.IRON_CHESTPLATE));
+            inventory.setLeggings(SpireArmor.toItemStack(Material.CHAINMAIL_LEGGINGS));
+            inventory.setBoots(SpireArmor.toItemStack(Material.IRON_BOOTS));
         } else if (floor >= 6) {
             final SpireSword sword = new SpireSword(Material.DIAMOND_SWORD);
-            player.getInventory().addItem(sword.toItemStack());
-            player.getInventory().setChestplate(SpireArmor.toItemStack(Material.DIAMOND_CHESTPLATE));
-            player.getInventory().setLeggings(SpireArmor.toItemStack(Material.IRON_LEGGINGS));
-            player.getInventory().setBoots(SpireArmor.toItemStack(Material.DIAMOND_BOOTS));
+            inventory.addItem(sword.toItemStack());
+            inventory.setChestplate(SpireArmor.toItemStack(Material.DIAMOND_CHESTPLATE));
+            inventory.setLeggings(SpireArmor.toItemStack(Material.IRON_LEGGINGS));
+            inventory.setBoots(SpireArmor.toItemStack(Material.DIAMOND_BOOTS));
         }
 
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onQuit(PlayerQuitEvent event) {
         final Player player = event.getPlayer();
         final PlayerSpireData data = dataMap.get(player.getUniqueId());
         if (data == null) {
             return;
+        }
+        PlayerProfile playerProfileByUuid = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
+        playerProfileByUuid.getEnderChest().rollback();
+        if(playerProfileByUuid.isLoaded()){
+            playerProfileByUuid.getInventory().applyItemToPlayer(player);
+            playerProfileByUuid.setTempInvUsing(false);
         }
         dataMap.remove(player.getUniqueId());
     }
@@ -385,9 +399,7 @@ public class SpireEvent extends AbstractEvent implements IEpicEvent, Listener, I
         this.dataMap.values()
                 .stream()
                 .sorted(Comparator.comparingInt(data -> data.soul))
-                .forEach(data -> {
-                    map.put(data.uuid, rank.getAndDecrement());
-                });
+                .forEach(data -> map.put(data.uuid, rank.getAndDecrement()));
 
         this.rankMap.clear();
         this.rankMap.putAll(map);
@@ -462,6 +474,8 @@ public class SpireEvent extends AbstractEvent implements IEpicEvent, Listener, I
                 final PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
                 if (profile.isTempInvUsing()) {
                     profile.getInventory().applyItemToPlayer(player);
+                    //?
+                    profile.getEnderChest().rollback();
                     profile.setTempInvUsing(false);
                 }
 

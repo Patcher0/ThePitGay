@@ -49,7 +49,6 @@ import java.util.stream.Collectors;
 
 public class BlockHeadEvent extends AbstractEvent implements IEpicEvent, Listener, IPreparative, IScoreBoardInsert {
     private final Map<UUID, PlayerBlockHeadData> dataMap = new HashMap<>();
-    private final Map<UUID, Integer> rankMap = new HashMap<>();
     public final Map<UUID, PowerUP> pup = new HashMap<>();
     private static final List<Material> canBeUsed = Arrays.asList(Material.STONE, Material.GRASS, Material.DIRT, Material.COBBLESTONE, Material.WOOD, Material.BEDROCK
             , Material.GOLD_ORE, Material.IRON_ORE, Material.COAL_ORE
@@ -264,14 +263,15 @@ public class BlockHeadEvent extends AbstractEvent implements IEpicEvent, Listene
         if (vector.getY() > 2.0) {
             vector.setY(2.0);
         }
-        FallingBlock fb = location.getWorld().spawnFallingBlock(location, killerData.block, (byte) 0);
-        FallingBlock fb2 = location.getWorld().spawnFallingBlock(location, killerData.block, (byte) 0);
-        FallingBlock fb3 = location.getWorld().spawnFallingBlock(location, killerData.block, (byte) 0);
-        FallingBlock fb4 = location.getWorld().spawnFallingBlock(location, killerData.block, (byte) 0);
-        FallingBlock fb5 = location.getWorld().spawnFallingBlock(location, killerData.block, (byte) 0);
-        FallingBlock fb6 = location.getWorld().spawnFallingBlock(location, killerData.block, (byte) 0);
-        FallingBlock fb7 = location.getWorld().spawnFallingBlock(location, killerData.block, (byte) 0);
-        FallingBlock fb8 = location.getWorld().spawnFallingBlock(location, killerData.block, (byte) 0);
+        World world1 = location.getWorld();
+        FallingBlock fb = world1.spawnFallingBlock(location, killerData.block, (byte) 0);
+        FallingBlock fb2 = world1.spawnFallingBlock(location, killerData.block, (byte) 0);
+        FallingBlock fb3 = world1.spawnFallingBlock(location, killerData.block, (byte) 0);
+        FallingBlock fb4 = world1.spawnFallingBlock(location, killerData.block, (byte) 0);
+        FallingBlock fb5 = world1.spawnFallingBlock(location, killerData.block, (byte) 0);
+        FallingBlock fb6 = world1.spawnFallingBlock(location, killerData.block, (byte) 0);
+        FallingBlock fb7 = world1.spawnFallingBlock(location, killerData.block, (byte) 0);
+        FallingBlock fb8 = world1.spawnFallingBlock(location, killerData.block, (byte) 0);
         double vector1 = 0.4;
         double vector2 = 0.3;
         fb.setVelocity(new Vector(vector1, 0.0, 0.0));
@@ -446,6 +446,7 @@ public class BlockHeadEvent extends AbstractEvent implements IEpicEvent, Listene
                     dataMap.remove(player.getUniqueId());
                 }
                 PlayerProfile.getPlayerProfileByUuid(player.getUniqueId()).getInventory().applyItemToPlayer(player);
+                profile.getEnderChest().rollback();
             }
             entities.removeIf(i -> {
                 i.remove();
@@ -481,8 +482,9 @@ public class BlockHeadEvent extends AbstractEvent implements IEpicEvent, Listene
 
     @EventHandler
     public void onSpawn(PitPlayerSpawnEvent event) {
-        PlayerBlockHeadData data = dataMap.get(event.getPlayer().getUniqueId());
-        PlayerProfile.getPlayerProfileByUuid(event.getPlayer().getUniqueId()).getInventory().applyItemToPlayer(event.getPlayer());
+        PlayerProfile playerProfileByUuid = PlayerProfile.getPlayerProfileByUuid(event.getPlayer().getUniqueId());
+        playerProfileByUuid.getInventory().applyItemToPlayer(event.getPlayer());
+        playerProfileByUuid.getEnderChest().rollback();
         sendPacket(event.getPlayer());
     }
 
@@ -547,6 +549,7 @@ public class BlockHeadEvent extends AbstractEvent implements IEpicEvent, Listene
         PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
         profile.setInventory(PlayerInv.fromPlayerInventory(player.getInventory()));
         profile.setTempInvUsing(true);
+        profile.getEnderChest().snapshot();
         sendPacket(player);
     }
 
