@@ -77,7 +77,9 @@ public class PlayerEnderChest {
         lastInventory = Bukkit.createInventory(null,54,"末影箱");
         lastInventory.setContents(inventory.getContents());
     }
-
+    public void unsnapshot(){
+        lastInventory = null;
+    }
     public String serialize() {
         int limit = 6 * 9;
 

@@ -25,7 +25,7 @@ import java.util.Objects;
 public class PlayerWarehouse {
     
     private Map<Integer, Inventory> warehouses;
-    
+    private Map<Integer, Inventory> snapshot;
     public PlayerWarehouse() {
         warehouses = new HashMap<>();
         for (int i = 1; i <= 10; i++) {
@@ -34,6 +34,25 @@ public class PlayerWarehouse {
             fillEmptySlots(inv);
             warehouses.put(i, inv);
         }
+    }
+    public void snapshot(){
+        snapshot = new HashMap<>();
+        warehouses.forEach((key, value) -> {
+            Inventory inventory = Bukkit.createInventory(null, value.getSize(), value.getTitle());
+            inventory.setContents(value.getContents());
+            snapshot.put(key, inventory);
+        });
+    }
+    public void rollback(){
+        Map<Integer,Inventory> snapshot0 = this.snapshot;
+        if(snapshot0 != null){;
+            snapshot0.forEach((i,a) -> {
+                warehouses.get(i).setContents(a.getContents());
+            });
+        }
+    }
+    public void unsnapshot(){
+        this.snapshot = null;
     }
     
     public static PlayerWarehouse deserialization(String string) {
@@ -61,7 +80,7 @@ public class PlayerWarehouse {
     
     public Inventory getWarehouse(int warehouseId) {
         if (warehouseId < 1 || warehouseId > 10) {
-            throw new IllegalArgumentException("寄存编号必须在1-10之间");
+            throw new IndexOutOfBoundsException("The warehouse index should be from 1 to 10");
         }
         return warehouses.get(warehouseId);
     }

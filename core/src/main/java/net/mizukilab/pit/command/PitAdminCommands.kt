@@ -687,6 +687,10 @@ class PitAdminCommands {
     @Execute(name = "trade")
     @Async
     fun trade(@Context player: Player, @Arg("target") target: String) {
+        if(ThePit.getInstance().eventFactory.activeEpicEvent != null){
+            player.sendMessage("§cCould not create a trade to $target because there is a running epic event")
+            return;
+        }
         val profile = ThePit.getInstance().profileOperator
             .namedIOperator(target).profile()
         if (profile == null) {

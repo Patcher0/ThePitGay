@@ -136,6 +136,7 @@ public class SpireEvent extends AbstractEvent implements IEpicEvent, Listener, I
             PlayerProfile playerProfileByUuid = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
             if(playerProfileByUuid.isLoaded()){
                 playerProfileByUuid.getEnderChest().snapshot();
+                playerProfileByUuid.getWarehouse().snapshot();
             }
         }
 
@@ -215,6 +216,7 @@ public class SpireEvent extends AbstractEvent implements IEpicEvent, Listener, I
             profile.setInventory(PlayerInv.fromPlayerInventory(player.getInventory()));
             profile.setTempInvUsing(true);
             profile.getEnderChest().snapshot();
+            profile.getWarehouse().snapshot();
 
             PlayerUtil.resetPlayer(player, true, true);
             this.giveInvSets(player);
@@ -235,6 +237,7 @@ public class SpireEvent extends AbstractEvent implements IEpicEvent, Listener, I
             profile.getInventory()
                     .applyItemToPlayer(event.getPlayer());
             profile.getEnderChest().rollback();
+            profile.getWarehouse().rollback();
             profile.setTempInvUsing(false);
         }
     }
@@ -277,6 +280,7 @@ public class SpireEvent extends AbstractEvent implements IEpicEvent, Listener, I
         }
         PlayerProfile playerProfileByUuid = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
         playerProfileByUuid.getEnderChest().rollback();
+        playerProfileByUuid.getWarehouse().rollback();
         if(playerProfileByUuid.isLoaded()){
             playerProfileByUuid.getInventory().applyItemToPlayer(player);
             playerProfileByUuid.setTempInvUsing(false);
@@ -476,6 +480,7 @@ public class SpireEvent extends AbstractEvent implements IEpicEvent, Listener, I
                     profile.getInventory().applyItemToPlayer(player);
                     //?
                     profile.getEnderChest().rollback();
+                    profile.getWarehouse().rollback();
                     profile.setTempInvUsing(false);
                 }
 
@@ -519,7 +524,8 @@ public class SpireEvent extends AbstractEvent implements IEpicEvent, Listener, I
 
             final int rank = rankMap.containsKey(player.getUniqueId()) ? (rankMap.get(player.getUniqueId()) + 1) : -1;
             final PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
-
+            profile.getEnderChest().unsnapshot();
+            profile.getWarehouse().unsnapshot();
             double rewardCoins = 0;
             int rewardRenown = 0;
             if (rank <= 3) {

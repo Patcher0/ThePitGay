@@ -1,10 +1,12 @@
 package net.mizukilab.pit.util.nametag;
 
+import cn.charlotte.pit.ThePit;
 import io.irina.backports.utils.SWMRHashTable;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.Getter;
+import net.mizukilab.pit.util.LzScheduler;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -76,9 +78,16 @@ public class NametagBoard {
     private void updateHealthBelow(Player player, Scoreboard scoreboard) {
         if (this.handler.getAdapter().showHealthBelowName(player)) {
             if (scoreboard.getObjective(DisplaySlot.BELOW_NAME) == null) {
-                Objective objective = scoreboard.registerNewObjective("showhealth", "health");
-                objective.setDisplaySlot(DisplaySlot.BELOW_NAME);
-                objective.setDisplayName(ChatColor.RED + StringEscapeUtils.unescapeJava("\u2764"));
+                //Async check
+                Objective objective = scoreboard.getObjective("newhealth");
+                if(objective == null) {
+                    LzScheduler.ensureMain(() -> {
+                        Objective objective0 = scoreboard.registerNewObjective("showhealth", "health");
+                        objective0.setDisplaySlot(DisplaySlot.BELOW_NAME);
+                        objective0.setDisplayName(ChatColor.RED + StringEscapeUtils.unescapeJava("\u2764"));
+                    });
+                    return;
+                }
                 // Ensures that 0 isn't displayed if they haven't lost health.
                 for (Player loopPlayer : Bukkit.getOnlinePlayers()) {
                     objective.getScore(loopPlayer).setScore((int) Math.floor(loopPlayer.getHealth()));

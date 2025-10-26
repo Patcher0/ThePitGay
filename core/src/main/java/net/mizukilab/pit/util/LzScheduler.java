@@ -3,6 +3,7 @@ package net.mizukilab.pit.util;
 import cn.charlotte.pit.ThePit;
 import it.unimi.dsi.fastutil.ints.Int2BooleanFunction;
 import lombok.experimental.UtilityClass;
+import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -23,5 +24,12 @@ public class LzScheduler {
                 countLocal++;
             }
         }.runTaskTimerAsynchronously(ThePit.getInstance(),delay,dur);
+    }
+    public void ensureMain(Runnable runnable){
+        if(Bukkit.isPrimaryThread()){
+            runnable.run();
+            return;
+        }
+        Bukkit.getScheduler().runTask(ThePit.getInstance(),runnable);
     }
 }

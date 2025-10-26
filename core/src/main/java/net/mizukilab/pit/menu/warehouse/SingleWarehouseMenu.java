@@ -28,7 +28,7 @@ public class SingleWarehouseMenu extends Menu {
     
     @Override
     public Map<Integer, Button> getButtons(Player player) {
-        return new HashMap<>();
+        return null;
     }
     
     @Override

@@ -58,7 +58,7 @@ class PitAdminDupeFixCommands {
                         var coalCounts = 0
                         var featherCounts = 0
                         var gemCounts = 0
-
+                        var armorCounts = 0;
                         var dupe = false
 
                         profile.inventory.contents.toList().forEachIndexed { index, itemStack ->

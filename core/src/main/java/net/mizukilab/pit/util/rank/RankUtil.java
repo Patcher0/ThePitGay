@@ -4,6 +4,7 @@ import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
 import io.lumine.xikage.mythicmobs.MythicMobs;
 import io.lumine.xikage.mythicmobs.mobs.ActiveMob;
+import lombok.extern.java.Log;
 import net.luckperms.api.model.user.User;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -14,11 +15,13 @@ import org.bukkit.entity.Player;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 
 /**
  * @author Yurinan, Misoryan
  * @since 2021/1/5 14:55
  */
+@Log(topic = "Minecraft")
 public class RankUtil {
 
     public static String getPlayerRank(String name) {
@@ -69,9 +72,15 @@ public class RankUtil {
             }
 
             if (mmEnable) {
-                Optional<ActiveMob> mob = MythicMobs.inst().getMobManager().getActiveMob(uuid);
-                if (mob.isPresent()) {
-                    return mob.get().getType().getDisplayName();
+                try {
+                    Optional<ActiveMob> mob = MythicMobs.inst().getMobManager().getActiveMob(uuid);
+                    if (mob.isPresent()) {
+                        return mob.get().getType().getDisplayName();
+                    }
+                } catch (Throwable t){
+                    log.logp(Level.WARNING,"RankUtil","getPlayerName"
+                            ,"Could not get the source name through mythicmobs api, disabling",t);
+                    mmEnable = false;
                 }
             }
 

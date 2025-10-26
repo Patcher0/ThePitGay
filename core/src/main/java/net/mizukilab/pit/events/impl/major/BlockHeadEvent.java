@@ -447,6 +447,7 @@ public class BlockHeadEvent extends AbstractEvent implements IEpicEvent, Listene
                 }
                 PlayerProfile.getPlayerProfileByUuid(player.getUniqueId()).getInventory().applyItemToPlayer(player);
                 profile.getEnderChest().rollback();
+                profile.getWarehouse().rollback();
             }
             entities.removeIf(i -> {
                 i.remove();
@@ -485,6 +486,7 @@ public class BlockHeadEvent extends AbstractEvent implements IEpicEvent, Listene
         PlayerProfile playerProfileByUuid = PlayerProfile.getPlayerProfileByUuid(event.getPlayer().getUniqueId());
         playerProfileByUuid.getInventory().applyItemToPlayer(event.getPlayer());
         playerProfileByUuid.getEnderChest().rollback();
+        playerProfileByUuid.getWarehouse().rollback();
         sendPacket(event.getPlayer());
     }
 
@@ -550,6 +552,7 @@ public class BlockHeadEvent extends AbstractEvent implements IEpicEvent, Listene
         profile.setInventory(PlayerInv.fromPlayerInventory(player.getInventory()));
         profile.setTempInvUsing(true);
         profile.getEnderChest().snapshot();
+        profile.getWarehouse().snapshot();
         sendPacket(player);
     }
 
