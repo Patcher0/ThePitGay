@@ -99,62 +99,10 @@ class PitAdminSimpleCommand {
         if (menu.equals("ender_chest", ignoreCase = true)) {
             PlayerProfile.getPlayerProfileByUuid(player.uniqueId).enderChest.openEnderChest(player)
         }
-        if (menu.equals("sewers", ignoreCase = true)) {
-            ThePit.api.openMenu(player, "sewers")
-        }
-        if (menu.equals("shop", ignoreCase = true)) {
-            ThePit.api.openMenu(player, "shop")
-        }
-        if (menu.equals("house",ignoreCase = true)) {
-            ThePit.api.openMenu(player, "warehouse")
-        }
-        if (menu.equals("perkBuy", ignoreCase = true)) {
-            PerkChooseMenu().openMenu(player)
-        }
-        if (menu.equals("prestigePerkBuy", ignoreCase = true)) {
-            try {
-                PrestigePerkBuyMenu().openMenu(player)
-            } catch (e: Exception) {
-                CC.printErrorWithCode(player, e)
-            }
-        }
-        if (menu.equals("prestige", ignoreCase = true)) {
-            PrestigeMainMenu().openMenu(player)
-        }
-        if (menu.equals("ench", ignoreCase = true)) {
-            try {
-                ThePit.api.openMythicWellMenu(player)
-            } catch (e: Exception) {
-                CC.printErrorWithCode(player, e)
-            }
-        }
-        if (menu.equals("quest", ignoreCase = true)) {
-            try {
-                QuestMenu().openMenu(player)
-            } catch (e: Exception) {
-                CC.printErrorWithCode(player, e)
-            }
-        }
-        if (menu.equals("mail", ignoreCase = true)) {
-            try {
-                MailMenu().openMenu(player)
-            } catch (e: Exception) {
-                CC.printErrorWithCode(player, e)
-            }
-        }
-        if (menu.equals("cdk", ignoreCase = true)) {
-            try {
-                CDKMenu().openMenu(player)
-            } catch (e: Exception) {
-                CC.printErrorWithCode(player, e)
-            }
-        }
-        if (menu.equals("allCdk", ignoreCase = true)) {
-            try {
-                CDKViewMenu().openMenu(player)
-            } catch (e: Exception) {
-                CC.printErrorWithCode(player, e)
-            }
+        try {
+            ThePit.api.openMenu(player, menu)
+        } catch (e: Exception) {
+            CC.printError(player,e);
         }
     }
 
