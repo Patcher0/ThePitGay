@@ -117,7 +117,7 @@ object PitHook {
     val gitVersion = "4a3f7b"
 
     @JvmStatic
-    val itemVersion = "KleeLoveLife"
+    val itemVersion = "buuid"
     fun init() {
         loadConfig()
         loadParker()
