@@ -26,7 +26,7 @@ class GoldenHelmet : IMythicItem(), Listener {
     }
 
     override fun getItemDisplayName(): String {
-        return "&6浩聪的皇冠"
+        return "&6国王的皇冠"
     }
 
     override fun getItemDisplayMaterial(): Material {
