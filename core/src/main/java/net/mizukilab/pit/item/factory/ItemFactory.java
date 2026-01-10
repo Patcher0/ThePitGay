@@ -137,18 +137,21 @@ public class ItemFactory implements IItemFactory {
 
     public IMythicItem getIMythicItem0(boolean shouldUpdateItem,ItemStack stack, String internalName) {
         IMythicItem mythicItem = Utils.getMythicItem0(stack, internalName);
-        if (mythicItem != null) {
-            if (mythicItem.uuid != null) {
-                boolean sameAsDefault = mythicItem.uuid.equals(IMythicItem.getDefUUID());
-                if(shouldUpdateItem){
-                    mythicItem.enchCheck(stack);
-                }
-                if(!sameAsDefault){
-                    ItemUtil.checkAndUpdateMagic(stack,mythicItem.uuid);
-                    theReference.putValue(mythicItem.uuid, mythicItem);
-                }
-            }
+        if (mythicItem == null) {
+            return mythicItem;
         }
+        if (mythicItem.uuid == null) {
+            return mythicItem;
+        }
+        boolean sameAsDefault = mythicItem.uuid.equals(IMythicItem.getDefUUID());
+        if(shouldUpdateItem){
+            mythicItem.enchCheck(stack);
+        }
+        if (sameAsDefault) {
+            return mythicItem;
+        }
+        ItemUtil.checkAndUpdateMagic(stack,mythicItem.uuid);
+        theReference.putValue(mythicItem.uuid, mythicItem);
         return mythicItem;
     }
 

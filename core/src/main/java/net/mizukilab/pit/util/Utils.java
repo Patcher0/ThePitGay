@@ -8,6 +8,7 @@ import net.minecraft.server.v1_8_R3.*;
 import net.mizukilab.pit.config.PitWorldConfig;
 import net.mizukilab.pit.data.operator.PackedOperator;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
+import net.mizukilab.pit.enchantment.UnknownEnchantment;
 import net.mizukilab.pit.enchantment.rarity.EnchantmentRarity;
 import net.mizukilab.pit.item.AbstractPitItem;
 import net.mizukilab.pit.item.IMythicItem;
@@ -133,6 +134,9 @@ public class Utils {
 
                     if (enchantment != null) {
                         ment.put(enchantment, level);
+                    } else {
+                        UnknownEnchantment unknownEnchantment = new UnknownEnchantment(enchantmentName);
+                        ment.put(unknownEnchantment, level);
                     }
                 } catch (NumberFormatException e) {
                     String levelString = s.substring(splitIndex + 1);
