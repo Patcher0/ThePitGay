@@ -135,7 +135,14 @@ public class Utils {
                     if (enchantment != null) {
                         ment.put(enchantment, level);
                     } else {
-                        UnknownEnchantment unknownEnchantment = new UnknownEnchantment(enchantmentName);
+                        UnknownEnchantment unknownEnchantment;
+                        AbstractEnchantment existing = instance.getEnchantmentFactor().getEnchantmentMap().get(enchantmentName);
+                        if (existing instanceof UnknownEnchantment) {
+                            unknownEnchantment = (UnknownEnchantment) existing;
+                        } else {
+                            unknownEnchantment = new UnknownEnchantment(enchantmentName);
+                            instance.getEnchantmentFactor().getEnchantmentMap().put(enchantmentName, unknownEnchantment);
+                        }
                         ment.put(unknownEnchantment, level);
                     }
                 } catch (NumberFormatException e) {

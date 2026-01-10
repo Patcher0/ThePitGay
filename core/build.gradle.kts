@@ -22,10 +22,13 @@ group = "top.mcrw"
 
 version = "V"
 repositories {
-    maven("https://maven.cleanroommc.com")
-    maven("https://maven.cleanroommc.com")
-    maven("https://maven.aliyun.com/repository/public/")
+    maven("https://maven.aliyun.com/repository/public/") {
+        content {
+            includeGroupByRegex(".*")
+        }
+    }
     mavenCentral()
+    maven("https://maven.cleanroommc.com")
     maven("https://repo.crazycrew.us/releases")
     maven("https://repo.codemc.io/repository/nms/")
     maven("https://repo.codemc.io/repository/maven-public/")
