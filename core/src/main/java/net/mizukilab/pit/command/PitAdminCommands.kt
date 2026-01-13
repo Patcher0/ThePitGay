@@ -18,10 +18,10 @@ import net.kyori.adventure.text.event.ClickEvent
 import net.mizukilab.pit.PitHook
 import net.mizukilab.pit.command.handler.HandHasItem
 import net.mizukilab.pit.events.impl.QuickMathEvent
+import net.mizukilab.pit.handlers.RebootRunnable.RebootTask
 import net.mizukilab.pit.item.AbstractPitItem
 import net.mizukilab.pit.item.MythicColor
 import net.mizukilab.pit.medal.impl.challenge.hidden.KaboomMedal
-import net.mizukilab.pit.handlers.RebootRunnable.RebootTask
 import net.mizukilab.pit.sendMessage
 import net.mizukilab.pit.util.MythicUtil
 import net.mizukilab.pit.util.PlusPlayer
@@ -187,6 +187,7 @@ class PitAdminCommands {
         ThePit.getInstance().customEntityNPCFactory.reload()
         return CC.translate("&a成功设置寄存所NPC位置!")
     }
+
     @Execute(name = "mail")
     @Async
     fun setMailLocation(@Context player: Player): String {
@@ -656,7 +657,6 @@ class PitAdminCommands {
     }
 
     @Execute(name = "give")
-
     fun give(@Context player: Player, @Arg("nbtName") nbtName: String, @Arg("amount") amount: String) {
         try {
             val clazz = ThePit.getInstance().itemFactor.itemMap[nbtName]
@@ -687,7 +687,7 @@ class PitAdminCommands {
     @Execute(name = "trade")
     @Async
     fun trade(@Context player: Player, @Arg("target") target: String) {
-        if(ThePit.getInstance().eventFactory.activeEpicEvent != null){
+        if (ThePit.getInstance().eventFactory.activeEpicEvent != null) {
             player.sendMessage("§cCould not create a trade to $target because there is a running epic event")
             return;
         }

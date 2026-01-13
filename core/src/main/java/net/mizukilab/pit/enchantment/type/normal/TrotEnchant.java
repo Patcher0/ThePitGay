@@ -3,9 +3,7 @@ package net.mizukilab.pit.enchantment.type.normal;
 import cn.charlotte.pit.data.PlayerProfile;
 import com.google.common.util.concurrent.AtomicDouble;
 import lombok.SneakyThrows;
-import net.minecraft.server.v1_8_R3.EnumParticle;
 import net.minecraft.server.v1_8_R3.PacketPlayInFlying;
-import net.minecraft.server.v1_8_R3.PacketPlayOutWorldParticles;
 import net.mizukilab.pit.enchantment.AbstractEnchantment;
 import net.mizukilab.pit.enchantment.param.item.ArmorOnly;
 import net.mizukilab.pit.enchantment.rarity.EnchantmentRarity;
@@ -16,13 +14,9 @@ import net.mizukilab.pit.util.Utils;
 import net.mizukilab.pit.util.cooldown.Cooldown;
 import nya.Skip;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerMoveEvent;
 import spg.lgdev.handler.MovementHandler;
-import spg.lgdev.iSpigot;
 
 /**
  * @Author: Starry_Killer
@@ -37,7 +31,7 @@ public class TrotEnchant extends AbstractEnchantment implements MovementHandler,
     @SneakyThrows
     public TrotEnchant() {
         try {
-            
+
         } catch (NoClassDefFoundError ignore) {
         }
     }
@@ -98,6 +92,7 @@ public class TrotEnchant extends AbstractEnchantment implements MovementHandler,
             }
 
             Location location = player.getLocation().add(0.0, 0.5, 0.0);
+            if (this.getItemEnchantLevel(player.getInventory().getLeggings()) < 1) return;
             Utils.sendRedstoneParticle(player, location, 255f, 255f, 255f);
         }
         speed.set(targetSpeed);
