@@ -1,3 +1,5 @@
+package net.mizukilab.pit.enchantment.type.rare
+
 import com.google.common.util.concurrent.AtomicDouble
 import net.minecraft.server.v1_8_R3.BlockPosition
 import net.minecraft.server.v1_8_R3.PacketPlayOutWorldEvent

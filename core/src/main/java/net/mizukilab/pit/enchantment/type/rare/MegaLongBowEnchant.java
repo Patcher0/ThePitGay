@@ -67,7 +67,7 @@ public class MegaLongBowEnchant extends AbstractEnchantment implements Listener,
 
     @Override
     public String getUsefulnessLore(int enchantLevel) {
-        return "射箭时无需蓄力即可让箭矢以最大蓄力状态射出,"
+        return "&7射箭时无需蓄力即可让箭矢以最大蓄力状态射出,"
                 + "/s&7同时为自身施加 &a跳跃提升 " + RomanUtil.convert(enchantLevel + 1) + " &f(00:02)"
                 + "/s&7此附魔每秒只能触发一次.";
     }

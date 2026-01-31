@@ -3,14 +3,11 @@ package net.mizukilab.pit.enchantment;
 import cn.charlotte.pit.ThePit;
 import cn.charlotte.pit.data.PlayerProfile;
 import cn.charlotte.pit.data.sub.EnchantmentRecord;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.log4j.Log4j2;
 import net.mizukilab.pit.config.NewConfiguration;
 import net.mizukilab.pit.data.operator.SuPromise;
@@ -30,10 +27,8 @@ import net.mizukilab.pit.util.random.RandomUtil;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 import static java.lang.Math.*;
-import java.util.List;
-import java.util.Random;
+
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 public class EnchantmentTable {
@@ -108,7 +103,6 @@ public class EnchantmentTable {
     enum Tier {
         TIER_1(1,
                 (chance, enchMap, mythicItem) -> {
-                    log.info("{} 开始附魔", "T1 附魔 > " + mythicItem.uuid + " | " + mythicItem.getItemDisplayName());
                     if (mythicItem.isDark()) { // 黑裤 必出Somber
                         var enchByClass = ThePit.getInstance().getEnchantmentFactor().getEnchByClass(SomberEnchant.class);
                         mythicItem.getEnchantments().put(enchByClass, 1);
@@ -132,8 +126,6 @@ public class EnchantmentTable {
                     if (mythicItem.isRage() || mythicItem.isDark()) {
                         throw new IllegalEnchantInputException("Can't enchant R/D mythicItem with Mythic Book");
                     }
-
-                    log.info("{} 开始附魔", "附魔书 附魔 > " + mythicItem.uuid + " | " + mythicItem.getItemDisplayName());
                     var abstractEnchantments = enchMap.get(EnchantmentRarity.RARE);
                     RandomUtil.chooseAndApplyChecked(true, abstractEnchantments, mythicItem.getEnchantments(), 3,3, AbstractEnchantment::getMaxEnchantLevel);
                     return true;
@@ -147,8 +139,6 @@ public class EnchantmentTable {
         }),
         TIER_2(2,
                 (chance, enchMap, mythicItem) -> {
-
-                    log.info("{} 开始附魔", "T2 附魔 > " + mythicItem.uuid + " | " + mythicItem.getItemDisplayName());
                     if (mythicItem.isDark()) {
                         var enchantments1 = mythicItem.getEnchantments();
                         var rage = enchMap.get(EnchantmentRarity.DARK_RARE);
@@ -221,7 +211,6 @@ public class EnchantmentTable {
                 }),
         TIER_3(3,
                 (chance, enchMap, mythicItem) -> {
-                    log.info("{} 开始附魔", "T3 附魔 > " + mythicItem.uuid + " | " + mythicItem.getItemDisplayName());
                     if (mythicItem.isDark()) {
                         var enchantments1 = mythicItem.getEnchantments();
                         var rage = enchMap.get(EnchantmentRarity.DARK_RARE);
@@ -278,11 +267,9 @@ public class EnchantmentTable {
             String enchantingBook = profile.getEnchantingBook();
             var level = getEnchantMap(enchTable, item);
             if (level == null) {
-                log.info("玩家 {} 附魔该物品时失败 {} - {}, 原因: 未找到合适的附魔池表", enq.getPlayer().getName(), enq.getMythic().getUuid(), enq.getMythic().getItemDisplayName());
                 enq.fail();
                 return;
             }
-            log.info("玩家 {} 开始附魔 {} - {}", enq.getPlayer().getName(), enq.getMythic().getUuid(), enq.getMythic().getItemDisplayName());
             boolean completed = false;
             boolean announce = false;
 
@@ -299,10 +286,8 @@ public class EnchantmentTable {
 
                 completed = true;
             } catch (IllegalEnchantInputException e) {
-                log.info("玩家 {} 附魔该物品时失败 {} - {}, 原因: {}", enq.getPlayer().getName(), enq.getMythic().getUuid(), enq.getMythic().getItemDisplayName(), e.getMessage());
                 enq.fail();
-            } catch (Throwable t) {
-                log.info("玩家 {} 附魔该物品时失败 {} - {}, 原因: {}", enq.getPlayer().getName(), enq.getMythic().getUuid(), enq.getMythic().getItemDisplayName(), t);
+            } catch (Throwable ignored) {
             } finally {
                 int lastMaxLive = item.maxLive;
 

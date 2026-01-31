@@ -1,8 +1,8 @@
 package net.mizukilab.pit
 
-import ExecutionerEnchant
 import cn.charlotte.pit.ThePit
 import cn.charlotte.pit.data.CDKData
+import net.mizukilab.pit.enchantment.type.ragerare.Regularity
 import cn.charlotte.pit.events.genesis.GenesisCombatListener
 import cn.charlotte.pit.util.hologram.packet.PacketHologramRunnable
 import com.comphenix.protocol.ProtocolLibrary
@@ -27,15 +27,12 @@ import net.mizukilab.pit.enchantment.type.aqua.RogueEnchant
 import net.mizukilab.pit.enchantment.type.auction.FractionalReserveEnchant
 import net.mizukilab.pit.enchantment.type.auction.rare.PaparazziEnchant
 import net.mizukilab.pit.enchantment.type.auction.rare.PitMBAEnchant
-import net.mizukilab.pit.enchantment.type.custom.VollewyA
-import net.mizukilab.pit.enchantment.type.custom.Volley_B
 import net.mizukilab.pit.enchantment.type.dark_normal.*
 import net.mizukilab.pit.enchantment.type.dark_rare.*
 import net.mizukilab.pit.enchantment.type.genesis.*
 import net.mizukilab.pit.enchantment.type.normal.*
 import net.mizukilab.pit.enchantment.type.op.*
 import net.mizukilab.pit.enchantment.type.rage.*
-import net.mizukilab.pit.enchantment.type.ragerare.Regularity
 import net.mizukilab.pit.enchantment.type.ragerare.ThinkOfThePeopleEnchant
 import net.mizukilab.pit.enchantment.type.rare.*
 import net.mizukilab.pit.enchantment.type.sewer_normal.AegisEnchant
@@ -75,7 +72,7 @@ import net.mizukilab.pit.park.Parker
 import net.mizukilab.pit.perk.type.boost.*
 import net.mizukilab.pit.perk.type.prestige.*
 import net.mizukilab.pit.perk.type.shop.*
-import net.mizukilab.pit.perk.type.streak.beastmode.BeastModeMegaStreak
+
 import net.mizukilab.pit.perk.type.streak.beastmode.RAndRKillStreak
 import net.mizukilab.pit.perk.type.streak.beastmode.TacticalRetreatKillStreak
 import net.mizukilab.pit.perk.type.streak.beastmode.ToughSkinKillStreak
@@ -97,6 +94,7 @@ import net.mizukilab.pit.perk.type.streak.uber.UberStreak
 import net.mizukilab.pit.quest.type.*
 import net.mizukilab.pit.handlers.*
 import net.mizukilab.pit.hologram.HologramMarco
+import net.mizukilab.pit.perk.type.streak.beastmode.BeastModeMegaStreak
 import net.mizukilab.pit.scoreboard.Scoreboard
 import net.mizukilab.pit.sound.impl.*
 import net.mizukilab.pit.tab.TabHandle
@@ -165,7 +163,7 @@ object PitHook {
         }
         Bukkit.getScheduler().runTaskLater(ThePit.getInstance(), {
             if(delayReloadEnchTable) {
-                ThePit.getInstance().enchTable.reload();
+                ThePit.getInstance().enchTable.reload()
             }
             loaded = true
         }, 100L)
