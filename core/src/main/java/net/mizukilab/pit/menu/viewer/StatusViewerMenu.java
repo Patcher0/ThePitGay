@@ -44,7 +44,7 @@ public class StatusViewerMenu extends Menu {
 
     @Override
     public Map<Integer, Button> getButtons(Player player) {
-        if (!profile.isSupporter()) {
+        if (Bukkit.getPlayer(profile.getPlayerUuid()) != null && Bukkit.getPlayer(profile.getPlayerUuid()).isOnline() && !profile.isSupporter()) {
             profile.getPlayerOption().setInventoryVisibility(true);
             profile.getPlayerOption().setEnderChestVisibility(true);
             profile.getPlayerOption().setProfileVisibility(true);
