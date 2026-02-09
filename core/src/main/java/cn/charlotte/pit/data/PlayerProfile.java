@@ -97,15 +97,19 @@ public class PlayerProfile {
 
     public static final UUID CONSTANT_UUID_BOT_UNLOADED_PLAYER = UUID.randomUUID();
     public final static PlayerProfile NONE_PROFILE = new NullProfile();
-
-    //两张表
-    public IOperator toOperator() {
-        return ThePit.getInstance().getProfileOperator().getIOperator(getPlayerUuid());
-    }
-
     public int prestige;
     public List<String> claimedMail;
     public PlayerMailData mailData;
+    //code = -1 = allow;
+    //code = -2 = disallow
+    public transient volatile byte code = -1;
+    public KingsQuestsData kingsQuestsData = new KingsQuestsData();
+    public ItemStack heldItemStack;
+    public ItemStack leggingItemStack;
+    public AbstractPitItem heldItem; //make it public because it didn't have any synch operation
+    public AbstractPitItem leggings; //make it public because it didn't have any synch operation
+    @JsonIgnore
+    UUID cachedUUID;
     @JsonIgnore
     private boolean loaded;
     private String playerName;
@@ -149,7 +153,6 @@ public class PlayerProfile {
     private PlayerEnderChest enderChest;
     private int enderChestRow;
     private PlayerWarehouse warehouse;
-
     //每次都遍历查询，效率低下
     //所以专用Map降低大O复杂度
     @Deprecated
@@ -158,7 +161,6 @@ public class PlayerProfile {
     @Deprecated
     private List<PerkData> boughtPerk;
     private Map<String, PerkData> boughtPerkMap = new SWMRHashTable<>();
-
     private Set<String> usedCdk;
     private Map<Integer, PerkData> chosePerk;
     private double totalExp;
@@ -188,14 +190,13 @@ public class PlayerProfile {
     private boolean nightQuestEnable;
     private QuestCenter questCenter;
     private GenesisData genesisData;
+    //玩家是否在退出其他pit服务器，用于数据保存用，防止产生脏数据
     private List<String> currentQuestList;
     private double maxHealth;
     private int foodLevel;
     private float moveSpeed;
     private String enchantingItem;
     private String enchantingScience;
-    //玩家是否在退出其他pit服务器，用于数据保存用，防止产生脏数据
-
     private String enchantingBook;
     private boolean login;
     private WipedData wipedData;
@@ -215,55 +216,32 @@ public class PlayerProfile {
     private KillRecap killRecap;
     private boolean screenShare;
     private String screenShareQQ;
-
     //nick
     private boolean nicked;
     private String nickName;
     private int nickPrestige;
     private int nickLevel;
-
     //drop
     private boolean isNotMythDrop;
-
     private boolean tempInvUsing;
     private boolean noDamageAnimations;
-    private double liteStreakKill;
-    private long lastActionTimestamp;
-
-    private double goldStackAddon = 0.0;
-    private double goldStackMax = 0.5;
-
-    private double xpStackAddon = 0.0;
-    private double xpStackMax = 1.0;
 
     // private List<PlayerInvBackup> invBackups;
-
+    private double liteStreakKill;
+    private long lastActionTimestamp;
+    private double goldStackAddon = 0.0;
+    private double goldStackMax = 0.5;
+    private double xpStackAddon = 0.0;
+    private double xpStackMax = 1.0;
     private int todayCompletedUber;
     private long todayCompletedUberLastRefreshed;
-
     private int profileFormatVersion = 0;
-
     private Cooldown streakCooldown;
     private int streakCount;
-
     private boolean bot;
-
     private long lastDamageAt = -1L;
-    //code = -1 = allow;
-    //code = -2 = disallow
-    public transient volatile byte code = -1;
-
     private Map<String, Double> extraMaxHealth = new SWMRHashTable<>();
-
-    public KingsQuestsData kingsQuestsData = new KingsQuestsData();
-
     private long lastRenameTime = 0;
-
-    public ItemStack heldItemStack;
-
-    public ItemStack leggingItemStack;
-    public AbstractPitItem heldItem; //make it public because it didn't have any synch operation
-    public AbstractPitItem leggings; //make it public because it didn't have any synch operation
 
     public PlayerProfile(UUID uuid, String playerName) {
         //调用默认构造函数，初始化赋值
@@ -272,27 +250,6 @@ public class PlayerProfile {
         this.playerName = playerName;
         this.lowerName = playerName.toLowerCase();
         this.mailData = new PlayerMailData(uuid, playerName);
-    }
-
-    public synchronized PlayerProfile disallow() {
-        if (this.code == ProfileOperator.OPCODE_FREE) {
-            this.code = ProfileOperator.OPCODE_BUSY;
-            return this;
-        }
-        return NONE_PROFILE;
-    }
-
-    public synchronized PlayerProfile disallowUnsafe() {
-        disallow();
-        return this;
-    }
-
-    public synchronized PlayerProfile allow() {
-        if (this.code == ProfileOperator.OPCODE_BUSY) {
-            this.code = ProfileOperator.OPCODE_FREE;
-            return this;
-        }
-        return NONE_PROFILE;
     }
 
     public PlayerProfile() {
@@ -365,34 +322,6 @@ public class PlayerProfile {
         this.loaded = false;
     }
 
-    public boolean isChoosePerk(String intName) {
-        for (PerkData value : chosePerk.values()) {
-            if (value.getPerkInternalName().equals(intName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    public void onTick(Player bukkitEntity){
-        this.inArena = Utils.isInArena(bukkitEntity);
-        GameMode gameMode = bukkitEntity.getGameMode();
-        if(gameMode != GameMode.CREATIVE && gameMode != GameMode.SPECTATOR) {
-            if (isInArena()) {
-                if (gameMode != GameMode.SURVIVAL) {
-                    Bukkit.getScheduler().runTask(ThePit.getInstance(),() -> {
-                        bukkitEntity.setGameMode(GameMode.SURVIVAL);
-                    });
-                }
-            } else {
-                if (gameMode != GameMode.ADVENTURE) {
-                    Bukkit.getScheduler().runTask(ThePit.getInstance(),() -> {
-                        bukkitEntity.setGameMode(GameMode.ADVENTURE);
-                    });
-                }
-            }
-        }
-
-    }
     /**
      * 本方法仅作为兼容桥, 向下兼容存在代码, 已最大保证线程安全性以及最大解决bug等问题
      * 重定向于 PackedOperator
@@ -409,34 +338,13 @@ public class PlayerProfile {
         }
         return rawCache;
     }
+
     @Deprecated
     public static PlayerProfile getPlayerProfile(Entity player) {
         if (player instanceof Player) {
             return getPlayerProfileByUuid(player.getUniqueId());
         }
         return NONE_PROFILE;
-    }
-
-    public AbstractPerk getActiveMegaStreakObj() {
-        if (!isLoaded()) {
-            return null;
-        }
-
-        PerkData perkData = getChosePerk().get(5);
-        if (perkData == null) {
-            return null;
-        }
-        AbstractPerk handle = perkData.getHandle(ThePit.getInstance().getPerkFactory().getPerkMap());
-        if (handle instanceof MegaStreak mega) {
-            if (getStreakKills() >= mega.getStreakNeed()) {
-                return handle;
-            }
-        }
-        return null;
-    }
-
-    public void deActiveMegaSteak() {
-        setStreakKills(0);
     }
 
     public static PlayerProfile getRawCache(UUID uuid) {
@@ -447,22 +355,6 @@ public class PlayerProfile {
 
         return operator.profile();
     }
-
-//    /**
-//     * 该方法用于查找玩家，如果玩家可能离线时请使用本方法
-//     * 注意！请异步调用本方法，如果在主线程上调用会抛异常
-//     *
-//     * @param uuid 寻找的玩家UUID
-//     * @return 目标玩家玩家档案，如果该玩家未注册，则返回null
-//     */
-//    @JsonIgnore
-//    public static PlayerProfile getOrLoadPlayerProfileByUuid(UUID uuid) {
-//        PlayerProfile profile = cacheProfile.get(uuid);
-//        if (profile != null) {
-//            return profile;
-//        }
-//        return loadPlayerProfileByUuid(uuid);
-//    }
 
     /**
      * 该方法用于查找玩家，如果玩家可能离线时请使用本方法
@@ -522,9 +414,19 @@ public class PlayerProfile {
      */
     @JsonIgnore
     public static PlayerProfile loadPlayerProfileByName(String name) {
-        return ThePit.getInstance()
-                .getMongoDB()
-                .getProfileCollection()
+        // 查询所有匹配的文档
+        List<PlayerProfile> allProfiles = ThePit.getInstance().getMongoDB().getProfileCollection()
+                .find(Filters.eq("lowerName", name.toLowerCase()))
+                .into(new ArrayList<>());
+
+        // 返回最近一个
+        if (allProfiles.size() > 1) {
+            allProfiles.sort((p1, p2) -> Long.compare(p2.getLastLogoutTime(), p1.getLastLogoutTime()));
+            return allProfiles.get(0);
+        }
+
+        // 只有一个匹配的文档或没有匹配的文档
+        return ThePit.getInstance().getMongoDB().getProfileCollection()
                 .findOne(Filters.eq("lowerName", name.toLowerCase())); //PlayerProfile lookup
     }
 
@@ -548,6 +450,148 @@ public class PlayerProfile {
         mailData.cleanUp();
 
         playerProfile.setMailData(mailData);
+    }
+
+    public static void bootstrapProfile(PlayerProfile profile) {
+        //refresh quests - start
+        profile.refreshQuest();
+        profile.refreshGenesisData();
+        //refresh quests - end
+
+
+        Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
+            try {
+                final Player player = Bukkit.getPlayer(profile.getPlayerUuid());
+                if (player != null) {
+                    if (profile.isNicked()) {
+                        player.setDisplayName(profile.nickName);
+                        if (profile.prestige <= 0) {
+                            profile.nickPrestige = 0;
+                        } else {
+                            profile.nickPrestige = RandomUtil.random.nextInt(profile.getPrestige()) + 1;
+                        }
+
+                        profile.nickLevel = RandomUtil.random.nextInt(profile.getLevel() + 1);
+                    }
+                }
+            } catch (Exception e) {
+                Bukkit.getOnlinePlayers()
+                        .forEach(player -> CC.printError(player, e));
+            }
+        });
+        profile.loaded = true;
+    }
+
+    public static synchronized final void saveAllSync(boolean silent) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            try {
+
+                PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
+                if (profile.isLoaded()) {
+                    profile.setInventory(InventoryUtil.playerInventoryFromPlayer(player));
+                    profile.save(player);
+                    if (!silent) {
+                        CC.boardCast0("&6&l公告! &7正在保存 " + player.getDisplayName() + " 玩家的数据...");
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+//    /**
+//     * 该方法用于查找玩家，如果玩家可能离线时请使用本方法
+//     * 注意！请异步调用本方法，如果在主线程上调用会抛异常
+//     *
+//     * @param uuid 寻找的玩家UUID
+//     * @return 目标玩家玩家档案，如果该玩家未注册，则返回null
+//     */
+//    @JsonIgnore
+//    public static PlayerProfile getOrLoadPlayerProfileByUuid(UUID uuid) {
+//        PlayerProfile profile = cacheProfile.get(uuid);
+//        if (profile != null) {
+//            return profile;
+//        }
+//        return loadPlayerProfileByUuid(uuid);
+//    }
+
+    //两张表
+    public IOperator toOperator() {
+        return ThePit.getInstance().getProfileOperator().getIOperator(getPlayerUuid());
+    }
+
+    public synchronized PlayerProfile disallow() {
+        if (this.code == ProfileOperator.OPCODE_FREE) {
+            this.code = ProfileOperator.OPCODE_BUSY;
+            return this;
+        }
+        return NONE_PROFILE;
+    }
+
+    public synchronized PlayerProfile disallowUnsafe() {
+        disallow();
+        return this;
+    }
+
+    public synchronized PlayerProfile allow() {
+        if (this.code == ProfileOperator.OPCODE_BUSY) {
+            this.code = ProfileOperator.OPCODE_FREE;
+            return this;
+        }
+        return NONE_PROFILE;
+    }
+
+    public boolean isChoosePerk(String intName) {
+        for (PerkData value : chosePerk.values()) {
+            if (value.getPerkInternalName().equals(intName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void onTick(Player bukkitEntity) {
+        this.inArena = Utils.isInArena(bukkitEntity);
+        GameMode gameMode = bukkitEntity.getGameMode();
+        if (gameMode != GameMode.CREATIVE && gameMode != GameMode.SPECTATOR) {
+            if (isInArena()) {
+                if (gameMode != GameMode.SURVIVAL) {
+                    Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
+                        bukkitEntity.setGameMode(GameMode.SURVIVAL);
+                    });
+                }
+            } else {
+                if (gameMode != GameMode.ADVENTURE) {
+                    Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
+                        bukkitEntity.setGameMode(GameMode.ADVENTURE);
+                    });
+                }
+            }
+        }
+
+    }
+
+    public AbstractPerk getActiveMegaStreakObj() {
+        if (!isLoaded()) {
+            return null;
+        }
+
+        PerkData perkData = getChosePerk().get(5);
+        if (perkData == null) {
+            return null;
+        }
+        AbstractPerk handle = perkData.getHandle(ThePit.getInstance().getPerkFactory().getPerkMap());
+        if (handle instanceof MegaStreak mega) {
+            if (getStreakKills() >= mega.getStreakNeed()) {
+                return handle;
+            }
+        }
+        return null;
+    }
+
+    public void deActiveMegaSteak() {
+        setStreakKills(0);
     }
 
     public PlayerProfile save(Player player) {
@@ -588,36 +632,6 @@ public class PlayerProfile {
                 .getMongoDB()
                 .getProfileCollection()
                 .replaceOne(Filters.eq("uuid", this.uuid), this, new ReplaceOptions().upsert(true));
-    }
-
-    public static void bootstrapProfile(PlayerProfile profile) {
-        //refresh quests - start
-        profile.refreshQuest();
-        profile.refreshGenesisData();
-        //refresh quests - end
-
-
-        Bukkit.getScheduler().runTask(ThePit.getInstance(), () -> {
-            try {
-                final Player player = Bukkit.getPlayer(profile.getPlayerUuid());
-                if (player != null) {
-                    if (profile.isNicked()) {
-                        player.setDisplayName(profile.nickName);
-                        if (profile.prestige <= 0) {
-                            profile.nickPrestige = 0;
-                        } else {
-                            profile.nickPrestige = RandomUtil.random.nextInt(profile.getPrestige()) + 1;
-                        }
-
-                        profile.nickLevel = RandomUtil.random.nextInt(profile.getLevel() + 1);
-                    }
-                }
-            } catch (Exception e) {
-                Bukkit.getOnlinePlayers()
-                        .forEach(player -> CC.printError(player, e));
-            }
-        });
-        profile.loaded = true;
     }
 
     public PlayerProfile load() {
@@ -712,9 +726,6 @@ public class PlayerProfile {
     public String geLevelColor() {
         return LevelUtil.getLevelColor(this.getLevel());
     }
-
-    @JsonIgnore
-    UUID cachedUUID;
 
     @JsonIgnore
     public UUID getPlayerUuid() {
@@ -1162,6 +1173,16 @@ public class PlayerProfile {
         return this.bounty;
     }
 
+    public void setBounty(int bounty) {
+    /*    if (bounty >= 5000) {
+           final Player player = Bukkit.getPlayer(this.getPlayerUuid());
+          if (player != null) {
+                new MaxBountyMedal().setProgress(PlayerProfile.getPlayerProfileByUuid(player.getUniqueId()), 1);
+           }
+        }*/
+        this.bounty = bounty;
+    }
+
     public String bountyColor() {
         //  Player player = Bukkit.getPlayer(getPlayerUuid());
         // if (player != null) {
@@ -1184,16 +1205,6 @@ public class PlayerProfile {
         return "&6";
     }
 
-    public void setBounty(int bounty) {
-    /*    if (bounty >= 5000) {
-           final Player player = Bukkit.getPlayer(this.getPlayerUuid());
-          if (player != null) {
-                new MaxBountyMedal().setProgress(PlayerProfile.getPlayerProfileByUuid(player.getUniqueId()), 1);
-           }
-        }*/
-        this.bounty = bounty;
-    }
-
     public int getActionBounty() {
         return this.actionBounty;
     }
@@ -1213,7 +1224,6 @@ public class PlayerProfile {
     public PlayerInv getInventory() {
         return this.inventory;
     }
-
 
     public void setInventory(PlayerInv inv) {
         if (this.tempInvUsing) {
@@ -1365,7 +1375,13 @@ public class PlayerProfile {
         PitInternalHook api = ThePit.getApi();
         if (api == null) return false;
 
-        if (supporter && !api.getRemoveSupportWhenNoPermission()) return true;
+        // 修复：如果 supporter 字段为 true，直接返回 true，不再检查玩家是否在线
+        // 原来的逻辑问题：当 api.getRemoveSupportWhenNoPermission() 为 true 时，
+        // 离线的天坑会员因为 Bukkit.getPlayerExact(playerName) 返回 null，会被误判为非会员
+        // 修复后：只要 supporter 字段为 true，就直接返回 true，确保离线的天坑会员也能被正确识别
+        if (supporter) return true;
+
+        if (!api.getRemoveSupportWhenNoPermission()) return true;
 
         Player player = Bukkit.getPlayerExact(playerName);
         if (player == null) return false;
@@ -1584,24 +1600,6 @@ public class PlayerProfile {
         this.streakKills = kills;
     }
 
-    public static synchronized final void saveAllSync(boolean silent) {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            try {
-
-                PlayerProfile profile = PlayerProfile.getPlayerProfileByUuid(player.getUniqueId());
-                if (profile.isLoaded()) {
-                    profile.setInventory(InventoryUtil.playerInventoryFromPlayer(player));
-                    profile.save(player);
-                    if (!silent) {
-                        CC.boardCast0("&6&l公告! &7正在保存 " + player.getDisplayName() + " 玩家的数据...");
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     public Cooldown getCombatTimer() {
         return this.combatTimer;
     }
@@ -1714,13 +1712,12 @@ public class PlayerProfile {
         this.nicked = nicked;
     }
 
+    public String getNickName() {
+        return nickName;
+    }
 
     public void setNickName(String nickName) {
         this.nickName = nickName;
-    }
-
-    public String getNickName() {
-        return nickName;
     }
 
     public void updateNick() {
@@ -1908,24 +1905,25 @@ public class PlayerProfile {
     public String getEnchantingBook() {
         return enchantingBook;
     }
-    public ItemStack getEnchantingBookItemStackFormed() {
-        return InventoryUtil.deserializeItemStack(enchantingBook);
-    }
 
     public void setEnchantingBook(String enchantingBook) {
         this.enchantingBook = enchantingBook;
+    }
+
+    public ItemStack getEnchantingBookItemStackFormed() {
+        return InventoryUtil.deserializeItemStack(enchantingBook);
     }
 
     public Map<String, PerkData> getUnlockedPerkMap() {
         return unlockedPerkMap;
     }
 
-    public Map<String, PerkData> getBoughtPerkMap() {
-        return boughtPerkMap;
-    }
-
     public void setUnlockedPerkMap(Map<String, PerkData> unlockedPerkMap) {
         this.unlockedPerkMap = unlockedPerkMap;
+    }
+
+    public Map<String, PerkData> getBoughtPerkMap() {
+        return boughtPerkMap;
     }
 
     public void setBoughtPerkMap(Map<String, PerkData> boughtPerkMap) {
@@ -1983,7 +1981,6 @@ public class PlayerProfile {
         }
 
 
-
         @Override
         public PlayerProfile save(Player player) {
             return this;
@@ -2002,6 +1999,10 @@ public class PlayerProfile {
         @Override
         public boolean isBot() {
             return true;
+        }
+
+        @Override
+        public void setBot(boolean bot) {
         }
 
         @Override
@@ -2136,10 +2137,6 @@ public class PlayerProfile {
 
         @Override
         public void setRenown(int renown) {
-        }
-
-        @Override
-        public void setBounty(int bounty) {
         }
 
         @Override
@@ -2314,10 +2311,6 @@ public class PlayerProfile {
         }
 
         @Override
-        public void setInArena(boolean inArena) {
-        }
-
-        @Override
         public void setStreakKills(double kills) {
         }
 
@@ -2445,10 +2438,6 @@ public class PlayerProfile {
         }
 
         @Override
-        public void setBot(boolean bot) {
-        }
-
-        @Override
         public void setLastDamageAt(long lastDamageAt) {
         }
 
@@ -2483,10 +2472,19 @@ public class PlayerProfile {
         }
 
         @Override
+        public void setInArena(boolean inArena) {
+        }
+
+        @Override
         public int getBounty() {
             return 0;
         }
-        public void onTick(Player buk){
+
+        @Override
+        public void setBounty(int bounty) {
+        }
+
+        public void onTick(Player buk) {
 
         }
     }
