@@ -72,7 +72,7 @@ class GoldenHelmet : IMythicItem(), Listener {
             .lore(
                 "&7生命: " + (if (live / (maxLive * 1.0) <= 0.6) if (live / (maxLive * 1.0) <= 0.3) "&c" else "&e" else "&a") + live + "&7/" + maxLive,
                 "",
-                "&9国王的皇冠",
+                "&9皇室",
                 "&7击杀经验值&b +10%&7.",
                 "",
                 "&6穿着时提供钻石头盔相同的伤害减免效果"
