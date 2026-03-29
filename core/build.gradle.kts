@@ -108,7 +108,6 @@ dependencies {
 
     compileOnly(libs.fastutil)
     compileOnly("us.crazycrew.crazycrates:api:0.7")
-    compileOnly(libs.spigot.get8())
     compileOnly(libs.luckperms)
     compileOnly(libs.playerpoints)
     compileOnly(libs.decentholograms)

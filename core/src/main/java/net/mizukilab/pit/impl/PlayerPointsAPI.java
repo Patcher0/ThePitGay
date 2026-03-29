@@ -9,9 +9,14 @@ public class PlayerPointsAPI {
     public static void init(){
         Plugin playerPoints = Bukkit.getPluginManager()
                 .getPlugin("PlayerPoints");
-        if(playerPoints != null){
-            API = PlayerPointsAPIImpl.INSTANCE;
-        } else{
+        try {
+            if (playerPoints != null) {
+                API = PlayerPointsAPIImpl.INSTANCE;
+            } else {
+                API = new NullPlayerPointsAPIImpl();
+            }
+        } catch (Throwable e) {
+            //fallback
             API = new NullPlayerPointsAPIImpl();
         }
     }

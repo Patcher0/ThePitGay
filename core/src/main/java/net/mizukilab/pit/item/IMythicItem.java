@@ -426,7 +426,7 @@ public abstract class IMythicItem extends AbstractPitItem {
                 }
             }
         }
-        enchCheck(item);
+       // enchCheck(item);
     }
     public void enchCheck(ItemStack stack) {
         boolean changed = false;

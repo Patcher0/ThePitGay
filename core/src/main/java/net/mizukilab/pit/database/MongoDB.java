@@ -14,10 +14,12 @@ import lombok.Getter;
 import org.bson.Document;
 import org.bson.UuidRepresentation;
 import org.bson.conversions.Bson;
+import org.bukkit.Bukkit;
 import org.mongojack.JacksonMongoCollection;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
@@ -52,7 +54,7 @@ public class MongoDB {
 
         final String mongoUser = ThePit.getInstance().getGlobalConfig().getMongoUser();
         final String mongoPassword = ThePit.getInstance().getGlobalConfig().getMongoPassword();
-
+        final String certDatabase = ThePit.getInstance().getGlobalConfig().getCertDatabaseName();
         final String databaseName;
         if (ThePit.getInstance().getGlobalConfig().getDatabaseName() == null) {
             databaseName = "thePit";
@@ -66,12 +68,12 @@ public class MongoDB {
                 .version(ServerApiVersion.V1)
                 .build()).uuidRepresentation(UuidRepresentation.STANDARD).applyConnectionString(connectionString);
         if (mongoUser != null && mongoPassword != null && !mongoUser.isEmpty() && !mongoPassword.isEmpty()) {
-            MongoCredential credential = MongoCredential.createCredential(mongoUser, databaseName, mongoPassword.toCharArray());
+            MongoCredential credential = MongoCredential.createCredential(mongoUser, certDatabase, mongoPassword.toCharArray());
             thePit = builder1
                     .credential(credential).applicationName("ThePitSafe")
                     .build();
         } else {
-            thePit = builder1.applicationName("ThePit-Unsafe").build();
+            thePit = builder1.applicationName("ThePitUnsafe").build();
         }
         this.mongoClient = MongoClients.create(thePit);
         this.database = mongoClient.getDatabase(databaseName);

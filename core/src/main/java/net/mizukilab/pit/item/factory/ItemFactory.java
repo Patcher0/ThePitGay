@@ -85,14 +85,14 @@ public class ItemFactory implements IItemFactory {
         boolean shouldUpdate = false;
 
         int hashCodeForUUID = ItemUtil.getHashCodeForUUID0(stack, extra);
-        boolean b = ItemUtil.shouldUpdateItem(stack);
-        if (hashCodeForUUID == 1 || (b && ItemUtil.shouldUpdateUUID())) {
+        boolean shouldUpdateVer = ItemUtil.shouldUpdateItem(stack);
+        if (hashCodeForUUID == 1 || (shouldUpdateVer && ItemUtil.shouldUpdateUUID())) {
             if (!clientSide) {
                 shouldUpdate = true;
                 ItemUtil.randomUUIDItem(stack);
             }
         }
-        if(!clientSide && b){
+        if(!clientSide && shouldUpdateVer){
             ItemUtil.signVer(stack);
         }
         IMythicItem iMythicItem = getIMythicItem(hashCodeForUUID);
@@ -103,7 +103,7 @@ public class ItemFactory implements IItemFactory {
             return getIMythicItem0(shouldUpdate,stack, internalName);
         } else {
             runnable.run();
-            int i = System.identityHashCode(Utils.toNMStackQuick(stack));
+          //  int i = System.identityHashCode(Utils.toNMStackQuick(stack));
             return iMythicItem;
         }
 

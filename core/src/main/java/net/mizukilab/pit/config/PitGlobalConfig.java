@@ -91,6 +91,12 @@ public class PitGlobalConfig extends Configuration {
             path = "service.mongodb.database"
     )
     private String databaseName;
+    @Setter
+    @Getter
+    @ConfigData(
+            path = "service.mongodb.certDatabase"
+    )
+    private String certDatabaseName;
 
     @Setter
     @Getter

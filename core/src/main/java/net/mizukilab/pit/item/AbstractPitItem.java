@@ -95,8 +95,6 @@ public abstract class AbstractPitItem {
         enchantments.object2IntEntrySet().fastForEach(i ->
                 getEnchantLore(lore, i, entries)
         );
-
-
         return lore;
     }
 
